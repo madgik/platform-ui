@@ -1,0 +1,49 @@
+/* Main Header Styling */
+.main-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background-color: #f8f9fa; /* Light background for the header */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for separation */
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  width: 100px;
+  height: auto;
+  margin-right: 10px;
+}
+
+.title-container h1 {
+  font-size: 1.5em;  /* Smaller font size */
+  color: #343a40;
+  font-family: 'Roboto', sans-serif;  /* Example of a modern font */
+  margin: 0;
+}
+
+.title-container p {
+  font-size: 1em;  /* Smaller subtitle */
+  color: #6c757d;
+  font-family: 'Roboto', sans-serif;  /* Matching font for subtitle */
+  margin: 0;
+}
+
+
+.sign-in-btn {
+  background-color: black;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  font-size: 1em;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.sign-in-btn:hover {
+  background-color: #333;
+}

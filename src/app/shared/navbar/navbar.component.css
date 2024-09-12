@@ -1,0 +1,109 @@
+/* Navbar styling
+.navbar {
+  background-color: #343a40;
+  border-radius: 3px;
+  padding: 10px;
+}
+
+.navbar ul {
+  display: flex;
+  justify-content: space-around;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar ul li {
+  margin: 0 15px;
+}
+
+.navbar ul li a {
+  color: white;
+  text-decoration: none;
+  font-size: 1.1em;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-family: 'Roboto', sans-serif;
+  transition: background-color 0.8s;
+}
+
+.navbar ul li a:hover {
+  background-color: #007bff;
+  font-family: 'Roboto', sans-serif;
+  color: white;
+}
+
+/* Tablet view */
+
+/*
+@media (max-width: 1024px) {
+  .main-header {
+    flex-direction: column;
+    align-items: center;
+    padding: 15px;
+  }
+
+  .logo-container {
+    margin-bottom: 15px;
+  }
+
+  .navbar ul {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .navbar ul li {
+    margin-bottom: 10px;
+  }
+}
+*/
+
+/* Navbar styling for desktop */
+.navbar {
+  background-color: transparent;
+  padding: 0;
+}
+
+.navbar ul {
+  display: flex;
+  justify-content: space-evenly;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar ul li {
+  margin: 0 20px;
+}
+
+.navbar ul li a {
+  font-family: 'Roboto', sans-serif;
+  color: #343a40;
+  text-decoration: none;
+  font-size: 1.1em;
+  padding: 10px;
+  border-radius: 4px;
+  transition: color 0.3s, background-color 0.3s;
+}
+
+.navbar ul li a:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: #007bff;
+}
+
+/* Tablet Layout (768px - 1024px) */
+@media (max-width: 1024px) {
+  .navbar ul {
+    flex-direction: column; /* Stack links vertically on tablets */
+    align-items: center;
+  }
+
+  .navbar ul li {
+    margin-bottom: 15px; /* Add space between links */
+  }
+
+  .navbar ul li a {
+    font-size: 1em; /* Adjust font size slightly for tablets */
+    padding: 8px 12px; /* Adjust padding for smaller screens */
+  }
+}

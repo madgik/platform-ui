@@ -1,0 +1,144 @@
+/* General Spacing Adjustments */
+.main-header {
+  margin-bottom: 30px; /* Reduce space after header */
+}
+
+.image-gallery {
+  margin-bottom: 30px; /* Reduce space between gallery and description */
+}
+
+.description {
+  margin: 20px 0; /* Keep a consistent margin for description */
+}
+
+.features {
+  margin-top: 40px; /* Add spacing between sections */
+}
+
+/* Adjusting landing page layout */
+.landing-page {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.image-gallery {
+  display: flex;
+  justify-content: space-evenly;
+  flex-wrap: wrap;
+  padding: 40px 0;
+}
+
+.image-item {
+  width: 180px;
+  margin: 20px;
+}
+
+.description {
+  padding: 20px;
+  font-size: 1.2em;
+}
+
+
+/* Image Gallery */
+.image-gallery {
+  display: flex;
+  justify-content: space-evenly; /* Ensure even spacing between images */
+  align-items: center;
+  padding: 40px 0; /* Add padding for breathing space */
+}
+
+.image-item {
+  text-align: center;
+}
+
+.image-item img {
+  width: 150px; /* Ensure consistent image size */
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 10px;
+}
+
+.image-caption {
+  font-size: 1em;
+  color: #333;
+}
+
+
+/* Description Section */
+.description {
+  text-align: center;
+  margin: 20px 0; /* Add spacing around the description */
+  padding: 0 20px;
+}
+
+.description h2 {
+  font-size: 1.5em;
+  color: #343a40;
+  margin-bottom: 10px;
+}
+
+.description p {
+  font-size: 1.1em;
+  color: #6c757d;
+}
+
+/* Features Section */
+.features {
+  display: flex;
+  justify-content: space-around;
+  padding: 20px;
+}
+
+.feature {
+  width: 30%;
+  text-align: center;
+}
+
+/* Testimonials Section */
+.testimonials {
+  display: flex;
+  justify-content: space-around;
+  padding: 20px;
+}
+
+.testimonial-card {
+  width: 18%;
+  border: 1px solid #ccc;
+  padding: 10px;
+  text-align: center;
+}
+
+/* Call to Action Button */
+.cta {
+  text-align: center;
+  padding: 20px;
+}
+
+.cta button {
+  background-color: black;
+  color: white;
+  padding: 15px 30px;
+  border: none;
+  font-size: 1.2em;
+  cursor: pointer;
+}
+
+/* Tablet Layout for Landing Page */
+@media (min-width: 768px) and (max-width: 1024px) {
+  /* Image Gallery */
+  .image-gallery {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);  /* 2 images per row */
+    gap: 20px;
+    padding: 30px 0;
+  }
+
+  .description {
+    padding: 0 30px; /* More padding for text on tablets */
+  }
+
+  .sign-in-btn {
+    padding: 8px 16px;  /* Make button slightly smaller for tablets */
+  }
+}
