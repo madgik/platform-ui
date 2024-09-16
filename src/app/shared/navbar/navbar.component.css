@@ -1,109 +1,81 @@
-/* Navbar styling
+/* Navbar Styling (align closer to the right and compact layout) */
 .navbar {
-  background-color: #343a40;
-  border-radius: 3px;
-  padding: 10px;
+  margin-left: auto;
+  display: flex;
+  align-items: center; /* Align items vertically in the center */
 }
 
 .navbar ul {
   display: flex;
-  justify-content: space-around;
+  justify-content: flex-end;
   list-style: none;
-  margin: 0;
+  margin: 25px;
   padding: 0;
 }
 
 .navbar ul li {
-  margin: 0 15px;
+  margin-left: 10px; /* Reduced space between navbar items */
 }
 
 .navbar ul li a {
-  color: white;
+  color: #c0c0c0;
   text-decoration: none;
-  font-size: 1.1em;
-  padding: 10px 20px;
-  border-radius: 5px;
+  font-size: 0.7em; /* Better readability */
+  transition: color 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   font-family: 'Roboto', sans-serif;
-  transition: background-color 0.8s;
+  font-weight: 300;
 }
 
 .navbar ul li a:hover {
-  background-color: #007bff;
-  font-family: 'Roboto', sans-serif;
-  color: white;
+  color: #18a2b8; /* Blue accent on hover */
 }
 
-/* Tablet view */
+.navbar ul li a i {
+  font-size: 1.8em; /* Adjust icon size */
+  margin-bottom: 2px;
+}
 
-/*
+/* Ensure it's aligned next to the user icon */
+.navbar-wrapper {
+  display: flex;
+  align-items: center;
+  margin-right: 10px; /* Adjust as needed to fine-tune spacing */
+}
+
+/* =========================== */
+/* Tablet Layout (768px - 1024px) */
+/* =========================== */
 @media (max-width: 1024px) {
-  .main-header {
-    flex-direction: column;
-    align-items: center;
-    padding: 15px;
+  .navbar ul li a {
+    font-size: 1em; /* Consistent font size for tablet */
   }
 
-  .logo-container {
-    margin-bottom: 15px;
+  .navbar ul li a i {
+    font-size: 1.4em; /* Smaller icons for tablet */
   }
+}
 
+/* =========================== */
+/* Mobile Layout (up to 768px) */
+/* =========================== */
+@media (max-width: 768px) {
   .navbar ul {
     flex-direction: column;
-    text-align: center;
+    align-items: center;
   }
 
   .navbar ul li {
     margin-bottom: 10px;
   }
-}
-*/
-
-/* Navbar styling for desktop */
-.navbar {
-  background-color: transparent;
-  padding: 0;
-}
-
-.navbar ul {
-  display: flex;
-  justify-content: space-evenly;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.navbar ul li {
-  margin: 0 20px;
-}
-
-.navbar ul li a {
-  font-family: 'Roboto', sans-serif;
-  color: #343a40;
-  text-decoration: none;
-  font-size: 1.1em;
-  padding: 10px;
-  border-radius: 4px;
-  transition: color 0.3s, background-color 0.3s;
-}
-
-.navbar ul li a:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-  color: #007bff;
-}
-
-/* Tablet Layout (768px - 1024px) */
-@media (max-width: 1024px) {
-  .navbar ul {
-    flex-direction: column; /* Stack links vertically on tablets */
-    align-items: center;
-  }
-
-  .navbar ul li {
-    margin-bottom: 15px; /* Add space between links */
-  }
 
   .navbar ul li a {
-    font-size: 1em; /* Adjust font size slightly for tablets */
-    padding: 8px 12px; /* Adjust padding for smaller screens */
+    font-size: 1em;
+  }
+
+  .navbar ul li a i {
+    font-size: 1.4em;
   }
 }

@@ -1,14 +1,29 @@
-<header class="main-header">
-  <div class="logo-container">
-    <img src="/assets/logo.png" alt="Platform Logo" class="logo" />
-    <div class="title-container">
+<header class="header">
+  <!-- Logo and Branding -->
+  <div class="branding">
+    <img src="assets/logo.png" alt="Platform Logo" class="logo">
+    <div class="branding-text">
       <h1>Medical Informatics Platform</h1>
       <p>Unlocking the power of medical data</p>
     </div>
   </div>
 
-<!-- Navbar component -->
-  <app-navbar></app-navbar>
+  <!-- Navigation Bar in the middle/right -->
+  <div class="navbar-wrapper">
+    <app-navbar></app-navbar>
+  </div>
 
-  <button class="sign-in-btn">Sign in</button>
+  <!-- User icon for login/logout (separate from the navbar, far right) -->
+  <div class="user-icon">
+    <ng-container *ngIf="isLoggedIn; else notLoggedIn">
+      <!-- Show the user’s picture when logged in -->
+      <img [src]="userPicture" alt="User Picture" class="account-picture">
+    </ng-container>
+    <ng-template #notLoggedIn>
+      <!-- Show a grey user avatar icon when not logged in -->
+      <button class="sign-in-btn">
+        <img src="assets/grey-avatar.png" alt="Sign In" class="account-picture">
+      </button>
+    </ng-template>
+  </div>
 </header>
