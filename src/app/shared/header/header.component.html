@@ -15,10 +15,10 @@
 
   <!-- User icon for login/logout (separate from the navbar, far right) -->
   <div class="user-icon">
-    <ng-container *ngIf="isLoggedIn; else notLoggedIn">
+    <button class="sign-in-btn" *ngIf="isLoggedIn; else notLoggedIn" [routerLink]="['/account']" routerLinkActive="router-link-active" >
       <!-- Show the user’s picture when logged in -->
-      <img [src]="userPicture" alt="User Picture" class="account-picture">
-    </ng-container>
+      <img src="assets/user-icon.png" alt="User Picture" class="account-picture">
+    </button>
     <ng-template #notLoggedIn>
       <!-- Show a grey user avatar icon when not logged in -->
       <button class="sign-in-btn">

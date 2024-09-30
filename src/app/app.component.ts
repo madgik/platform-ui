@@ -1,14 +1,14 @@
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
 import { FooterComponent } from './shared/footer/footer.component';
+import { Component } from '@angular/core';
 import { HeaderComponent } from './shared/header/header.component';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, FooterComponent, HeaderComponent],
+  imports: [HeaderComponent, FooterComponent, RouterModule],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  styleUrls: ['./app.component.css']
 })
 export class AppComponent {
   title = 'fl-platform';
