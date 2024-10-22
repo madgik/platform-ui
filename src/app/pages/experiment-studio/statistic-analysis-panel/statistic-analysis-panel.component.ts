@@ -15,4 +15,14 @@ export class StatisticAnalysisPanelComponent {
     { title: 'Median', value: 42.5 },
     { title: 'Standard Deviation', value: 12.7 }
   ];
+
+  accordionState: { [key: string]: boolean } = {};
+
+  toggleAccordion(panel: string) {
+    this.accordionState[panel] = !this.accordionState[panel];
+  }
+
+  isAccordionOpen(panel: string): boolean {
+    return !!this.accordionState[panel];
+  }
 }

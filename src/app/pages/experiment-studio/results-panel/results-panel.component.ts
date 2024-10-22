@@ -9,5 +9,13 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./results-panel.component.css']
 })
 export class ResultsPanelComponent {
-  // Logic to display results goes here
+  accordionState: { [key: string]: boolean } = {};
+
+  toggleAccordion(panel: string) {
+    this.accordionState[panel] = !this.accordionState[panel];
+  }
+
+  isAccordionOpen(panel: string): boolean {
+    return !!this.accordionState[panel];
+  }
 }

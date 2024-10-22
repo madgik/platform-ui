@@ -16,4 +16,14 @@ export class AlgorithmPanelComponent {
   configureAlgorithm(algorithm: string) {
     this.algorithmConfigured.emit(algorithm);
   }
+
+  accordionState: { [key: string]: boolean } = {};
+
+  toggleAccordion(panel: string) {
+    this.accordionState[panel] = !this.accordionState[panel];
+  }
+
+  isAccordionOpen(panel: string): boolean {
+    return !!this.accordionState[panel];
+  }
 }

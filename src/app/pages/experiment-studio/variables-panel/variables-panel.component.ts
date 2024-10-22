@@ -13,7 +13,17 @@ export class VariablesPanelComponent {
 
   variables = ['Variable A', 'Variable B', 'Variable C'];
 
-  onSelectVariable(variable: string) {
+  selectVariable(variable: string) {
     this.variableSelected.emit(variable);
+  }
+
+  accordionState: { [key: string]: boolean } = {};
+
+  toggleAccordion(panel: string) {
+    this.accordionState[panel] = !this.accordionState[panel];
+  }
+
+  isAccordionOpen(panel: string): boolean {
+    return !!this.accordionState[panel];
   }
 }
