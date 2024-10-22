@@ -16,4 +16,14 @@ export class FiltersPanelComponent {
   applyFilter(filter: string) {
     this.filterApplied.emit(filter);
   }
+
+  accordionState: { [key: string]: boolean } = {};
+
+  toggleAccordion(panel: string) {
+    this.accordionState[panel] = !this.accordionState[panel];
+  }
+
+  isAccordionOpen(panel: string): boolean {
+    return !!this.accordionState[panel];
+  }
 }

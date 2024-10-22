@@ -16,4 +16,14 @@ export class TransformationsPanelComponent {
   applyTransformation(transformation: string) {
     this.transformationApplied.emit(transformation);
   }
+
+  accordionState: { [key: string]: boolean } = {};
+
+  toggleAccordion(panel: string) {
+    this.accordionState[panel] = !this.accordionState[panel];
+  }
+
+  isAccordionOpen(panel: string): boolean {
+    return !!this.accordionState[panel];
+  }
 }
