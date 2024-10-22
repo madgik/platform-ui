@@ -1,0 +1,135 @@
+/* Sidebar layout - now white background with shadows */
+.experiment-sidebar {
+  background-color: #fff;
+  width: 250px;
+  height: 100vh;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; /* Align everything to the top */
+  border-radius: 12px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* Sidebar header - adjusted margin */
+.sidebar-header {
+  padding: 10px 0;
+  margin-bottom: 5px; /* Reduced to make the space smaller */
+}
+
+.sidebar-title {
+  font-size: 1.4rem;
+  color: #333;
+  font-weight: bold;
+}
+
+/* Section for collapsible menu */
+.sidebar-section {
+  margin-bottom: 10px; /* Reduced margin */
+  background-color: #f7f7f7;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+/* Toggleable menu style */
+.toggle-menu {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #333;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 12px 10px 10px 10px;
+  background-color: inherit;
+  border-radius: 6px;
+  transition: background-color 0.1s ease, box-shadow 0.3s ease;
+  margin-right: 50px;
+}
+
+.toggle-menu:hover a {
+  padding: 0;
+  margin-right: 50px;
+}
+
+.toggle-menu:hover {
+  background-color: #89e0ee;
+  padding: 22px 22px 22px 22px;
+  margin: -8px;
+  padding-right: 70px;
+}
+
+.menuExpanded {
+  margin-left: 10px;
+}
+
+/* Nested list (experiments) */
+.nested-experiment-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 10px 0; /* Reduced spacing for a tighter look */
+}
+
+.nested-experiment-list li {
+  display: flex;
+  align-items: center;
+  margin-left: 15px;
+  padding: 10px 15px;
+  background-color: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  color: #333;
+}
+
+.nested-experiment-list li:hover {
+  background-color: #89e0ee;
+  color: #020202;
+  border-radius: 8px;
+}
+
+.nested-experiment-list li i {
+  margin-right: 15px;
+}
+
+.nested-experiment-list li span {
+  font-size: 0.9rem;
+}
+
+/* Static Menu */
+.static-menu {
+  list-style: none;
+  padding: 0;
+  margin-top: 0px; /* Reduce the margin between the sections */
+}
+
+.static-menu li {
+  margin-bottom: 8px; /* Reduce the margin to tighten the space */
+}
+
+.static-menu a {
+  display: flex;
+  align-items: center;
+  color: #333;
+  text-decoration: none;
+  padding: 20px 15px;
+  border-radius: 8px;
+  background-color: #f7f7f7;
+  transition: background-color 0.3s ease;
+}
+
+.static-menu a:hover {
+  background-color: #89e0ee;
+
+}
+
+.static-menu a i {
+  margin-right: 10px;
+}
+
+/* Sidebar hover and active states */
+.static-menu a.active,
+.nested-experiment-list li.active {
+  background-color: #18a2b8;
+  color: #fff;
+}

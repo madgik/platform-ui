@@ -1,0 +1,30 @@
+<div class="experiment-sidebar">
+  <!-- Sidebar Header -->
+  <div class="sidebar-header">
+    <h2 class="sidebar-title">Experiments</h2>
+  </div>
+
+  <!-- Experiment List (Collapsible) -->
+  <div class="sidebar-section">
+    <a (click)="toggleMenu()" class="toggle-menu">
+      <i class="fas fa-flask"></i>
+      <span>Experiment List</span>
+      <i [class]="menuExpanded ? 'fas fa-chevron-up' : 'fas fa-chevron-down'"></i>
+    </a>
+    <ul *ngIf="menuExpanded" class="nested-experiment-list">
+      <li *ngFor="let experiment of experiments" (click)="selectExperiment(experiment)">
+        <i class="fas fa-vial"></i>
+        <span>{{ experiment.name }}</span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Static Menu Items -->
+  <ul class="static-menu">
+    <li *ngFor="let item of experimentMenuItems">
+      <a [routerLink]="item.route">
+        <i [class]="item.icon"></i> <span>{{ item.label }}</span>
+      </a>
+    </li>
+  </ul>
+</div>

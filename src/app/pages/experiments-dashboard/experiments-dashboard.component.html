@@ -1,0 +1,22 @@
+<div class="experiments-dashboard">
+  <div class="main-content">
+    <!-- Top section with a button to create new experiments -->
+    <div class="top-section">
+      <h1>Experiments Dashboard</h1>
+      <button class="btn-new-experiment" (click)="createNewExperiment()">New Experiment</button>
+    </div>
+
+    <!-- Content section with experiment list and details -->
+    <div class="content-body">
+      <!-- Experiment menu with a dynamic list of experiments -->
+      <div class="experiment-menu">
+        <app-experiments-list (experimentSelected)="onExperimentSelected($event)"></app-experiments-list>
+      </div>
+
+      <!-- Experiment Details -->
+      <div class="experiment-details">
+        <app-experiment-details [selectedExperiment]="selectedExperiment"></app-experiment-details>
+      </div>
+    </div>
+  </div>
+</div>

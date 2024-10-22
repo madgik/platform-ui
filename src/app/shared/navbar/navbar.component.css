@@ -1,0 +1,74 @@
+/* Navbar Styling (align closer to the right and compact layout) */
+.navbar {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+.navbar ul {
+  display: flex;
+  justify-content: flex-end;
+  list-style: none;
+  margin: 25px;
+  padding: 0;
+}
+
+.navbar ul li {
+  margin-left: 10px; /* Reduced space between navbar items */
+}
+
+.navbar ul li a {
+  color: #c0c0c0;
+  text-decoration: none;
+  font-size: 0.8em; /* Increase for better readability */
+  transition: color 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 300;
+}
+
+.navbar ul li a:hover {
+  color: #18a2b8; /* Blue accent on hover */
+}
+
+.navbar ul li a i {
+  font-size: 1.8em; /* Adjust icon size */
+  margin-bottom: 2px;
+}
+
+.navbar ul li a.active {
+  color: #18a2b8; /* Change color to highlight the active route */
+  font-weight: bold;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .navbar ul li a {
+    font-size: 1em; /* Consistent font size for tablet */
+  }
+
+  .navbar ul li a i {
+    font-size: 1.4em; /* Smaller icons for tablet */
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar ul {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .navbar ul li {
+    margin-bottom: 10px;
+  }
+
+  .navbar ul li a {
+    font-size: 1em;
+  }
+
+  .navbar ul li a i {
+    font-size: 1.4em;
+  }
+}

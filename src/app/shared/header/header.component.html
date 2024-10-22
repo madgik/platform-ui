@@ -1,0 +1,29 @@
+<header class="header">
+  <!-- Logo and Branding -->
+  <div class="branding">
+    <img src="assets/logo.png" alt="Platform Logo" class="logo">
+    <div class="branding-text">
+      <h1>Medical Informatics Platform</h1>
+      <p>Unlocking the power of medical data</p>
+    </div>
+  </div>
+
+  <!-- Navigation Bar in the middle/right -->
+  <div class="navbar-wrapper">
+    <app-navbar></app-navbar>
+  </div>
+
+  <!-- User icon for login/logout (separate from the navbar, far right) -->
+  <div class="user-icon">
+    <button class="sign-in-btn" *ngIf="isLoggedIn; else notLoggedIn" [routerLink]="['/account']">
+      <!-- Show the user’s picture when logged in -->
+      <img src="assets/user-icon.png" alt="User Picture" class="account-picture">
+    </button>
+    <ng-template #notLoggedIn>
+      <!-- Show a grey user avatar icon when not logged in -->
+      <button class="sign-in-btn">
+        <img src="assets/grey-avatar.png" alt="Sign In" class="account-picture">
+      </button>
+    </ng-template>
+  </div>
+</header>

@@ -1,0 +1,49 @@
+<section class="federation-container">
+  <!-- Federation Image Grid Section -->
+  <div class="image-gallery">
+    <div class="image-container">
+      <div *ngFor="let federation of federations" class="image-item" (click)="selectFederation(federation)">
+        <img [src]="federation.image" [alt]="federation.title">
+        <div class="image-caption">
+          <h3>{{ federation.title }}</h3>
+          <p>Institutions: {{ federation.institutions }} | Data Records: {{ federation.records }}</p>
+          <p *ngIf="federation.isExpanded">{{ federation.description }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Federation Description Section -->
+  <div class="description" *ngIf="selectedFederation">
+    <h2>{{ selectedFederation.title }}</h2>
+    <p>
+      Tool Name: This text is by default for describing my experiments and by hovering other tools it changes.
+      {{ selectedFederation.description }}
+    </p>
+    <div class="actions">
+      <i class="fa fa-exchange-alt"></i>
+      <i class="fa fa-list"></i>
+    </div>
+  </div>
+</section>
+
+<!-- Federation Sections -->
+<section class="federations">
+  <div class="federation">
+    <h2>Access to Medical Data</h2>
+    <p>Tool Name: This text is by default for describing...</p>
+  </div>
+  <div class="federation">
+    <h2>Run Experiments</h2>
+    <p>Tool Name: This text is by default for describing...</p>
+  </div>
+  <div class="federation">
+    <h2>Algorithms</h2>
+    <p>Tool Name: This text is by default for describing...</p>
+  </div>
+</section>
+
+<!-- Call to Action Button -->
+<div class="cta">
+  <button>Create Account</button>
+</div>

@@ -1,0 +1,13 @@
+<div class="panels-container">
+  <!-- Workflow and other panels -->
+  <app-variables-panel (variableSelected)="onVariableSelected($event)"></app-variables-panel>
+  <app-transformations-panel (transformationApplied)="transformationName = $event"></app-transformations-panel>
+
+  <app-filters-panel (filterApplied)="filterName = $event"></app-filters-panel>
+  <app-algorithm-panel (algorithmConfigured)="onAlgorithmConfigured($event)"></app-algorithm-panel>
+
+  <!-- Newly added Statistic Analysis Panel -->
+  <app-statistic-analysis-panel></app-statistic-analysis-panel>
+
+  <app-results-panel></app-results-panel>
+</div>
