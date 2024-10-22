@@ -4,9 +4,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router'; // If you have routing
 
 @NgModule({
-  declarations: [
-    AccountPageComponent,
-  ],
+  declarations: [],
   imports: [
     CommonModule,
     RouterModule.forChild([

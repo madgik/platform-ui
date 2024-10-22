@@ -1,1 +1,80 @@
-<p>account-page works!</p>
+<!-- account-page.component.html -->
+<div class="account-page">
+  <!-- Sidebar Navigation -->
+  <div class="sidebar" [class.collapsed]="isCollapsed">
+    <div class="sidebar-toggle" (click)="toggleSidebar()">
+      <i class="fas fa-bars"></i>
+    </div>
+    <ul class="sidebar-nav">
+      <li>
+        <a routerLink="/account" routerLinkActive="active">
+          <i class="fas fa-user"></i>
+          <span *ngIf="!isCollapsed">Personal Info</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/federation-management" routerLinkActive="active">
+          <i class="fas fa-users"></i>
+          <span *ngIf="!isCollapsed">Federation Management</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/faq" routerLinkActive="active">
+          <i class="fas fa-question-circle"></i>
+          <span *ngIf="!isCollapsed">Support</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/security-settings" routerLinkActive="active">
+          <i class="fas fa-shield-alt"></i>
+          <span *ngIf="!isCollapsed">Security Settings</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Main Content Area -->
+  <div class="content">
+    <header class="account-header">
+      <h1>Account Details</h1>
+      <button class="sign-out-btn" (click)="signOut()">Sign Out</button>
+    </header>
+    <section class="account-details">
+      <div class="profile-picture">
+        <img src="assets/user-icon.png" alt="User Profile">
+      </div>
+      <div class="user-info">
+        <h2>{{ userName }}</h2>
+        <p>{{ userEmail }}</p>
+      </div>
+    </section>
+    <section class="personal-info">
+      <h2>Personal Information</h2>
+      <p>Manage your personal information, including phone numbers and email addresses where you can be contacted.</p>
+      <div class="info-cards">
+        <div class="info-card">
+          <h3>Name</h3>
+          <p>{{ userName }}</p>
+        </div>
+        <div class="info-card">
+          <h3>Areas of Expertise</h3>
+          <p>Computer Science (BSc)</p>
+          <p>Neuroscience (MSc)</p>
+        </div>
+        <div class="info-card">
+          <h3>Country</h3>
+          <p>Greece, Athens</p>
+        </div>
+        <div class="info-card">
+          <h3>Language</h3>
+          <p>English</p>
+          <p>Greek</p>
+        </div>
+        <div class="info-card">
+          <h3>Contact</h3>
+          <p>{{ userEmail }}</p>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

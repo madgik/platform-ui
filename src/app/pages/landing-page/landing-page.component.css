@@ -1,144 +1,198 @@
-/* General Spacing Adjustments */
-.main-header {
-  margin-bottom: 30px; /* Reduce space after header */
-}
-
-.image-gallery {
-  margin-bottom: 30px; /* Reduce space between gallery and description */
-}
-
-.description {
-  margin: 20px 0; /* Keep a consistent margin for description */
-}
-
-.features {
-  margin-top: 40px; /* Add spacing between sections */
-}
-
-/* Adjusting landing page layout */
-.landing-page {
-  text-align: center;
-  padding: 40px 20px;
-}
-
-.image-gallery {
+/* Container for the grid and description */
+.federation-container {
   display: flex;
-  justify-content: space-evenly;
-  flex-wrap: wrap;
-  padding: 40px 0;
-}
-
-.image-item {
-  width: 180px;
-  margin: 20px;
-}
-
-.description {
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 30px;
   padding: 20px;
-  font-size: 1.2em;
+  margin-top: 40px; /* Added margin to increase space below the navbar */
+  font-family: 'Roboto', sans-serif;
 }
 
-
-/* Image Gallery */
+/* Image Gallery Styling */
 .image-gallery {
-  display: flex;
-  justify-content: space-evenly; /* Ensure even spacing between images */
-  align-items: center;
-  padding: 40px 0; /* Add padding for breathing space */
+  width: 60%;
+}
+
+.image-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 items per row */
+  gap: 20px;
 }
 
 .image-item {
-  text-align: center;
+  width: 100%; /* Set width to 100% of grid item */
+  height: 200px; /* Set specific height */
+  position: relative;
+  cursor: pointer;
+  border-radius: 15px;
+  overflow: hidden;
+  transition: transform 0.3s ease;
+  background-color: #f0f0f0; /* Fallback background */
 }
 
 .image-item img {
-  width: 150px; /* Ensure consistent image size */
-  height: 150px;
-  border-radius: 50%;
-  object-fit: cover;
-  margin-bottom: 10px;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Ensures image covers the set size */
+  border-radius: 15px;
+}
+
+.image-item:hover {
+  transform: scale(1.05);
 }
 
 .image-caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  padding: 10px;
+  font-size: 0.9em;
+}
+
+.image-caption h3 {
+  font-size: 1.2em; /* Increase heading size */
+  margin: 0;
+}
+
+.image-caption p {
+  font-size: 0.9em; /* Slightly smaller paragraph text */
+  margin: 5px 0 0 0;
+}
+
+/* Description Section Styling */
+.description {
+  width: 35%;
+  padding: 25px;
+  background-color: #f9f9f9;
+  border-radius: 15px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.description h2 {
+  font-size: 1.6em; /* Increased heading size */
+  margin-bottom: 15px;
+}
+
+.description p {
+  font-size: 1.1em; /* Increased paragraph text size */
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.actions {
+  display: flex;
+  gap: 15px;
+}
+
+.actions i {
+  font-size: 1.4em; /* Smaller icon size */
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.actions i:hover {
+  color: #18a2b8;
+}
+
+/* Federation Section Styles */
+.federations {
+  display: flex;
+  justify-content: space-around;
+  padding: 40px 20px;
+  background-color: #fafafa;
+}
+
+.federation {
+  width: 30%;
+  text-align: left;
+}
+
+.federation h2 {
+  font-size: 1.4em;
+  color: #795548;
+  margin-bottom: 10px;
+}
+
+.federation p {
   font-size: 1em;
   color: #333;
 }
 
-
-/* Description Section */
-.description {
-  text-align: center;
-  margin: 20px 0; /* Add spacing around the description */
-  padding: 0 20px;
-}
-
-.description h2 {
-  font-size: 1.5em;
-  color: #343a40;
-  margin-bottom: 10px;
-}
-
-.description p {
-  font-size: 1.1em;
-  color: #6c757d;
-}
-
-/* Features Section */
-.features {
-  display: flex;
-  justify-content: space-around;
-  padding: 20px;
-}
-
-.feature {
-  width: 30%;
-  text-align: center;
-}
-
-/* Testimonials Section */
-.testimonials {
-  display: flex;
-  justify-content: space-around;
-  padding: 20px;
-}
-
-.testimonial-card {
-  width: 18%;
-  border: 1px solid #ccc;
-  padding: 10px;
-  text-align: center;
-}
-
-/* Call to Action Button */
+/* Call to Action Styles */
 .cta {
   text-align: center;
-  padding: 20px;
+  padding: 30px;
 }
 
 .cta button {
-  background-color: black;
+  background-color: #18a2b8;
   color: white;
   padding: 15px 30px;
   border: none;
+  border-radius: 8px;
   font-size: 1.2em;
   cursor: pointer;
+  transition: background-color 0.3s ease-in-out;
 }
 
-/* Tablet Layout for Landing Page */
-@media (min-width: 768px) and (max-width: 1024px) {
-  /* Image Gallery */
-  .image-gallery {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);  /* 2 images per row */
-    gap: 20px;
-    padding: 30px 0;
+.cta button:hover {
+  background-color: #127a91;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .federation-container {
+    flex-direction: column;
+    align-items: center;
+    margin-top: 30px; /* Adjusted for responsive design */
+  }
+
+  .image-gallery,
+  .description {
+    width: 90%;
+  }
+
+  .image-container {
+    grid-template-columns: repeat(2, 1fr); /* 2 items per row for tablets */
+    gap: 15px;
+  }
+
+  .image-item {
+    height: 150px; /* Reduced height for smaller screens */
+  }
+
+  .actions i {
+    font-size: 1.2em; /* Even smaller icons for tablets */
+  }
+}
+
+@media (max-width: 768px) {
+  .image-container {
+    grid-template-columns: 1fr; /* Single column layout for mobile */
+  }
+
+  .image-item {
+    height: 150px;
   }
 
   .description {
-    padding: 0 30px; /* More padding for text on tablets */
+    width: 100%;
   }
 
-  .sign-in-btn {
-    padding: 8px 16px;  /* Make button slightly smaller for tablets */
+  .federation {
+    width: 90%;
+    text-align: center;
+  }
+
+  .actions i {
+    font-size: 1.2em; /* Consistent size for small screens */
   }
 }

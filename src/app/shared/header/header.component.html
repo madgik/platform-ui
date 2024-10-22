@@ -15,7 +15,7 @@
 
   <!-- User icon for login/logout (separate from the navbar, far right) -->
   <div class="user-icon">
-    <button class="sign-in-btn" *ngIf="isLoggedIn; else notLoggedIn" [routerLink]="['/account']" routerLinkActive="router-link-active" >
+    <button class="sign-in-btn" *ngIf="isLoggedIn; else notLoggedIn" [routerLink]="['/account']">
       <!-- Show the user’s picture when logged in -->
       <img src="assets/user-icon.png" alt="User Picture" class="account-picture">
     </button>

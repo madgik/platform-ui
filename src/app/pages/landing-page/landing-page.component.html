@@ -1,75 +1,49 @@
-<!-- landing-page.component.html -->
-
-  <!-- Main Image Section -->
-  <section class="image-gallery">
-    <div class="image-item">
-      <img src="/assets/tbi.png" alt="Traumatic Brain Injury" />
-      <div class="image-caption">
-        <p>Traumatic Brain Injury</p>
-        <p>Institutions: 4 | Data Records: 2000</p>
+<section class="federation-container">
+  <!-- Federation Image Grid Section -->
+  <div class="image-gallery">
+    <div class="image-container">
+      <div *ngFor="let federation of federations" class="image-item" (click)="selectFederation(federation)">
+        <img [src]="federation.image" [alt]="federation.title">
+        <div class="image-caption">
+          <h3>{{ federation.title }}</h3>
+          <p>Institutions: {{ federation.institutions }} | Data Records: {{ federation.records }}</p>
+          <p *ngIf="federation.isExpanded">{{ federation.description }}</p>
+        </div>
       </div>
     </div>
-    <div class="image-item">
-      <img src="/assets/mental-health.png" alt="Mental Health" />
-      <div class="image-caption">
-        <p>Mental Health</p>
-        <p>Institutions: 3 | Data Records: 3000</p>
-      </div>
-    </div>
-    <div class="image-item">
-      <img src="/assets/dementia.png" alt="Dementia" />
-      <div class="image-caption">
-        <p>Dementia</p>
-        <p>Institutions: 4 | Data Records: 2000</p>
-      </div>
-    </div>
-    <div class="image-item">
-      <img src="/assets/epilepsy.png" alt="Epilepsy" />
-      <div class="image-caption">
-        <p>Epilepsy</p>
-        <p>Institutions: 4 | Data Records: 2000</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- Descriptions Section -->
-  <section class="description">
-    <h2>Mental Health</h2>
-    <p>
-      Tool Name: This text is by default for describing my experiments and by hovering other tools it changes...
-    </p>
-  </section>
-
-  <!-- Feature Sections -->
-  <section class="features">
-    <div class="feature">
-      <h2>Access to Medical Data</h2>
-      <p>Tool Name: This text is by default for describing...</p>
-    </div>
-    <div class="feature">
-      <h2>Run Experiments</h2>
-      <p>Tool Name: This text is by default for describing...</p>
-    </div>
-    <div class="feature">
-      <h2>Algorithms</h2>
-      <p>Tool Name: This text is by default for describing...</p>
-    </div>
-  </section>
-
-  <!-- Testimonials Section -->
-  <section class="testimonials">
-    <div class="testimonial-card">
-      <p>Text text text more and more text...</p>
-    </div>
-    <div class="testimonial-card">
-      <p>Text text text more and more text...</p>
-    </div>
-    <div class="testimonial-card">
-      <p>Text text text more and more text...</p>
-    </div>
-  </section>
-
-  <!-- Call to Action Button -->
-  <div class="cta">
-    <button>Create Account</button>
   </div>
+
+  <!-- Federation Description Section -->
+  <div class="description" *ngIf="selectedFederation">
+    <h2>{{ selectedFederation.title }}</h2>
+    <p>
+      Tool Name: This text is by default for describing my experiments and by hovering other tools it changes.
+      {{ selectedFederation.description }}
+    </p>
+    <div class="actions">
+      <i class="fa fa-exchange-alt"></i>
+      <i class="fa fa-list"></i>
+    </div>
+  </div>
+</section>
+
+<!-- Federation Sections -->
+<section class="federations">
+  <div class="federation">
+    <h2>Access to Medical Data</h2>
+    <p>Tool Name: This text is by default for describing...</p>
+  </div>
+  <div class="federation">
+    <h2>Run Experiments</h2>
+    <p>Tool Name: This text is by default for describing...</p>
+  </div>
+  <div class="federation">
+    <h2>Algorithms</h2>
+    <p>Tool Name: This text is by default for describing...</p>
+  </div>
+</section>
+
+<!-- Call to Action Button -->
+<div class="cta">
+  <button>Create Account</button>
+</div>

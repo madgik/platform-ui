@@ -1,4 +1,30 @@
-<div class="federations-page">
-  <h1>Federations Page</h1>
-  <!-- <app-federations-list></app-federations-list> -->
-</div>
+<!-- federations.component.html -->
+<section class="filter-section">
+  <div class="filter-links">
+    <ng-container *ngFor="let filter of filters; let i = index">
+      <span [ngClass]="{'active-filter': filter === selectedFilter}"
+            (click)="selectFilter(filter)">
+        {{ filter }}
+      </span>
+      <!-- Show separator pipe if it's not the last element -->
+      <span *ngIf="i < filters.length - 1"> | </span>
+    </ng-container>
+  </div>
+</section>
+
+
+<section class="federations-list">
+  <div *ngFor="let federation of filteredFederations" class="federation-card">
+    <img [src]="federation.image" alt="{{ federation.title }}" class="federation-image">
+    <div class="federation-content">
+      <h3>{{ federation.title }}</h3>
+      <p>Data Records: {{ federation.records }} | Institutions: {{ federation.institutions }}</p>
+      <p>Data Model: {{ federation.dataModel }}</p>
+      <p class="federation-description">{{ federation.description }}</p>
+      <div class="federation-buttons">
+        <button class="data-model-btn">Data Model</button>
+        <button class="request-access-btn">Request Access</button>
+      </div>
+    </div>
+  </div>
+</section>

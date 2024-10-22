@@ -1,0 +1,79 @@
+.experiments-dashboard {
+  margin-top: 20px;
+  font-family: 'Roboto', sans-serif;
+}
+
+/* Flexbox layout for the content body */
+.content-body {
+  display: flex;
+  gap: 20px;
+  flex: 1;
+}
+
+/* Menu styling */
+.experiment-menu {
+  width: 285px;
+  padding: 0px;
+  background-color: #f7f7f7;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.toggle-menu {
+  font-weight: bold;
+  font-size: 1.1rem;
+  display: flex;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.experiment-details {
+  flex: 1;
+  background-color: #ffffff;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.top-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-new-experiment {
+  background-color: #18a2b8;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease-in-out;
+}
+
+.btn-new-experiment:hover {
+  background-color: #127a91;
+}
+
+/* Responsiveness */
+@media (max-width: 768px) {
+  .content-body {
+    flex-direction: column;
+  }
+
+  .experiment-menu {
+    width: 100%;
+    margin-bottom: 20px;
+  }
+
+  .experiment-details {
+    width: 100%;
+    padding: 15px;
+  }
+
+  .btn-new-experiment {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+}

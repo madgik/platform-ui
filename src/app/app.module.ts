@@ -4,6 +4,9 @@ import { RouterModule } from '@angular/router';
 
 import { FooterComponent } from './shared/footer/footer.component';
 import { HeaderComponent } from './shared/header/header.component';
+import { AppComponent } from './app.component';
+import { ExperimentsDashboardComponent } from './pages/experiments-dashboard/experiments-dashboard.component';
+import { ExperimentsDashboardModule } from './pages/experiments-dashboard/experiments-dashboard.module';
 
 @NgModule({
   declarations: [],
@@ -11,7 +14,11 @@ import { HeaderComponent } from './shared/header/header.component';
     BrowserModule,
     HeaderComponent,
     FooterComponent,
-    RouterModule.forRoot([])
+    RouterModule.forRoot([
+      { path: 'experiments', component: ExperimentsDashboardComponent },
+      { path: 'experiments/:id', component: ExperimentsDashboardComponent }
+    ]),
+    ExperimentsDashboardModule
   ],
   bootstrap: []
 })

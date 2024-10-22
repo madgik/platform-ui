@@ -1,19 +1,18 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FederationsPageComponent } from './federations-page.component';
-import { FederationDetailComponent } from './federation-detail/federation-detail.component';
-import { RouterModule } from '@angular/router'; // If you have routing
+import { RouterModule, Routes } from '@angular/router';
+
+import { FederationsPageComponent } from './federations-page.component'; // Could be standalone, but managed by a module
+
+const routes: Routes = [
+  { path: '', component: FederationsPageComponent }
+];
 
 @NgModule({
-  declarations: [
-    FederationsPageComponent,
-    FederationDetailComponent, // Declare any child components
-  ],
+  declarations: [],
   imports: [
     CommonModule,
-    RouterModule.forChild([
-      { path: '', component: FederationsPageComponent }
-    ])
+    RouterModule.forChild(routes) // Child routing inside the feature module
   ]
 })
-export class FederationsPageModule {}
+export class FederationsModule { }
