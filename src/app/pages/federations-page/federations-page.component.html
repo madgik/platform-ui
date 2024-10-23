@@ -12,14 +12,13 @@
   </div>
 </section>
 
-
 <section class="federations-list">
   <div *ngFor="let federation of filteredFederations" class="federation-card">
-    <img [src]="federation.image" alt="{{ federation.title }}" class="federation-image">
+    <img [src]="'assets/' + federation.code + '.png'" alt="{{ federation.title }}" class="federation-image">
     <div class="federation-content">
       <h3>{{ federation.title }}</h3>
       <p>Data Records: {{ federation.records }} | Institutions: {{ federation.institutions }}</p>
-      <p>Data Model: {{ federation.dataModel }}</p>
+      <p>Data Model: {{ federation.dataModels }}</p>
       <p class="federation-description">{{ federation.description }}</p>
       <div class="federation-buttons">
         <button class="data-model-btn">Data Model</button>
@@ -28,3 +27,4 @@
     </div>
   </div>
 </section>
+
