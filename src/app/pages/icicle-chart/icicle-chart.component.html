@@ -1,0 +1,53 @@
+<div style="padding: 10px;">
+  <!-- Dropdowns for Federation and Data Model Selection -->
+  <div style="display: flex; align-items: center; margin-bottom: 5px; gap: 10px; margin-top: 30px;">  <!-- Added margin-top -->
+    <!-- Federation Dropdown -->
+    <div style="flex-grow: 1;">
+      <label for="federation" style="font-weight: normal; margin-right: 3px; font-size: 12px;">Federation:</label>
+      <select id="federation" [(ngModel)]="selectedFederation" (change)="onFederationChange($event)" style="padding: 3px; width: 150px; font-size: 12px;">
+        <option *ngFor="let federation of federations" [ngValue]="federation">{{ federation.code }}</option>
+      </select>
+    </div>
+
+    <!-- Data Model Dropdown -->
+    <div style="flex-grow: 1;">
+      <label for="dataModel" style="font-weight: normal; margin-right: 3px; font-size: 12px;">Data Model:</label>
+      <select id="dataModel" [(ngModel)]="selectedDataModel" (change)="onDataModelChange($event)" style="padding: 3px; width: 150px; font-size: 12px;">
+        <option *ngFor="let dataModel of dataModels" [value]="dataModel">{{ dataModel }}</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Flexbox for chart and node information -->
+  <div style="display: flex; align-items: flex-start; gap: 20px; padding: 0; margin: 0;">
+    <!-- Icicle chart container -->
+    <div id="chart-container" style="flex-grow: 2; padding: 0; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); border-radius: 6px; background-color: #fff;">
+      <div *ngIf="!d3Data" class="loading-spinner">Loading...</div>
+      <div id="chart" style="width: 100%; height: 500px;"></div>
+    </div>
+
+    <!-- Node Information Section -->
+    <div class="node-info" style="width: 200px; padding: 10px; background-color: #f9f9f9; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); border-radius: 6px;">
+      <h3 style="margin-bottom: 8px; color: #333; font-size: 14px;">Node Information</h3>
+
+      <!-- If the current node is a parent (has children), show only code, label, and number of children -->
+      <div *ngIf="selectedNode?.children?.length > 0; else leafNode">
+        <p><strong>Code:</strong> {{ selectedNode?.data?.code || 'N/A' }}</p>
+        <p><strong>Label:</strong> {{ selectedNode?.data?.name || 'N/A' }}</p>
+        <p><strong>Number of Children:</strong> {{ selectedNode?.children?.length || 0 }}</p>
+      </div>
+
+      <!-- If the current node is a leaf (no children), show all fields -->
+      <ng-template #leafNode>
+        <p><strong>Name:</strong> {{ selectedNode?.data?.name || 'N/A' }}</p>
+        <p><strong>Code:</strong> {{ selectedNode?.data?.code || 'N/A' }}</p>
+        <p><strong>Description:</strong> {{ selectedNode?.data?.description || 'N/A' }}</p>
+        <p><strong>SQL Type:</strong> {{ selectedNode?.data?.sql_type || 'N/A' }}</p>
+        <p><strong>Is Categorical:</strong> {{ selectedNode?.data?.isCategorical ? 'Yes' : 'No' }}</p>
+        <p><strong>Units:</strong> {{ selectedNode?.data?.units || 'N/A' }}</p>
+        <p><strong>Min Value:</strong> {{ selectedNode?.data?.minValue || 'N/A' }}</p>
+        <p><strong>Max Value:</strong> {{ selectedNode?.data?.maxValue || 'N/A' }}</p>
+      </ng-template>
+    </div>
+  </div>
+</div>

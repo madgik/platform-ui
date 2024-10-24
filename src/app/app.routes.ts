@@ -5,6 +5,7 @@ import { FederationsPageComponent } from './pages/federations-page/federations-p
 import { ExperimentsDashboardComponent } from './pages/experiments-dashboard/experiments-dashboard.component';
 import { AccountPageComponent } from './pages/account-page/account-page.component';
 import { ExperimentStudioComponent } from './pages/experiment-studio/experiment-studio.component';
+import { IcicleChartComponent } from './pages/icicle-chart/icicle-chart.component';
 
 export const appRoutes: Routes = [
   { path: 'home', component: LandingPageComponent },
@@ -12,6 +13,7 @@ export const appRoutes: Routes = [
   { path: 'experiments', component: ExperimentsDashboardComponent },
   { path: 'account', component: AccountPageComponent },
   { path: 'experiment-studio', component: ExperimentStudioComponent },
+  { path: 'icicle', component: IcicleChartComponent },  // Add this route
   { path: '', redirectTo: 'home', pathMatch: 'full' }, // Redirect to home by default
   { path: '**', redirectTo: 'home' } // Wildcard route for a 404 page (optional)
 ];
