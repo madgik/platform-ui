@@ -7,7 +7,7 @@
   width: 100%;
   background-color: #2b2c2e;
   box-sizing: border-box;
-  height: 50px; /* Fixed height */
+  height: 80px; /* Fixed height */
   color: #f0f0f0;
   position: fixed; /* Fix the header at the top */
   top: 0;
@@ -53,6 +53,7 @@
   justify-content: flex-end;
   align-items: center;
   flex-grow: 1;
+  padding-top: 20px;
 }
 
 /* User Icon Styling (far right) */

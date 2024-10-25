@@ -1,19 +1,21 @@
 <!-- federations.component.html -->
 <section class="filter-section">
   <div class="filter-links">
-    <ng-container *ngFor="let filter of filters; let i = index">
-      <span [ngClass]="{'active-filter': filter === selectedFilter}"
-            (click)="selectFilter(filter)">
-        {{ filter }}
-      </span>
-      <!-- Show separator pipe if it's not the last element -->
-      <span *ngIf="i < filters.length - 1"> | </span>
-    </ng-container>
+    @for (filter of filters; let i = $index; track filter) {
+      <ng-container >
+        <span [ngClass]="{'active-filter': filter === selectedFilter}"
+              (click)="selectFilter(filter)">
+          {{ filter }}
+        </span>
+        <!-- Show separator pipe if it's not the last element -->
+        <span *ngIf="i < filters.length - 1"> | </span>
+      </ng-container>
+    }
   </div>
 </section>
 
 <section class="federations-list">
-  <div *ngFor="let federation of filteredFederations" class="federation-card">
+  @for (federation of federations; track federation) {
     <img [src]="'assets/' + federation.code + '.png'" alt="{{ federation.title }}" class="federation-image">
     <div class="federation-content">
       <h3>{{ federation.title }}</h3>
@@ -25,6 +27,6 @@
         <button class="request-access-btn">Request Access</button>
       </div>
     </div>
-  </div>
+  }
 </section>
 

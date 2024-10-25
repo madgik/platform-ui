@@ -1,0 +1,11 @@
+<div class="accordion" [ngStyle]="{'padding': padding}">
+  <div class="accordion-header" (click)="toggleAccordion()" [ngStyle]="{'font-size': fontSize}">
+    <span>{{ accordionTitle }}</span>
+    <button>
+      <i class="fas" [ngClass]="isOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+    </button>
+  </div>
+  <div class="accordion-content" [ngClass]="{'open': isOpen}">
+    <ng-content></ng-content>
+  </div>
+</div>

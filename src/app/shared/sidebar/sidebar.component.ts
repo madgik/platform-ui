@@ -16,8 +16,8 @@ interface SidebarItem {
   styleUrls: ['./sidebar.component.css']
 })
 export class SidebarComponent {
-  @Input() items!: any[];
-  @Input() title!: string;
+  @Input({required: true}) items!: any[];
+  @Input({required: true}) title!: string;
   isCollapsed = false;  // Property to toggle sidebar state
 
   toggleSidebar() {
