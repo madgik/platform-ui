@@ -1,8 +1,8 @@
 export interface Federation {
+  code: string;
   title: string;
   description: string;
-  image: string;
+  dataModels: string[];
   institutions: string;
   records: string;
-  isExpanded?: boolean;
 }
