@@ -1,14 +1,16 @@
 import { Component, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { AccordionComponent } from '../../../shared/accordion/accordion.component';
 
 @Component({
   selector: 'app-filters-panel',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, AccordionComponent],
   templateUrl: './filters-panel.component.html',
   styleUrls: ['./filters-panel.component.css']
 })
 export class FiltersPanelComponent {
+  accordionTitle = "Filters"
   @Output() filterApplied = new EventEmitter<string>();
 
   filters = ['Filter A', 'Filter B', 'Filter C'];

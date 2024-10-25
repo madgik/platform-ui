@@ -2,14 +2,16 @@
   <!-- Federation Image Grid Section -->
   <div class="image-gallery">
     <div class="image-container">
-      <div *ngFor="let federation of federations" class="image-item" (click)="selectFederation(federation)">
-        <img [src]="federation.image" [alt]="federation.title">
-        <div class="image-caption">
-          <h3>{{ federation.title }}</h3>
-          <p>Institutions: {{ federation.institutions }} | Data Records: {{ federation.records }}</p>
-          <p *ngIf="federation.isExpanded">{{ federation.description }}</p>
+      @for (federation of federations; track federation) {
+        <div class="image-item" (click)="selectFederation(federation)">
+          <img [src]="federation.image" [alt]="federation.title">
+          <div class="image-caption">
+            <h3>{{ federation.title }}</h3>
+            <p>Institutions: {{ federation.institutions }} | Data Records: {{ federation.records }}</p>
+            <p *ngIf="federation.isExpanded">{{ federation.description }}</p>
+          </div>
         </div>
-      </div>
+      }
     </div>
   </div>
 
