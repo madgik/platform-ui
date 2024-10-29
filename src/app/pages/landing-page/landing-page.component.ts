@@ -17,19 +17,11 @@ export class LandingPageComponent implements OnInit {
   constructor(private federationService: FederationService) {}
 
   ngOnInit(): void {
-    this.loadFederations();
-  }
-
-  loadFederations(): void {
-    this.federationService.getFederations().subscribe({
-      next: (data: Federation[]) => {
-        console.log('Data received from API:', data);
-        this.federations = data;
-        this.selectDefaultFederation();
+    this.federationService.getFederationsWithFullDataModelNames().subscribe({
+      next: (federations) => {
+        this.federations = federations;
       },
-      error: (error) => {
-        console.error('Error loading federations:', error);
-      },
+      error: (error) => console.error('Error loading federations:', error)
     });
   }
 

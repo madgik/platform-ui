@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FederationService } from '../../services/federation.service';
 import {Federation} from "../../interfaces/federations.interface";
+import {DataModelService} from "../../services/data-model.service";
 
 @Component({
   selector: 'app-federations',
@@ -19,21 +20,13 @@ export class FederationsPageComponent implements OnInit {
 
   constructor(private federationService: FederationService) {}
 
-  // Fetch data on initialization
   ngOnInit(): void {
-    this.loadFederations();
-  }
-
-  // Method to load federations from the service
-  loadFederations(): void {
-    this.federationService.getFederations().subscribe({
-      next: (data: Federation[]) => {
-        this.federations = data;
-        this.filteredFederations = data;  // Initially, all federations are shown
+    this.federationService.getFederationsWithFullDataModelNames().subscribe({
+      next: (federations) => {
+        this.federations = federations;
+        this.filteredFederations = federations;  // If you use a filtered list
       },
-      error: (error) => {
-        console.error('Error fetching federations:', error);
-      }
+      error: (error) => console.error('Error loading federations:', error)
     });
   }
 

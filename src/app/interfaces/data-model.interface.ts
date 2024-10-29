@@ -25,6 +25,7 @@ export interface Group {
 
 // Interface for the overall DataModel
 export interface DataModel {
+  uuid: string;
   label: string;
   code?: string;
   version?: string;  // Root level only
