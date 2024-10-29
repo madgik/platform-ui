@@ -18,7 +18,12 @@
     <div class="federation-content">
       <h3>{{ federation.title }}</h3>
       <p>Data Records: {{ federation.records }} | Institutions: {{ federation.institutions }}</p>
-      <p>Data Model: {{ federation.dataModels }}</p>
+      <p>Data Models:</p>
+      <ul>
+        <li *ngFor="let dataModel of federation.dataModels">
+          {{ dataModel }}
+        </li>
+      </ul>
       <p class="federation-description">{{ federation.description }}</p>
       <div class="federation-buttons">
         <button class="data-model-btn">Data Model</button>

@@ -18,7 +18,7 @@ export class IcicleChartComponent implements OnInit, OnChanges {
   federations: Federation[] = [];
   selectedFederation!: Federation;
   dataModels: string[] = [];
-  selectedDataModel: string = '';
+  selectedDataModelFullname: string = '';
   selectedNode: any;
   private focus: any;
   private root: any;
@@ -33,13 +33,19 @@ export class IcicleChartComponent implements OnInit, OnChanges {
   ) {}
 
   ngOnInit(): void {
-    this.loadFederations();
+    this.federationService.getFederationsWithFullDataModelNames().subscribe({
+      next: (federations) => {
+        this.federations = federations;
+        this.selectDefaultFederation();
+      },
+      error: (error) => console.error('Error loading federations:', error)
+    });
   }
 
   loadData(): void {
     console.log('loadData method called');
-    if (this.selectedDataModel) {
-      const [code, version] = this.selectedDataModel.split('_');
+    if (this.selectedDataModelFullname) {
+      const [code, version] = this.selectedDataModelFullname.split('_');
       this.dataModelService.getDataModelByCodeAndVersion(code, version).subscribe({
         next: (d3HierarchyData) => {
           if (d3HierarchyData) {
@@ -52,28 +58,18 @@ export class IcicleChartComponent implements OnInit, OnChanges {
     }
   }
 
-  loadFederations(): void {
-    this.federationService.getFederations().subscribe({
-      next: (data: Federation[]) => {
-        this.federations = data;
-        this.selectDefaultFederation();
-      },
-      error: (error) => console.error('Error loading federations:', error),
-    });
-  }
-
   selectDefaultFederation(): void {
     if (this.federations.length > 0) {
       this.selectedFederation = this.federations[0];
       this.dataModels = this.selectedFederation.dataModels;
-      this.selectedDataModel = this.dataModels.length > 0 ? this.dataModels[0] : '';
+      this.selectedDataModelFullname = this.dataModels.length > 0 ? this.dataModels[0] : '';
       this.loadData();
     }
   }
 
   onFederationChange(event: any): void {
     this.dataModels = this.selectedFederation.dataModels;
-    this.selectedDataModel = this.dataModels.length > 0 ? this.dataModels[0] : '';
+    this.selectedDataModelFullname = this.dataModels.length > 0 ? this.dataModels[0] : '';
     this.loadData();
   }
 

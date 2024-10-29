@@ -12,7 +12,7 @@
     <!-- Data Model Dropdown -->
     <div style="flex-grow: 1;">
       <label for="dataModel" style="font-weight: normal; margin-right: 3px; font-size: 12px;">Data Model:</label>
-      <select id="dataModel" [(ngModel)]="selectedDataModel" (change)="onDataModelChange($event)" style="padding: 3px; width: 150px; font-size: 12px;">
+      <select id="dataModel" [(ngModel)]="selectedDataModelFullname" (change)="onDataModelChange($event)" style="padding: 3px; width: 150px; font-size: 12px;">
         <option *ngFor="let dataModel of dataModels" [value]="dataModel">{{ dataModel }}</option>
       </select>
     </div>
