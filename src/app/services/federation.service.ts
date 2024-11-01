@@ -9,7 +9,7 @@ import { DataModelService } from './data-model.service';  // Ensure you import D
   providedIn: 'root',
 })
 export class FederationService {
-  private apiUrl = 'http://localhost:8090/services/datacatalogue/federations';
+  private apiUrl = '/services/datacatalogue/federations';
 
   constructor(private http: HttpClient, private dataModelService: DataModelService) {}
 

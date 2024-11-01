@@ -7,7 +7,7 @@ import {catchError, map, tap} from 'rxjs/operators';
   providedIn: 'root',
 })
 export class DataModelService {
-  private apiUrl = 'http://localhost:8090/services/datacatalogue/datamodels';
+  private apiUrl = '/services/datacatalogue/datamodels';
   private dataModels: any[] = []; // Cache for all loaded data models
   private dataModelsLoaded: boolean = false; // Flag to track if data models are loaded
 
