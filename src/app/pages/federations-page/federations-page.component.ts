@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { FederationService } from '../../services/federation.service';
 import {Federation} from "../../interfaces/federations.interface";
 import {DataModelService} from "../../services/data-model.service";
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-federations',
@@ -18,7 +19,7 @@ export class FederationsPageComponent implements OnInit {
   federations: Federation[] = [];  // Federations data from the service
   filteredFederations: Federation[] = [];  // To store filtered federations
 
-  constructor(private federationService: FederationService) {}
+  constructor(private federationService: FederationService, private router: Router) {}
 
   ngOnInit(): void {
     this.federationService.getFederationsWithFullDataModelNames().subscribe({
@@ -30,6 +31,10 @@ export class FederationsPageComponent implements OnInit {
     });
   }
 
+// Method to navigate to the /icicle route
+  goToIcicle() {
+    this.router.navigate(['/icicle']);
+  }
   // Handle filter selection
   selectFilter(filter: string) {
     this.selectedFilter = filter;

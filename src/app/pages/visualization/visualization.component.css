@@ -9,10 +9,14 @@ select {
 
 #chart-container {
   padding: 0;
-  background-color: #ffffff;
+  width: 928px; /* Or 100% if using dynamic sizing */
+  height: 924px;
+  background-color: #f0f0f0; /* Light gray for visibility */
   border-radius: 6px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden; /* Ensure no content exceeds bounds */
 }
+
 
 .node-info {
   background-color: #f9f9f9;
