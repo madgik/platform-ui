@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
+import { BehaviorSubject, Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -8,7 +9,15 @@ export class AuthService {
   private tokenKey = 'auth_token';
   private redirectUrlKey = 'redirect_url';
 
+  // Observable to track login state
+  private loggedInSubject = new BehaviorSubject<boolean>(this.hasToken());
+  isLoggedIn$: Observable<boolean> = this.loggedInSubject.asObservable();
+
   constructor(private router: Router) {}
+
+  private hasToken(): boolean {
+    return !!localStorage.getItem(this.tokenKey);
+  }
 
   // Initiate login by saving intended URL
   login(redirectUrl: string = '/') {
@@ -26,6 +35,9 @@ export class AuthService {
     if (token) {
       localStorage.setItem(this.tokenKey, token);
 
+      // Update the logged-in state
+      this.loggedInSubject.next(true);
+
       // Retrieve the stored URL or default to home
       const redirectUrl = localStorage.getItem(this.redirectUrlKey) || '/protected';
 
@@ -38,12 +50,19 @@ export class AuthService {
   }
 
   logout() {
+    // Clear token and reset login state
     localStorage.removeItem(this.tokenKey);
-    localStorage.removeItem(this.redirectUrlKey); // Optional: Clear redirect URL on logout
+    this.loggedInSubject.next(false); // Update to logged-out state
+    localStorage.removeItem(this.redirectUrlKey);
+
+    // Navigate to the home page or login page and reload the application
+    this.router.navigate(['/']).then(() => {
+      window.location.reload(); // Ensure app fully resets after logout
+    });
   }
 
   isLoggedIn(): boolean {
-    return !!localStorage.getItem(this.tokenKey);
+    return this.loggedInSubject.value;
   }
 
   getToken(): string | null {

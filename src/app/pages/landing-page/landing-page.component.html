@@ -42,7 +42,7 @@
   </div>
 </section>
 
-<!-- Call to Action Button -->
-<div class="cta">
+<!-- Call to Action Button (Visible only when not logged in) -->
+<div class="cta" *ngIf="!isLoggedIn()">
   <button>Create Account</button>
 </div>

@@ -8,6 +8,7 @@ import {FederationService} from "../../services/federation.service";
 import {DataModelService} from "../../services/data-model.service";
 import {createSimpleTreemap} from "./simple-treemap";
 import {createZoomableCirclePacking} from "./zoomable circle-packing";
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-visualization',
@@ -29,15 +30,31 @@ export class VisualizationComponent  implements OnInit, OnChanges {
     private elementRef: ElementRef,
     private federationService: FederationService,
     private dataModelService: DataModelService,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
-    this.federationService.getFederationsWithFullDataModelNames().subscribe({
-      next: (federations) => {
-        this.federations = federations;
-        this.selectDefaultFederation();
-      },
-      error: (error) => console.error('Error loading federations:', error)
+    this.route.queryParams.subscribe(params => {
+      const federationCode = params['federationCode'];
+      this.federationService.getFederationsWithFullDataModelNames().subscribe({
+        next: (federations) => {
+          this.federations = federations;
+
+          // Try to find federation by code; fallback to default if not found or code is missing
+          this.selectedFederation = federationCode
+            ? federations.find(fed => fed.code === federationCode) ?? this.federations[0] // Use default if not found
+            : this.federations[0];
+
+          if (this.selectedFederation) {
+            this.dataModels = this.selectedFederation.dataModels;
+            this.selectedDataModelFullname = this.dataModels.length > 0 ? this.dataModels[0] : '';
+            this.loadData();
+          } else {
+            console.error('Error: No federations available.');
+          }
+        },
+        error: (error) => console.error('Error loading federations:', error)
+      });
     });
   }
 

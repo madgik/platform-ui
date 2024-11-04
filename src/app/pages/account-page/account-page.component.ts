@@ -1,6 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { AuthService } from "../../services/auth.service";
+import { UserService } from "../../services/user.service";
+import {User} from "../../interfaces/user.interface";
 
 @Component({
   selector: 'app-account-page',
@@ -9,17 +12,32 @@ import { RouterModule } from '@angular/router';
   templateUrl: './account-page.component.html',
   styleUrls: ['./account-page.component.css']
 })
+export class AccountPageComponent implements OnInit {
+  userName = '';
+  userEmail = '';
 
-export class AccountPageComponent {
-  isCollapsed = false;  // Control sidebar state
-  userName = 'Molly Katsouli';
-  userEmail = 'katsouli.mo@gmail.com';
+  constructor(
+    public authService: AuthService,
+    private userService: UserService
+  ) {}
 
-  toggleSidebar() {
-    this.isCollapsed = !this.isCollapsed;
+  ngOnInit(): void {
+    this.loadUserDetails();
   }
 
-  signOut() {
-    console.log('Sign out logic goes here...');
+  loadUserDetails(): void {
+    this.userService.getUserDetails().subscribe({
+      next: (user: User) => {
+        this.userName = user.fullname;
+        this.userEmail = user.email;
+      },
+      error: (error) => {
+        console.error("Error loading user details:", error);
+      }
+    });
+  }
+
+  signOut(): void {
+    this.authService.logout();
   }
 }
