@@ -15,7 +15,7 @@ export const appRoutes: Routes = [
   { path: 'experiments', component: ExperimentsDashboardComponent, canActivate: [AuthGuard] },
   { path: 'account', component: AccountPageComponent, canActivate: [AuthGuard] },
   { path: 'experiment-studio', component: ExperimentStudioComponent, canActivate: [AuthGuard] },
-  { path: 'icicle', component: VisualizationComponent, canActivate: [AuthGuard] },
+  { path: 'visualization', component: VisualizationComponent, canActivate: [AuthGuard] },
   { path: 'auth-callback', component: AuthCallbackComponent },
   { path: '', redirectTo: 'home', pathMatch: 'full' },
   { path: '**', redirectTo: 'home' }

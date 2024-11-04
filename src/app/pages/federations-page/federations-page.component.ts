@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FederationService } from '../../services/federation.service';
 import {Federation} from "../../interfaces/federations.interface";
-import {DataModelService} from "../../services/data-model.service";
 import {Router} from "@angular/router";
 
 @Component({
@@ -31,10 +30,13 @@ export class FederationsPageComponent implements OnInit {
     });
   }
 
-// Method to navigate to the /icicle route
-  goToIcicle() {
-    this.router.navigate(['/icicle']);
+  // Method to navigate to the /visualization route with a specified federation
+  goToVisualization(federation: Federation) {
+    this.router.navigate(['/visualization'], {
+      queryParams: { federationCode: federation.code } // Assuming `id` uniquely identifies the federation
+    });
   }
+
   // Handle filter selection
   selectFilter(filter: string) {
     this.selectedFilter = filter;

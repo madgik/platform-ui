@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FederationService } from '../../services/federation.service';
-import {Federation} from "../../interfaces/federations.interface";
+import { Federation } from "../../interfaces/federations.interface";
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-landing-page',
@@ -14,9 +15,19 @@ export class LandingPageComponent implements OnInit {
   federations: Federation[] = [];
   selectedFederation!: Federation;
 
-  constructor(private federationService: FederationService) {}
+  constructor(
+    private federationService: FederationService,
+    private authService: AuthService
+  ) {}
+
+  isLoggedIn(): boolean {
+    return this.authService.isLoggedIn();
+  }
 
   ngOnInit(): void {
+    // Check if user is logged in
+
+    // Load federations
     this.federationService.getFederationsWithFullDataModelNames().subscribe({
       next: (federations) => {
         this.federations = federations;
