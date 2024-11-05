@@ -1,6 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable } from 'rxjs';
+import {map} from "rxjs/operators";
+import {UserService} from "./user.service";
+import {HttpClient} from "@angular/common/http";
 
 @Injectable({
   providedIn: 'root'
@@ -11,9 +14,8 @@ export class AuthService {
 
   // Observable to track login state
   private loggedInSubject = new BehaviorSubject<boolean>(this.hasToken());
-  isLoggedIn$: Observable<boolean> = this.loggedInSubject.asObservable();
 
-  constructor(private router: Router) {}
+  constructor(private http: HttpClient, private userService: UserService, private router: Router) {}
 
   private hasToken(): boolean {
     return !!localStorage.getItem(this.tokenKey);
@@ -39,7 +41,7 @@ export class AuthService {
       this.loggedInSubject.next(true);
 
       // Retrieve the stored URL or default to home
-      const redirectUrl = localStorage.getItem(this.redirectUrlKey) || '/protected';
+      const redirectUrl = localStorage.getItem(this.redirectUrlKey);
 
       // Clear the stored URL and navigate
       localStorage.removeItem(this.redirectUrlKey);
@@ -50,14 +52,30 @@ export class AuthService {
   }
 
   logout() {
-    // Clear token and reset login state
-    localStorage.removeItem(this.tokenKey);
-    this.loggedInSubject.next(false); // Update to logged-out state
-    localStorage.removeItem(this.redirectUrlKey);
+    // Call the backend logout endpoint to invalidate the session
+    this.http.post('/services/logout', {}).subscribe({
+      next: () => {
+        // On successful logout from backend, clear local data
+        localStorage.removeItem(this.tokenKey);
+        this.loggedInSubject.next(false);
+        localStorage.removeItem(this.redirectUrlKey);
 
-    // Navigate to the home page or login page and reload the application
-    this.router.navigate(['/']).then(() => {
-      window.location.reload(); // Ensure app fully resets after logout
+        // Navigate to home and reload to ensure the app is fully reset
+        this.router.navigate(['/']).then(() => {
+          window.location.reload();
+        });
+      },
+      error: (err: any) => {
+        console.error('Error during backend logout:', err);
+
+        // Fallback: clear local data and reload even if backend logout fails
+        localStorage.removeItem(this.tokenKey);
+        this.loggedInSubject.next(false);
+        localStorage.removeItem(this.redirectUrlKey);
+        this.router.navigate(['/']).then(() => {
+          window.location.reload();
+        });
+      }
     });
   }
 
@@ -65,7 +83,10 @@ export class AuthService {
     return this.loggedInSubject.value;
   }
 
-  getToken(): string | null {
-    return localStorage.getItem(this.tokenKey);
+  // Check if the user has a specific role
+  hasRole(role: string): Observable<boolean> {
+    return this.userService.getUserRoles().pipe(
+      map((roles) => roles.includes(role))
+    );
   }
 }

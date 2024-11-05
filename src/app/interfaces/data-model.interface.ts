@@ -1,5 +1,3 @@
-// Define interfaces for your data models
-
 // Interface for a Variable in the data model
 export interface Variable {
   label: string;

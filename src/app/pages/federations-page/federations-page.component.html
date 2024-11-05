@@ -1,4 +1,3 @@
-<!-- federations.component.html -->
 <section class="filter-section">
   <div class="filter-links">
     <ng-container *ngFor="let filter of filters; let i = index">
@@ -6,13 +5,21 @@
             (click)="selectFilter(filter)">
         {{ filter }}
       </span>
-      <!-- Show separator pipe if it's not the last element -->
       <span *ngIf="i < filters.length - 1"> | </span>
     </ng-container>
   </div>
 </section>
 
 <section class="federations-list">
+  <!-- Add New Federation Card (Visible only to DC_ADMIN) -->
+  <div *ngIf="isAdmin" class="federation-card add-new-card" (click)="goToAddFederationPage()">
+    <div class="add-card-content">
+      <div class="add-icon">+</div>
+      <h3>Add New Federation</h3>
+    </div>
+  </div>
+
+  <!-- Existing Federation Cards -->
   <div *ngFor="let federation of filteredFederations" class="federation-card">
     <img [src]="'assets/' + federation.code + '.png'" alt="{{ federation.title }}" class="federation-image">
     <div class="federation-content">
@@ -28,8 +35,11 @@
       <div class="federation-buttons">
         <button class="data-model-btn" (click)="goToVisualization(federation)">Data Model</button>
         <button class="request-access-btn">Request Access</button>
+        <!-- Delete button (Visible only to DC_ADMIN) -->
+        <button *ngIf="isAdmin" class="delete-btn" (click)="deleteFederation(federation.code)">
+          🗑️ Delete
+        </button>
       </div>
     </div>
   </div>
 </section>
-

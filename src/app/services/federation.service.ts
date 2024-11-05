@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, forkJoin, of } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
 import { Federation } from '../interfaces/federations.interface';
-import { DataModelService } from './data-model.service';  // Ensure you import DataModelService
+import { DataModelService } from './data-model.service';
 
 @Injectable({
   providedIn: 'root',
@@ -17,12 +17,11 @@ export class FederationService {
   getFederationsWithFullDataModelNames(): Observable<Federation[]> {
     return this.http.get<Federation[]>(this.apiUrl).pipe(
       switchMap((federations) => {
-        // For each federation, get data models' full names
         const federationObservables = federations.map(federation =>
           this.dataModelService.getDataModelsFullNamesByIds(federation.dataModelIds).pipe(
             map((fullNames) => ({
               ...federation,
-              dataModels: fullNames,  // Replace `dataModelIds` with full names
+              dataModels: fullNames,
             })),
             catchError((error) => {
               console.error(`Error resolving data models for federation ${federation.code}:`, error);
@@ -30,8 +29,22 @@ export class FederationService {
             })
           )
         );
-        return forkJoin(federationObservables);  // Execute all observables and return updated federations
+        return forkJoin(federationObservables);
       })
     );
+  }
+
+  // Create a new federation
+  createFederation(federation: Federation): Observable<Federation> {
+    return this.http.post<Federation>(this.apiUrl, federation).pipe(
+      catchError((error) => {
+        console.error('Error creating federation:', error);
+        throw error;
+      })
+    );
+  }
+
+  deleteFederation(code: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${code}`);
   }
 }
