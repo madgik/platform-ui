@@ -15,6 +15,7 @@ import {User} from "../../interfaces/user.interface";
 export class AccountPageComponent implements OnInit {
   userName = '';
   userEmail = '';
+  roles : string[] | undefined;
 
   constructor(
     public authService: AuthService,
@@ -30,6 +31,7 @@ export class AccountPageComponent implements OnInit {
       next: (user: User) => {
         this.userName = user.fullname;
         this.userEmail = user.email;
+        this.roles = user.roles;
       },
       error: (error) => {
         console.error("Error loading user details:", error);

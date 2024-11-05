@@ -1,23 +1,33 @@
+
 <div style="padding: 10px;">
+
   <!-- Dropdowns for Federation and Data Model Selection -->
   <div style="display: flex; align-items: center; margin-bottom: 5px; gap: 10px; margin-top: 30px;">  <!-- Added margin-top -->
-    <!-- Federation Dropdown -->
-    <div style="flex-grow: 1;">
-      <label for="federation" style="font-weight: normal; margin-right: 3px; font-size: 12px;">Federation:</label>
-      <select id="federation" [(ngModel)]="selectedFederation" (change)="onFederationChange($event)" style="padding: 3px; width: 150px; font-size: 12px;">
-        <option *ngFor="let federation of federations" [ngValue]="federation">{{ federation.code }}</option>
-      </select>
-    </div>
 
-    <!-- Data Model Dropdown -->
+  </div>
+  <div class="header">
+    <h1>Data Models</h1>
+    <button *ngIf="isDomainExpert" (click)="navigateToAddDataModel()" class="add-data-model-button">
+      + Add New Data Model
+    </button>
+  </div>
+  <div style="flex-grow: 1;">
+    <label for="federation" style="font-weight: normal; margin-right: 3px; font-size: 12px;">Federation:</label>
+    <select id="federation" [(ngModel)]="selectedFederation" (change)="onFederationChange($event)" style="padding: 3px; width: 150px; font-size: 12px;">
+      <option [ngValue]="null">All Federations</option> <!-- All Federations option -->
+      <option *ngFor="let federation of federations" [ngValue]="federation">{{ federation.code }}</option>
+    </select>
+  </div>
+
+
+
+  <!-- Data Model Dropdown -->
     <div style="flex-grow: 1;">
       <label for="dataModel" style="font-weight: normal; margin-right: 3px; font-size: 12px;">Data Model:</label>
       <select id="dataModel" [(ngModel)]="selectedDataModelFullname" (change)="onDataModelChange($event)" style="padding: 3px; width: 150px; font-size: 12px;">
         <option *ngFor="let dataModel of dataModels" [value]="dataModel">{{ dataModel }}</option>
       </select>
     </div>
-  </div>
-
   <div>
     <label>Select Visualization:</label>
     <select (change)="onVisualizationTypeChange($event)">
