@@ -11,21 +11,24 @@
       <span>Experiment List</span>
       <i [class]="menuExpanded ? 'fas fa-chevron-up' : 'fas fa-chevron-down'"></i>
     </a>
-    <ul *ngIf="menuExpanded" class="nested-experiment-list">
-      @for (experiment of experiments; track experiment) {
-        <li (click)="selectExperiment(experiment)">
-          <i class="fas fa-vial"></i>
-          <span>{{ experiment.name }}</span>
-        </li>
-      }
-    </ul>
+    @if(menuExpanded) {
+      <ul class="nested-experiment-list">
+        @for (experiment of experiments; track experiment) {
+          <li (click)="selectExperiment(experiment)">
+            <i class="fas fa-vial"></i>
+            <span>{{ experiment.name }}</span>
+          </li>
+        }
+      </ul>
+    }
   </div>
+
 
   <!-- Static Menu Items -->
   <ul class="static-menu">
     @for (item of experimentMenuItems; track item) {
       <li>
-        <a [routerLink]="item.route">
+        <a (click)="onMenuItemClick(item)"> <!-- </a>[routerLink]="item.route"> -->
           <i [class]="item.icon"></i> <span>{{ item.label }}</span>
         </a>
       </li>

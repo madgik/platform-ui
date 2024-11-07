@@ -1,4 +1,64 @@
 /* You can add global styles to this file, and also import other style files */
 
 html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+body { margin: 0; font-family: Roboto, sans-serif; }
+
+/* Style all required fields */
+input:required, textarea:required, select:required {
+  border-color: #ccc; /* Neutral border color for required fields */
+  background-color: #fafafa; /* Light background color */
+  box-shadow: none; /* Remove any default shadow */
+}
+
+/* Style for invalid fields (unfilled required fields) */
+input:required:invalid, textarea:required:invalid, select:required:invalid {
+  border-color: #d32f2f; /* Red border for invalid fields */
+  background-color: #ffe6e6; /* Light red background for visibility */
+}
+
+/* Style for valid fields (when required fields are filled) */
+input:required:valid, textarea:required:valid, select:required:valid {
+  border-color: #4caf50; /* Green border for valid fields */
+  background-color: #e8f5e9; /* Light green background */
+}
+
+.btn-cancel,
+.btn-create {
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 1em;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.3s ease;
+}
+
+.btn-cancel {
+  background-color: #ccc;
+  color: #333;
+}
+
+.btn-cancel:hover {
+  background-color: #b3b3b3;
+}
+
+.btn-create {
+  background-color: #39bcc5;
+  color: #fff;
+}
+
+.btn-create:hover {
+  background-color: #2f98a0;
+}
+
+.custom-validation-tooltip {
+  position: absolute;
+  background-color: #d32f2f; /* Red background for error */
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  white-space: nowrap;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+}

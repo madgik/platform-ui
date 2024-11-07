@@ -1,5 +1,5 @@
 export interface Experiment {
-  id: number;
+  id: string;
   name: string;
   description: string;
   dateCreated: string;  // Adjust based on your date format

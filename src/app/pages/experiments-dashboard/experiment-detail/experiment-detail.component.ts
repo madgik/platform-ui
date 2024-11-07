@@ -1,8 +1,8 @@
 import { Component, Input } from '@angular/core';
-import { Experiment } from '../../../interfaces/experiments-dashboard.interface';
 
 @Component({
   selector: 'app-experiment-details',
+  standalone: true,
   templateUrl: './experiment-detail.component.html',
   styleUrls: ['./experiment-detail.component.css']
 })
