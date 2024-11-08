@@ -1,9 +1,10 @@
 import * as d3 from 'd3';
 import {VisualizationComponent} from "./visualization.component";
 
+
 export function createZoomableCirclePacking(data: any, container: HTMLElement, component: VisualizationComponent): void {
   const width = 928;
-  const height = width;
+  const height = 928;
 
   const color = d3.scaleLinear<string>()
     .domain([0, 5])
@@ -64,7 +65,6 @@ export function createZoomableCirclePacking(data: any, container: HTMLElement, c
   }
 
   function zoom(event: MouseEvent, d: any) {
-    const focus0 = focus;
     focus = d;
     component.setSelectedNode(d);
 
@@ -73,7 +73,7 @@ export function createZoomableCirclePacking(data: any, container: HTMLElement, c
     }
 
 
-    const transition = svg.transition()
+    svg.transition()
       .duration(event.altKey ? 7500 : 750)
       .tween("zoom", () => {
         const i = d3.interpolateZoom(view, [focus.x, focus.y, focus.r * 2]);

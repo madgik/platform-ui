@@ -36,7 +36,6 @@ export class VisualizationComponent  implements OnInit, OnChanges {
     private route: ActivatedRoute,
     private router: Router
   ) {}
-
   ngOnInit(): void {
     this.authService.hasRole('DC_DOMAIN_EXPERT').subscribe((hasRole) => {
       this.isDomainExpert = hasRole;
@@ -103,12 +102,14 @@ export class VisualizationComponent  implements OnInit, OnChanges {
     this.selectedNode = node;
   }
 
-  onFederationChange(event: any): void {
+  onFederationChange(): void {
     this.loadDataModels(); // Reload data models based on the selected federation
   }
-  onDataModelChange(event: any): void {
+  onDataModelChange(): void {
     this.loadData();
   }
+
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['d3Data'] && this.d3Data) {
       const container = this.elementRef.nativeElement.querySelector('#chart');

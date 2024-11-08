@@ -8,8 +8,8 @@ import { AuthGuard } from './guards/auth.guard';
 import {NgModule} from "@angular/core";
 import {AuthCallbackComponent} from "./callback/authcallback.component";
 import {VisualizationComponent} from "./pages/visualization/visualization.component";
-import {AddFederationPageComponent} from "./pages/add-federation-page /add-federation-page.component";
-import {AddDataModelPageComponent} from "./pages/add-data-model-page/add-data-model-page.component";
+import {AddFederationPageComponent} from "./pages/federations-page/add-federation/add-federation-page.component";
+import {AddDataModelPageComponent} from "./pages/visualization/add-data-model/add-data-model-page.component";
 
 export const appRoutes: Routes = [
   { path: 'home', component: LandingPageComponent },

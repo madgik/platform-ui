@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import {FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
-import { DataModelService } from '../../services/data-model.service';
+import { DataModelService } from '../../../services/data-model.service';
 import { CommonModule } from '@angular/common';
-import {FederationService} from "../../services/federation.service";
+import {FederationService} from "../../../services/federation.service";
 import {Router} from "@angular/router";
 
 @Component({

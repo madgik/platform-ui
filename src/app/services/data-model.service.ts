@@ -104,6 +104,7 @@ export class DataModelService {
         name: v.label,
         value: 1,
         code: v.code,
+        label: v.label,
         description: v.description,
         sql_type: v.sql_type,
         isCategorical: v.isCategorical,

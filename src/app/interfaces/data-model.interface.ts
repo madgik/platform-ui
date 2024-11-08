@@ -35,6 +35,7 @@ export interface DataModel {
 // D3 hierarchy format interface
 export interface D3HierarchyNode {
   name: string;
+  label: string;
   value?: number;  // Optional, as this may only be used for leaf nodes
   code?: string;
   description?: string;
