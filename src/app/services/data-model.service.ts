@@ -1,37 +1,68 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import {Injectable} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {Observable, of} from 'rxjs';
+import {catchError, map, tap} from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DataModelService {
-  private apiUrl = 'http://localhost:8090/services/datacatalogue/datamodels';
+  private apiUrl = '/services/datacatalogue/datamodels';
   private dataModels: any[] = []; // Cache for all loaded data models
+  private dataModelsLoaded: boolean = false; // Flag to track if data models are loaded
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    this.loadAllDataModels().subscribe();
+  }
 
-  // Load all data models from the API and cache them
+  // Update the cache with all data models from the API and return an Observable
   loadAllDataModels(): Observable<any[]> {
     console.log('loadAllDataModels called');
 
-    // Check if data models are already loaded in cache
-    if (this.dataModels.length > 0) {
-      console.log('Returning cached data models:', this.dataModels);
-      return of(this.dataModels); // Return cached data models
+    // Only fetch data models if not already loaded
+    if (!this.dataModelsLoaded) {
+      return this.http.get<any[]>(this.apiUrl).pipe(
+        tap((dataModels: any[]) => {
+          console.log('Data models fetched from API:', dataModels);
+          this.dataModels = dataModels; // Cache the data models
+          this.dataModelsLoaded = true; // Mark data models as loaded
+        }),
+        catchError((error) => {
+          console.error('Error occurred while fetching data models from API:', error);
+          this.dataModels = []; // Clear cache if an error occurs
+          this.dataModelsLoaded = false;
+          return of([]);
+        })
+      );
     }
 
-    // Fetch data models from API
-    return this.http.get<any[]>(this.apiUrl).pipe(
-      map((dataModels: any[]) => {
-        console.log('Data models fetched from API:', dataModels);
-        this.dataModels = dataModels; // Cache the data models
-        return dataModels;
+    // Return cached data if already loaded
+    return of(this.dataModels);
+  }
+
+  // Retrieve all data models, using the cache if available
+  getAllDataModels(): Observable<any[]> {
+    console.log('getAllDataModels called');
+
+    // Ensure data models are loaded before returning
+    return this.loadAllDataModels().pipe(
+      map(() => this.dataModels)
+    );
+  }
+
+  // Method to get data models by IDs, using the cache if available
+  getDataModelsFullNamesByIds(ids: string[]): Observable<string[]> {
+    return this.getAllDataModels().pipe(
+      map((dataModels: any[]): string[] => {
+        console.log('Mapping data models to full names');
+        return ids.map(id => {
+          const dataModel = dataModels.find(model => model.uuid === id);
+          return dataModel ? `${dataModel.code}_${dataModel.version}` : 'Unknown Data Model';
+        });
       }),
-      catchError((error) => {
-        console.error('Error occurred while fetching data models from API:', error);
-        return of([]); // Return an empty array in case of error
+      catchError(error => {
+        console.error('Error loading data models:', error);
+        return of(ids.map(() => 'Error Loading Data Model'));
       })
     );
   }
@@ -40,21 +71,18 @@ export class DataModelService {
   getDataModelByCodeAndVersion(code: string, version: string): Observable<any> {
     console.log(`getDataModelByCodeAndVersion called with code: ${code}, version: ${version}`);
 
-    // Ensure all data models are loaded before searching
-    return this.loadAllDataModels().pipe(
+    return this.getAllDataModels().pipe(
       map((dataModels: any[]) => {
-        console.log('Looking for data model in the list of cached models...');
-        // Find the data model that matches the given code and version
+        console.log('Searching for data model in cached models...');
         const foundModel = dataModels.find(
           (model) => model.code === code && model.version === version
         );
 
         if (foundModel) {
           console.log('Data model found:', foundModel);
-          // Convert the found data model to D3 hierarchy format
           const d3Hierarchy = this.convertToD3Hierarchy(foundModel);
           console.log('Data model converted to D3 hierarchy format:', d3Hierarchy);
-          return d3Hierarchy;  // Return the converted D3 hierarchy
+          return d3Hierarchy;
         } else {
           console.error(`Data model with code ${code} and version ${version} not found.`);
           throw new Error(`Data model with code ${code} and version ${version} not found.`);
@@ -62,7 +90,7 @@ export class DataModelService {
       }),
       catchError((error) => {
         console.error('Error occurred while finding data model:', error);
-        return of(null); // Return null if not found or error occurs
+        return of(null);
       })
     );
   }
@@ -76,6 +104,7 @@ export class DataModelService {
         name: v.label,
         value: 1,
         code: v.code,
+        label: v.label,
         description: v.description,
         sql_type: v.sql_type,
         isCategorical: v.isCategorical,
@@ -87,6 +116,7 @@ export class DataModelService {
     const convertGroups = (groups: any) =>
       groups.map((g: any) => ({
         name: g.label,
+        code: g.code,
         children: [
           ...convertVariables(g.variables || []),
           ...convertGroups(g.groups || []),
@@ -95,6 +125,7 @@ export class DataModelService {
 
     const d3Hierarchy = {
       name: data.label,
+      code: data.code,
       children: [
         ...convertVariables(data.variables || []),
         ...convertGroups(data.groups || []),
