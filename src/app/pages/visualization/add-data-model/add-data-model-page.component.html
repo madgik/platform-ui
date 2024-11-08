@@ -9,19 +9,22 @@
       <option value="xlsx">XLSX</option>
     </select>
 
-    <div *ngIf="selectedFileType">
-      <label for="file">Choose {{ selectedFileType.toUpperCase() }} File</label>
-      <input id="file" type="file" (change)="onFileChange($event)" accept=".json, .xlsx" />
-    </div>
+    @if (selectedFileType) {
+      <div>
+        <label for="file">Choose {{ selectedFileType.toUpperCase() }} File</label>
+        <input id="file" type="file" (change)="onFileChange($event)" accept=".json, .xlsx" />
+      </div>
+    }
 
-    <!-- Show version and longitudinal only if file type is XLSX -->
-    <div *ngIf="selectedFileType === 'xlsx'">
-      <label for="version">Version</label>
-      <input id="version" type="text" formControlName="version" placeholder="Enter version (e.g., 1.0)" />
+    @if (selectedFileType === 'xlsx') {
+      <div>
+        <label for="version">Version</label>
+        <input id="version" type="text" formControlName="version" placeholder="Enter version (e.g., 1.0)" />
 
-      <label for="longitudinal">Is Longitudinal</label>
-      <input id="longitudinal" type="checkbox" formControlName="longitudinal" />
-    </div>
+        <label for="longitudinal">Is Longitudinal</label>
+        <input id="longitudinal" type="checkbox" formControlName="longitudinal" />
+      </div>
+    }
 
     <button type="submit" [disabled]="!file">Upload Data Model</button>
   </form>

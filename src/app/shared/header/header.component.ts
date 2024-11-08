@@ -1,4 +1,4 @@
-import { CommonModule, NgIf } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { NavbarComponent } from '../navbar/navbar.component';
 import {NavigationEnd, Router, RouterModule} from '@angular/router';
 import { AuthService } from "../../services/auth.service";
@@ -8,7 +8,7 @@ import {filter} from "rxjs";
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, NavbarComponent, NgIf, RouterModule],
+  imports: [CommonModule, NavbarComponent, RouterModule],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.css']
 })

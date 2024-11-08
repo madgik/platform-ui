@@ -1,45 +1,58 @@
 <section class="filter-section">
   <div class="filter-links">
-    <ng-container *ngFor="let filter of filters; let i = index">
-      <span [ngClass]="{'active-filter': filter === selectedFilter}"
-            (click)="selectFilter(filter)">
-        {{ filter }}
-      </span>
-      <span *ngIf="i < filters.length - 1"> | </span>
-    </ng-container>
+    @for(filter of filters; track $index) {
+      <ng-container>
+    <span [ngClass]="{'active-filter': filter === selectedFilter}" (click)="selectFilter(filter)">
+      {{ filter }}
+    </span>
+        @if ($index < filters.length - 1){
+          <span> | </span>
+        }
+      </ng-container>
+    }
+
   </div>
 </section>
 
 <section class="federations-list">
   <!-- Add New Federation Card (Visible only to DC_ADMIN) -->
-  <div *ngIf="isAdmin" class="federation-card add-new-card" (click)="goToAddFederationPage()">
-    <div class="add-card-content">
-      <div class="add-icon">+</div>
-      <h3>Add New Federation</h3>
-    </div>
-  </div>
-
-  <!-- Existing Federation Cards -->
-  <div *ngFor="let federation of filteredFederations" class="federation-card">
-    <img [src]="'assets/' + federation.code + '.png'" alt="{{ federation.title }}" class="federation-image">
-    <div class="federation-content">
-      <h3>{{ federation.title }}</h3>
-      <p>Data Records: {{ federation.records }} | Institutions: {{ federation.institutions }}</p>
-      <p>Data Models:</p>
-      <ul>
-        <li *ngFor="let dataModel of federation.dataModels">
-          {{ dataModel }}
-        </li>
-      </ul>
-      <p class="federation-description">{{ federation.description }}</p>
-      <div class="federation-buttons">
-        <button class="data-model-btn" (click)="goToVisualization(federation)">Data Model</button>
-        <button class="request-access-btn">Request Access</button>
-        <!-- Delete button (Visible only to DC_ADMIN) -->
-        <button *ngIf="isAdmin" class="delete-btn" (click)="deleteFederation(federation.code)">
-          🗑️ Delete
-        </button>
+  @if (isAdmin) {
+    <div class="federation-card add-new-card" (click)="goToAddFederationPage()">
+      <div class="add-card-content">
+        <div class="add-icon">+</div>
+        <h3>Add New Federation</h3>
       </div>
     </div>
-  </div>
+  }
+
+  <!-- Existing Federation Cards -->
+  @for(federation of filteredFederations; track federation ){
+    <div class="federation-card">
+      <img [src]="'assets/' + federation.code + '.png'" alt="{{ federation.title }}" class="federation-image">
+      <div class="federation-content">
+        <h3>{{ federation.title }}</h3>
+        <p>Data Records: {{ federation.records }} | Institutions: {{ federation.institutions }}</p>
+        <p>Data Models:</p>
+        <ul>
+          @for(dataModel of federation.dataModels; track dataModel ){
+            <li >
+              {{ dataModel }}
+            </li>
+          }
+        </ul>
+        <p class="federation-description">{{ federation.description }}</p>
+        <div class="federation-buttons">
+          <button class="data-model-btn" (click)="goToVisualization(federation)">Data Model</button>
+          <button class="request-access-btn">Request Access</button>
+          <!-- Delete button (Visible only to DC_ADMIN) -->
+          @if (isAdmin){
+            <button class="delete-btn" (click)="deleteFederation(federation.code)">
+              🗑️ Delete
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
 </section>

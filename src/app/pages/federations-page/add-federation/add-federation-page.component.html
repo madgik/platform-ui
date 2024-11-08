@@ -21,12 +21,14 @@
     <div class="data-models-section">
       <h2>Select Data Models</h2>
       <div class="data-models-grid">
-        <div *ngFor="let model of dataModels" class="data-model-card">
-          <label>
-            <input type="checkbox" [value]="model.uuid" (change)="onDataModelChange($event)" />
-            <span class="data-model-name">{{ model.code }}_{{ model.version }}</span>
-          </label>
-        </div>
+        @for (model of dataModels; track model){
+          <div class="data-model-card">
+            <label>
+              <input type="checkbox" [value]="model.uuid" (change)="onDataModelChange($event)" />
+              <span class="data-model-name">{{ model.code }}_{{ model.version }}</span>
+            </label>
+          </div>
+        }
       </div>
     </div>
 
