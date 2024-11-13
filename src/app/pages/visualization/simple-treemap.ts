@@ -3,7 +3,7 @@ import {VisualizationComponent} from "./visualization.component";
 
 export function createSimpleTreemap(data: any, container: HTMLElement, component: VisualizationComponent): void {
   const width = 928;
-  const height = 924;
+  const height = 2000;
 
   const color = d3.scaleOrdinal(data.children.map((d: any) => d.name), d3.schemeTableau10);
 
@@ -17,11 +17,9 @@ export function createSimpleTreemap(data: any, container: HTMLElement, component
       .sort((a, b) => (b.value ?? 0) - (a.value ?? 0)));
 
   const svg = d3.create("svg")
-    .attr("viewBox", `0 0 ${width} ${height}`)
-    .attr("width", width)
-    .attr("height", height)
-    .style("max-width", "100%")
-    .style("height", "auto")
+    .attr("viewBox", `0 0 ${width} ${height}`) // Responsive viewBox for scaling
+    .style("width", "100%") // Set width to 100% to fill container
+    .style("height", "auto") // Let height adjust automatically based on content
     .style("font", "10px sans-serif");
 
   const leaf = svg.selectAll("g")

@@ -9,7 +9,7 @@ import { map } from "rxjs/operators";
   providedIn: 'root'
 })
 export class UserService {
-  private userUrl = '/services/datacatalogue/user';
+  private userUrl = '/services/user';
   private userRoles: string[] = [];
 
   constructor(private http: HttpClient) {}

@@ -140,6 +140,20 @@
   .add-new-card h3 {
     font-size: 1em; /* Slightly smaller font size for the title */
   }
+  .update-btn {
+    background-color: #ffc107; /* A yellow color for differentiation */
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-right: 8px; /* Adds some space between the update and delete buttons */
+  }
+
+  .update-btn:hover {
+    background-color: #e0a800;
+  }
 
 
 }

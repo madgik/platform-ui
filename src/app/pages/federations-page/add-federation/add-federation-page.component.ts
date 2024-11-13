@@ -39,7 +39,7 @@ export class AddFederationPageComponent implements OnInit {
 
   loadDataModels(): void {
     console.log('Loading data models...');
-    this.dataModelService.loadAllDataModels().subscribe({
+    this.dataModelService.getAllReleasedDataModels().subscribe({
       next: (models) => {
         console.log('Data models loaded:', models);
         this.dataModels = models;

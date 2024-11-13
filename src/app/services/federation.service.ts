@@ -9,9 +9,10 @@ import { DataModelService } from './data-model.service';
   providedIn: 'root',
 })
 export class FederationService {
-  private apiUrl = '/services/datacatalogue/federations';
+  private apiUrl = '/services/federations';
 
   constructor(private http: HttpClient, private dataModelService: DataModelService) {}
+
 
   // Fetch federations and resolve data model IDs to full names
   getFederationsWithFullDataModelNames(): Observable<Federation[]> {
@@ -44,7 +45,20 @@ export class FederationService {
     );
   }
 
-  deleteFederation(code: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${code}`);
+  updateFederation(code: string, federation: Federation): Observable<Federation> {
+    const url = `${this.apiUrl}/${code}`; // Construct the URL with the federation code
+    return this.http.put<Federation>(url, federation).pipe(
+      catchError((error) => {
+        console.error('Error updating federation:', error);
+        throw error;
+      })
+    );
+  }
+
+  deleteFederation(code: string): void {
+    this.http.delete<void>(`${this.apiUrl}/${code}`).subscribe({
+      next: () => console.log(`Federation with code ${code} deleted successfully.`),
+      error: (error) => console.error('Error deleting federation:', error)
+    });
   }
 }

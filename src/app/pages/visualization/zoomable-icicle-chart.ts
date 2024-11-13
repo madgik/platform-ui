@@ -3,7 +3,7 @@ import {VisualizationComponent} from "./visualization.component";
 
 export function createIcicleChart(data: any, container: HTMLElement, component: VisualizationComponent): void {
   const width = 928;
-  const height = 600;
+  const height = 2500;
 
   const color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, data.children.length + 1));
 

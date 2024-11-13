@@ -37,29 +37,30 @@ export class FederationsPageComponent implements OnInit {
     });
   }
 
-  goToAddFederationPage() {
+  goToAddFederation() {
     console.log('Navigating to Add Federation page');
     this.router.navigate(['/add-federation']);
   }
 
-  // Method to navigate to the /visualization route with a specified federation
-  goToVisualization(federation: Federation) {
-    this.router.navigate(['/visualization'], {
-      queryParams: { federationCode: federation.code } // Assuming `id` uniquely identifies the federation
+  goToUpdateFederation(federationCode: string) {
+    console.log('Navigating to Update Federation page');
+    this.router.navigate(['/update-federation'], {
+      queryParams: { federationCode: federationCode } // Assuming `id` uniquely identifies the federation
     });
   }
 
-  deleteFederation(code: string): void {
+  // Method to navigate to the /visualization route with a specified federation
+  goToVisualization(federationCode: string) {
+    this.router.navigate(['/visualization'], {
+      queryParams: { federationCode: federationCode } // Assuming `id` uniquely identifies the federation
+    });
+  }
+
+  deleteFederation(federationCode: string): void {
     if (confirm('Are you sure you want to delete this federation?')) {
-      this.federationService.deleteFederation(code).subscribe({
-        next: () => {
-          // Update the list by filtering out the deleted federation
-          this.filteredFederations = this.filteredFederations.filter(fed => fed.code !== code);
-          console.log('Federation deleted successfully');
-        },
-        error: (err) => console.error('Error deleting federation:', err),
-      });
+      this.federationService.deleteFederation(federationCode);
     }
+    this.router.navigate(['/federations']);
   }
 
   // Handle filter selection
