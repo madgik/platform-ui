@@ -5,7 +5,6 @@ import { VisualizationComponent } from "./visualization.component";
 export function createTidyTree(data: any, container: HTMLElement, component: VisualizationComponent): void {
   const width = 1500;
 
-  //TODO: make it bigger that it expects to need
   const root = d3.hierarchy(data);
   const dx = 10;
   const dy = width / (root.height + 1);

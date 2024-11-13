@@ -47,7 +47,6 @@ export class VisualizationComponent  implements OnInit, OnChanges {
     private route: ActivatedRoute,
     private router: Router
   ) {}
-  //TODO:Make the same as old frontend and divide data models on cross sectional and longitudinal.
 
   ngOnInit(): void {
     this.authService.hasRole('DC_DOMAIN_EXPERT').subscribe((hasRole) => {
@@ -153,6 +152,7 @@ export class VisualizationComponent  implements OnInit, OnChanges {
             this.d3Data = d3Hierarchy;
             this.renderVisualization(container);
           }
+          this.selectedNode = {"data": {"name": d3Hierarchy.name, "code": d3Hierarchy.code}, children: d3Hierarchy.children};
         },
         error: (error) => console.error('Error:', error),
       });
@@ -171,6 +171,7 @@ export class VisualizationComponent  implements OnInit, OnChanges {
   onDataModelChange(): void {
     this.loadData();
   }
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['d3Data'] && this.d3Data) {
       const container = this.elementRef.nativeElement.querySelector('#chart');
