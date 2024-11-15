@@ -1,112 +1,128 @@
 <div class="container">
-  <!-- Header with title and actions button -->
-  <div class="header">
-    <h1 id="data-models-heading">Data Models</h1>
-    <!-- Options menu button for actions -->
-    <button class="three-dots-button" aria-haspopup="true" [attr.aria-expanded]="optionsVisible()" aria-controls="options-menu" aria-label="Open actions menu" (click)="toggleOptionsMenu()">
-      &#8942;
-    </button>
+  <div class="top-bar">
+    <!-- Dropdowns container for data model-specific settings -->
+    <div class="dropdown-container">
+      <div>
+        <label for="federation">Select Federation:</label>
+        <select class="dropdown" id="federation" [(ngModel)]="selectedFederation" (change)="onFederationChange()" aria-labelledby="federation">
+          <option [ngValue]="null">---</option>
+          <option *ngFor="let federation of federations" [ngValue]="federation">{{ federation.code }}</option>
+        </select>
+      </div>
 
-    <!-- Dropdown menu for actions -->
-    <div *ngIf="optionsVisible()" class="options-menu">
-      <button (click)="gotoAddDataModel()">Add Data Model</button>
-      <button (click)="goToUpdateDataModel()">Update Data Model</button>
-      <button (click)="deleteDataModel()">Delete Data Model</button>
-      <!-- Conditional Release Data Model button -->
-      <button *ngIf="!isSelectedDataModelReleased()" (click)="releaseDataModel()">Release Data Model</button>
-      <button (click)="showExportOptions()">Export Data Model</button>
+      <div>
+        <label for="dataModel">Select Data Model:</label>
+        <select class="dropdown" id="dataModel" [(ngModel)]="selectedDataModelFullname" (change)="onDataModelChange()" aria-labelledby="dataModel">
+          <!-- Cross-Sectional Data Models Group -->
+          <optgroup *ngIf="crossSectionalModels.length > 0" label="Cross-Sectional">
+            <option *ngFor="let model of crossSectionalModels" [value]="model.fullname">{{ model.fullname }}</option>
+          </optgroup>
 
-      <!-- File type selection dropdown, visible only when exportOptionsVisible is true -->
-      <div *ngIf="exportOptionsVisible()" style="padding: 10px;">
-        <label>Select Export Format:</label>
-        <select [(ngModel)]="selectedFileType">
+          <!-- Longitudinal Data Models Group -->
+          <optgroup *ngIf="longitudinalModels.length > 0" label="Longitudinal">
+            <option *ngFor="let model of longitudinalModels" [value]="model.fullname">{{ model.fullname }}</option>
+          </optgroup>
+
+          <!-- No Data Models Fallback -->
+          <option *ngIf="crossSectionalModels.length === 0 && longitudinalModels.length === 0" disabled>
+            No data models available
+          </option>
+        </select>
+      </div>
+
+      <!-- Compact Export Options Dropdown -->
+      <div class="export-options">
+        <label for="file-type-select" class="export-label">Format:</label>
+        <select class="dropdown" id="file-type-select" [(ngModel)]="selectedFileType" aria-label="Choose export format">
           <option value="json">JSON</option>
           <option value="xlsx">XLSX</option>
         </select>
-        <button (click)="exportDataModel()">Export</button> <!-- Export button to trigger action -->
+        <button class="export-confirm-button" (click)="exportDataModel()">
+          <i class="printer-icon"></i> Export
+        </button>
+      </div>
+    </div>
+
+    <div class="action-menu">
+      <!-- Three-dots button to open/close the menu -->
+      <button *ngIf="isDomainExpert" class="three-dots-button" aria-haspopup="true" [attr.aria-expanded]="optionsVisible()" aria-controls="options-menu" aria-label="Open actions menu" (click)="toggleOptionsMenu()">
+        &#8942;
+      </button>
+
+      <!-- Menu backdrop (only visible when menu is open) -->
+      <div *ngIf="optionsVisible()" class="menu-backdrop" (click)="toggleOptionsMenu()"></div>
+
+      <!-- Options menu for actions -->
+      <div *ngIf="optionsVisible()" class="options-menu">
+        <button (click)="gotoAddDataModel()">Add Data Model</button>
+        <button *ngIf="!isSelectedDataModelReleased()" (click)="goToUpdateDataModel()">Update Data Model</button>
+        <button *ngIf="!isSelectedDataModelReleased()" (click)="deleteDataModel()">Delete Data Model</button>
+        <button *ngIf="!isSelectedDataModelReleased()" (click)="releaseDataModel()">Release Data Model</button>
       </div>
     </div>
   </div>
 
-  <!-- Dropdowns container -->
-  <div class="dropdown-container">
-    <div>
-      <label for="federation">Select Federation:</label>
-      <select id="federation" [(ngModel)]="selectedFederation" (change)="onFederationChange()" aria-labelledby="federation">
-        <option [ngValue]="null">All Federations</option>
-        <option *ngFor="let federation of federations" [ngValue]="federation">{{ federation.code }}</option>
-      </select>
-    </div>
-
-    <div>
-      <label for="dataModel">Select Data Model:</label>
-      <select id="dataModel" [(ngModel)]="selectedDataModelFullname" (change)="onDataModelChange()" aria-labelledby="dataModel">
-
-        <!-- Cross-Sectional Data Models Group -->
-        <optgroup *ngIf="crossSectionalModels.length > 0" label="Cross-Sectional">
-          <option *ngFor="let model of crossSectionalModels" [value]="model.fullname">{{ model.fullname }}</option>
-        </optgroup>
-
-        <!-- Longitudinal Data Models Group -->
-        <optgroup *ngIf="longitudinalModels.length > 0" label="Longitudinal">
-          <option *ngFor="let model of longitudinalModels" [value]="model.fullname">{{ model.fullname }}</option>
-        </optgroup>
-
-        <!-- No Data Models Fallback -->
-        <option *ngIf="crossSectionalModels.length === 0 && longitudinalModels.length === 0" disabled>
-          No data models available
-        </option>
-
-      </select>
-    </div>
-
-
-
-    <div>
-      <label for="visualization">Select Visualization:</label>
-      <select id="visualization" (change)="onVisualizationTypeChange($event)">
-        <option value="ZoomableCirclePacking">Zoomable Circle Packing</option>
-        <option value="ZoomableTreemap">Zoomable Treemap</option>
-        <option value="Treemap">Treemap</option>
-        <option value="ZoomableIcicle">Zoomable Icicle</option>
-        <option value="ZoomableSunburst">Zoomable Sunburst</option>
-        <option value="TidyTree">TidyTree</option>
-      </select>
-    </div>
-
-    <!-- Button to toggle Node Info visibility -->
-    <button class="toggle-node-info-button" (click)="toggleNodeInfo()">
-      {{ nodeInfoVisible ? 'Hide Node Info' : 'Show Node Info' }}
-    </button>
+  <!-- Visualization type selector positioned directly above the chart -->
+  <div class="visualization-type-container">
+    <label for="visualization">Select Visualization:</label>
+    <select class="dropdown" id="visualization" (change)="onVisualizationTypeChange($event)">
+      <option value="ZoomableCirclePacking">Zoomable Circle Packing</option>
+      <option value="ZoomableSunburst">Zoomable Sunburst</option>
+      <option value="TidyTree">TidyTree</option>
+    </select>
   </div>
 
   <!-- Chart container with scrolling capability -->
   <div id="chart-container">
-    <div id="chart" style="width: 100%; height: 600px;"></div>
+    <div id="chart" style="width: 100%; height: 800px;"></div>
   </div>
 
-  <!-- Collapsible Node Information Panel -->
-  @if (nodeInfoVisible) {
-    <div class="node-info" style="width: 200px; padding: 10px; background-color: #f9f9f9; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); border-radius: 6px;">
-    <button class="collapse-button" (click)="toggleNodeInfo()">Node Info</button>
-      <h3 style="margin-bottom: 8px; color: #333; font-size: 14px;">Node Information</h3>
+  <div *ngIf="!optionsVisible()" id="node-info-container">
+    <div class="node-info">
+      <button class="toggle-node-info-button" (click)="toggleNodeInfo()">
+        {{ nodeInfoVisible ? 'Hide Node Info' : 'Show Node Info' }}
+      </button>
+      <div *ngIf="nodeInfoVisible">
+        <div *ngIf="selectedNode?.children?.length > 0; else nodeDetails">
+          <h3>Group Information</h3>
+          <p><strong>Code:</strong> {{ selectedNode?.data?.code || 'N/A' }}</p>
+          <p><strong>Label:</strong> {{ selectedNode?.data?.name || 'N/A' }}</p>
+          <p><strong>Number of Children:</strong> {{ selectedNode?.children?.length || 0 }}</p>
+        </div>
+        <ng-template #nodeDetails>
+          <h3>Variable Information</h3>
+          <p *ngIf="selectedNode?.data?.name">
+            <strong>Name:</strong> {{ selectedNode?.data?.name }}
+          </p>
+          <p *ngIf="selectedNode?.data?.code">
+            <strong>Code:</strong> {{ selectedNode?.data?.code }}
+          </p>
 
-      <!-- If the current node is a parent (has children), show only code, label, and number of children -->
-      @if (selectedNode?.children?.length > 0) {
-        <p><strong>Code:</strong> {{ selectedNode?.data?.code || 'N/A' }}</p>
-        <p><strong>Label:</strong> {{ selectedNode?.data?.name || 'N/A' }}</p>
-        <p><strong>Number of Children:</strong> {{ selectedNode?.children?.length || 0 }}</p>
-      }
-      @else {
-        <p><strong>Name:</strong> {{ selectedNode?.data?.name || 'N/A' }}</p>
-        <p><strong>Code:</strong> {{ selectedNode?.data?.code || 'N/A' }}</p>
-        <p><strong>Description:</strong> {{ selectedNode?.data?.description || 'N/A' }}</p>
-        <p><strong>SQL Type:</strong> {{ selectedNode?.data?.sql_type || 'N/A' }}</p>
-        <p><strong>Is Categorical:</strong> {{ selectedNode?.data?.isCategorical ? 'Yes' : 'No' }}</p>
-        <p><strong>Units:</strong> {{ selectedNode?.data?.units || 'N/A' }}</p>
-        <p><strong>Min Value:</strong> {{ selectedNode?.data?.minValue || 'N/A' }}</p>
-        <p><strong>Max Value:</strong> {{ selectedNode?.data?.maxValue || 'N/A' }}</p>
-      }
+          <!-- Scrollable Description Area -->
+          <div *ngIf="selectedNode?.data?.description">
+            <p><strong>Description:</strong></p>
+            <div class="node-info-description">
+              {{ selectedNode?.data?.description }}
+            </div>
+          </div>
+
+          <p *ngIf="selectedNode?.data?.sql_type">
+            <strong>SQL Type:</strong> {{ selectedNode?.data?.sql_type }}
+          </p>
+          <p *ngIf="selectedNode?.data?.isCategorical !== null">
+            <strong>Is Categorical:</strong> {{ selectedNode?.data?.isCategorical ? 'Yes' : 'No' }}
+          </p>
+          <p *ngIf="selectedNode?.data?.units">
+            <strong>Units:</strong> {{ selectedNode?.data?.units }}
+          </p>
+          <p *ngIf="selectedNode?.data?.minValue !== null">
+            <strong>Min Value:</strong> {{ selectedNode?.data?.minValue }}
+          </p>
+          <p *ngIf="selectedNode?.data?.maxValue !== null">
+            <strong>Max Value:</strong> {{ selectedNode?.data?.maxValue }}
+          </p>
+        </ng-template>
+      </div>
     </div>
-  }
+  </div>
 </div>

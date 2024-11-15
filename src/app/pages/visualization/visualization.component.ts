@@ -1,12 +1,9 @@
 import {Component, OnInit, ElementRef, OnChanges, SimpleChanges, signal, HostListener} from '@angular/core';
-import {createZoomableTreemap} from "./zoomable-treemap";
-import {createIcicleChart} from "./zoomable-icicle-chart";
 import {FormsModule} from "@angular/forms";
 import {CommonModule} from "@angular/common";
 import {Federation} from "../../interfaces/federations.interface";
 import {FederationService} from "../../services/federation.service";
 import {DataModelService} from "../../services/data-model.service";
-import {createSimpleTreemap} from "./simple-treemap";
 import {createZoomableCirclePacking} from "./zoomable circle-packing";
 import {ActivatedRoute, Router} from '@angular/router';
 import {AuthService} from "../../services/auth.service";
@@ -24,6 +21,10 @@ import {DataModel} from "../../interfaces/data-model.interface";
   imports: [CommonModule, FormsModule, MatMenuTrigger, MatIcon, MatMenu, MatIconButton, MatMenuItem],
   standalone: true
 })
+//TODO:LINK for federation
+//TODO:request access for federation
+//TODO:filters
+//TODO:refactor
 export class VisualizationComponent  implements OnInit, OnChanges {
   visualizationType = 'ZoomableCirclePacking';
   d3Data: any;
@@ -188,15 +189,6 @@ export class VisualizationComponent  implements OnInit, OnChanges {
       case 'ZoomableCirclePacking':
         createZoomableCirclePacking(this.d3Data, container, this);
         break;
-      case 'ZoomableTreemap':
-        createZoomableTreemap(this.d3Data, container, this);
-        break;
-      case 'Treemap':
-        createSimpleTreemap(this.d3Data, container, this);
-        break;
-      case 'ZoomableIcicle':
-        createIcicleChart(this.d3Data, container, this);
-        break;
       case 'ZoomableSunburst':
         createSunburst(this.d3Data, container, this);
         break;
@@ -303,11 +295,6 @@ export class VisualizationComponent  implements OnInit, OnChanges {
     }
   }
 
-
-
-  showExportOptions(): void {
-    this.exportOptionsVisible.set(true); // Show file type selection
-  }
 
   exportDataModel(): void {
     this.toggleOptionsMenu();

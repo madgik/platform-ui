@@ -26,6 +26,7 @@ export class AddFederationPageComponent implements OnInit {
     this.federationForm = this.fb.group({
       code: [''],
       title: [''],
+      url: [''],
       description: [''],
       institutions: [''],
       records: ['']

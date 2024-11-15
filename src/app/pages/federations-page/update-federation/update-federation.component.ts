@@ -30,6 +30,7 @@ export class UpdateFederationComponent implements OnInit {
     this.federationForm = this.fb.group({
       code: [''],
       title: [''],
+      url: [''],
       description: [''],
       institutions: [''],
       records: ['']
@@ -47,6 +48,7 @@ export class UpdateFederationComponent implements OnInit {
             this.federationForm = this.fb.group({
               code: [federation.code],
               title: [federation.title],
+              url: [federation.url],
               description: [federation.description],
               institutions: [federation.institutions],
               records: [federation.records]
