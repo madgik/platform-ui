@@ -5,7 +5,7 @@
       <div>
         <label for="federation">Select Federation:</label>
         <select class="dropdown" id="federation" [(ngModel)]="selectedFederation" (change)="onFederationChange()" aria-labelledby="federation">
-          <option [ngValue]="null">---</option>
+          <option *ngIf="isDomainExpert" [ngValue]="null">---</option>
           <option *ngFor="let federation of federations" [ngValue]="federation">{{ federation.code }}</option>
         </select>
       </div>
@@ -54,8 +54,8 @@
 
       <!-- Options menu for actions -->
       <div *ngIf="optionsVisible()" class="options-menu">
-        <button (click)="gotoAddDataModel()">Add Data Model</button>
-        <button *ngIf="!isSelectedDataModelReleased()" (click)="goToUpdateDataModel()">Update Data Model</button>
+        <button (click)="gotoAddOrUpdateDataModel(false)">Add Data Model</button>
+        <button *ngIf="!isSelectedDataModelReleased()" (click)="gotoAddOrUpdateDataModel(true)">Update Data Model</button>
         <button *ngIf="!isSelectedDataModelReleased()" (click)="deleteDataModel()">Delete Data Model</button>
         <button *ngIf="!isSelectedDataModelReleased()" (click)="releaseDataModel()">Release Data Model</button>
       </div>

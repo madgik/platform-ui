@@ -5,13 +5,13 @@ import {CommonModule} from "@angular/common";
 import {DataModelService} from "../../../services/data-model.service";
 
 @Component({
-  selector: 'app-update-data-model',
+  selector: 'app-data-model',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './update-data-model.component.html',
-  styleUrls: ['./update-data-model.component.css'],
+  templateUrl: './data-model.component.html',
+  styleUrls: ['./data-model.component.css'],
 })
-export class UpdateDataModelComponent implements OnInit {
+export class DataModelComponent implements OnInit {
   dataModelForm: FormGroup;
   selectedFileType: string = 'json';
   file: File | null = null;
@@ -36,6 +36,7 @@ export class UpdateDataModelComponent implements OnInit {
       this.selectedDataModelID = params['dataModelId'];
       });
   }
+
   onFileTypeChange(event: Event): void {
     const target = event.target as HTMLSelectElement;
     this.selectedFileType = target.value;
@@ -50,6 +51,14 @@ export class UpdateDataModelComponent implements OnInit {
   }
 
   submitForm(): void {
+    if (this.selectedDataModelID) {
+      this.handleUpdateMode();
+    } else {
+      this.handleAddMode();
+    }
+  }
+
+  handleUpdateMode(): void {
     if (!this.file) {
       console.error('No file selected');
       return;
@@ -80,4 +89,30 @@ export class UpdateDataModelComponent implements OnInit {
     }
   }
 
+  handleAddMode(): void {
+    if (!this.file) {
+      console.error('No file selected');
+      return;
+    }
+
+    if (this.selectedFileType === 'json') {
+      this.dataModelService.createDataModelFromJson(this.file).subscribe({
+        next: () => {
+          console.log('JSON Data Model created successfully.');
+          this.router.navigate(['/visualization']);
+        },
+        error: (error) => console.error('Error creating JSON Data Model:', error),
+      });
+    } else if (this.selectedFileType === 'xlsx') {
+      const version = this.dataModelForm.get('version')?.value;
+      const longitudinal = this.dataModelForm.get('longitudinal')?.value;
+      this.dataModelService.createDataModelFromExcel(this.file, version, longitudinal).subscribe({
+        next: () => {
+          console.log('Excel Data Model created successfully.');
+          this.router.navigate(['/visualization']);
+        },
+        error: (error) => console.error('Error creating Excel Data Model:', error),
+      });
+    }
+  }
 }

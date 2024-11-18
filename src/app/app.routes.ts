@@ -9,11 +9,10 @@ import {NgModule} from "@angular/core";
 import {AuthCallbackComponent} from "./callback/authcallback.component";
 import {VisualizationComponent} from "./pages/visualization/visualization.component";
 import {AddFederationPageComponent} from "./pages/federations-page/add-federation/add-federation-page.component";
-import {AddDataModelComponent} from "./pages/visualization/add-data-model/add-data-model.component";
 import {
   UpdateFederationComponent
 } from "./pages/federations-page/update-federation/update-federation.component";
-import {UpdateDataModelComponent} from "./pages/visualization/update-data-model/update-data-model.component";
+import {DataModelComponent} from "./pages/visualization/data-model/data-model.component";
 
 export const appRoutes: Routes = [
   { path: 'home', component: LandingPageComponent },
@@ -24,8 +23,7 @@ export const appRoutes: Routes = [
   { path: 'visualization', component: VisualizationComponent},
   { path: 'add-federation', component: AddFederationPageComponent},
   { path: 'update-federation', component: UpdateFederationComponent},
-  { path: 'add-data-model', component: AddDataModelComponent},
-  { path: 'update-data-model', component: UpdateDataModelComponent},
+  { path: 'data-model', component: DataModelComponent},
   { path: 'auth-callback', component: AuthCallbackComponent },
   { path: '', redirectTo: 'home', pathMatch: 'full' },
   { path: '**', redirectTo: 'home' }

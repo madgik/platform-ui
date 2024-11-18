@@ -1,0 +1,29 @@
+<section class="data-model-form">
+  <h1>{{ selectedDataModelID ? 'Update Data Model' : 'Add New Data Model' }}</h1>
+
+  <form [formGroup]="dataModelForm" (ngSubmit)="submitForm()">
+    <label for="file-type">Select File Type</label>
+    <select id="file-type" formControlName="fileType" (change)="onFileTypeChange($event)">
+      <option value="" disabled>Select file type</option>
+      <option value="json">JSON</option>
+      <option value="xlsx">XLSX</option>
+    </select>
+
+    <div *ngIf="selectedFileType">
+      <label for="file">Choose {{ selectedFileType.toUpperCase() }} File</label>
+      <input id="file" type="file" (change)="onFileChange($event)" accept=".json, .xlsx" />
+    </div>
+
+    <div *ngIf="selectedFileType === 'xlsx'">
+      <label for="version">Version</label>
+      <input id="version" type="text" formControlName="version" placeholder="Enter version (e.g., 1.0)" />
+
+      <label for="longitudinal">Is Longitudinal</label>
+      <input id="longitudinal" type="checkbox" formControlName="longitudinal" />
+    </div>
+
+    <button type="submit" [disabled]="!file">
+      {{ selectedDataModelID ? 'Update' : 'Upload' }} Data Model
+    </button>
+  </form>
+</section>

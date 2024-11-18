@@ -50,27 +50,27 @@ export class VisualizationComponent  implements OnInit, OnChanges {
   ) {}
 
   ngOnInit(): void {
-    this.initializeData()
-  }
+    // Check for the user's role first
+    this.authService.hasRole('DC_DOMAIN_EXPERT').subscribe((hasRole) => {
+      this.isDomainExpert = hasRole;
+    });
 
-  private initializeData(): void {
-    this.route.queryParams.subscribe((params) => {
-      const federationCode = params['federationCode'];
-      this.selectedFederation = federationCode
-        ? this.federations.find((fed) => fed.code === federationCode) || null
-        : null;
+    // Load federations and query params together
+    this.federationService.getFederationsWithFullDataModelNames().subscribe({
+      next: (federations) => {
+        this.federations = federations;
 
-      this.authService.hasRole('DC_DOMAIN_EXPERT').subscribe((hasRole) => {
-        this.isDomainExpert = hasRole;
-      });
+        // Now process the query parameters
+        this.route.queryParams.subscribe((params) => {
+          const federationCode = params['federationCode'];
 
-      this.federationService.getFederationsWithFullDataModelNames().subscribe({
-        next: (federations) => {
-          this.federations = federations;
-          this.loadDataModels();
-        },
-        error: (error) => console.error('Error loading federations:', error),
-      });
+          this.selectedFederation = federationCode
+            ? this.federations.find((fed) => fed.code === federationCode) || this.federations[0] : this.federations[0];
+
+          this.loadDataModels(); // Only load data models after federations and params are processed
+        });
+      },
+      error: (error) => console.error('Error loading federations:', error),
     });
   }
 
@@ -103,7 +103,6 @@ export class VisualizationComponent  implements OnInit, OnChanges {
     this.crossSectionalModels = [];
     this.longitudinalModels = [];
 
-    console.log("[setDataModelCategories] dataModels", dataModels)
     this.crossSectionalModels = dataModels
       .filter((model) => !model.longitudinal)
       .map((model) => ({ fullname: `${model.code}_${model.version}`, name: model.name }));
@@ -122,8 +121,6 @@ export class VisualizationComponent  implements OnInit, OnChanges {
     if (selectedDataModel) {
       this.dataModelService.getDataModelByFullname(selectedDataModel).subscribe({
         next: (data_model) => {
-          const container = this.elementRef.nativeElement.querySelector('#chart');
-          container.innerHTML = '';
           this.d3Data = this.dataModelService.convertToD3Hierarchy(data_model);
           this.renderChart();
           this.selectedNode = {
@@ -169,58 +166,42 @@ export class VisualizationComponent  implements OnInit, OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['d3Data'] && this.d3Data) {
-      const container = this.elementRef.nativeElement.querySelector('#chart');
-      container.innerHTML = '';
 
       if (this.d3Data) {
-        this.renderVisualization(container);
+        this.renderChart();
       }
     }
   }
 
-  renderVisualization(container: HTMLElement): void {
-    switch (this.visualizationType) {
-      case 'ZoomableCirclePacking':
-        createZoomableCirclePacking(this.d3Data, container, this);
-        break;
-      case 'ZoomableSunburst':
-        createSunburst(this.d3Data, container, this);
-        break;
-      case 'TidyTree':
-        createTidyTree(this.d3Data, container, this);
-        break;
-      default:
-        console.error('Unknown visualization type:', this.visualizationType);
-    }
-  }
 
   onVisualizationTypeChange(event: any): void {
     this.visualizationType = event.target.value;
     this.loadData();
   }
 
-  gotoAddDataModel(): void {
-    this.router.navigate(['/add-data-model']).then(() => {
-      console.log('Navigated to Add Data Model page.');
-    });
-    this.optionsVisible.set(false);
-  }
-
-
-  goToUpdateDataModel(): void {
-    const fullname = this.selectedDataModelFullname();
-    if (fullname) {
-      this.dataModelService.getDataModelByFullname(fullname).subscribe({
-        next: (data_model) => {
-          this.router.navigate(['/update-data-model'], {
-            queryParams: { dataModelId: data_model.uuid },
-          });
-        },
-        error: (error) => console.error('Error fetching data model:', error),
+  gotoAddOrUpdateDataModel(isUpdate: boolean): void {
+    if (isUpdate) {
+      const fullname = this.selectedDataModelFullname();
+      if (fullname) {
+        this.dataModelService.getDataModelByFullname(fullname).subscribe({
+          next: (data_model) => {
+            this.router.navigate(['/data-model'], {
+              queryParams: { dataModelId: data_model.uuid },
+            }).then(() => {
+              console.log('Navigated to Update Data Model page.');
+            });
+          },
+          error: (error) => console.error('Error fetching data model:', error),
+        });
+      }
+    } else {
+      this.router.navigate(['/data-model']).then(() => {
+        console.log('Navigated to Add Data Model page.');
       });
     }
     this.optionsVisible.set(false);
   }
+
 
   deleteDataModel(): void {
     const userConfirmed = window.confirm(
@@ -308,7 +289,6 @@ export class VisualizationComponent  implements OnInit, OnChanges {
       }, 0);
     }
   }
-
 
   exportDataModel(): void {
     this.toggleOptionsMenu();

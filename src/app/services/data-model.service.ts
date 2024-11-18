@@ -94,8 +94,6 @@ export class DataModelService {
     const code = fullname.substring(0, lastUnderscoreIndex);
     const version = fullname.substring(lastUnderscoreIndex + 1);
 
-    console.log(`getDataModelByFullname called with code: ${code}, version: ${version}`);
-
     return this.getAllDataModels().pipe(
       map((dataModels: any[]) => {
         const foundModel = dataModels.find(
