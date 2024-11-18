@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import {CommonModule} from "@angular/common";
 import {DataModelService} from "../../../services/data-model.service";
@@ -48,14 +47,26 @@ export class AddDataModelComponent {
       console.error('No file selected');
       return;
     }
-    if (this.selectedFileType === 'json'){
-      this.dataModelService.createDataModelFromJson(this.file)
+
+    if (this.selectedFileType === 'json') {
+      this.dataModelService.createDataModelFromJson(this.file).subscribe({
+        next: () => {
+          console.log('JSON Data Model created successfully.');
+          this.router.navigate(['/visualization']);
+        },
+        error: (error) => console.error('Error creating JSON Data Model:', error),
+      });
     } else if (this.selectedFileType === 'xlsx') {
       const version = this.dataModelForm.get('version')?.value;
       const longitudinal = this.dataModelForm.get('longitudinal')?.value;
-      this.dataModelService.createDataModelFromExcel(this.file, version, longitudinal)
+      this.dataModelService.createDataModelFromExcel(this.file, version, longitudinal).subscribe({
+        next: () => {
+          console.log('Excel Data Model created successfully.');
+          this.router.navigate(['/visualization']);
+        },
+        error: (error) => console.error('Error creating Excel Data Model:', error),
+      });
     }
-    this.router.navigate(['/visualization']);
-    console.log('Data Model created successfully');
   }
+
 }

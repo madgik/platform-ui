@@ -50,23 +50,23 @@ export class VisualizationComponent  implements OnInit, OnChanges {
   ) {}
 
   ngOnInit(): void {
-    this.authService.hasRole('DC_DOMAIN_EXPERT').subscribe((hasRole) => {
-      this.isDomainExpert = hasRole;
-    });
+    this.initializeData()
+  }
 
+  private initializeData(): void {
     this.route.queryParams.subscribe((params) => {
       const federationCode = params['federationCode'];
+      this.selectedFederation = federationCode
+        ? this.federations.find((fed) => fed.code === federationCode) || null
+        : null;
+
+      this.authService.hasRole('DC_DOMAIN_EXPERT').subscribe((hasRole) => {
+        this.isDomainExpert = hasRole;
+      });
+
       this.federationService.getFederationsWithFullDataModelNames().subscribe({
         next: (federations) => {
           this.federations = federations;
-
-          // Default to "All Federations" if no specific federation code is provided
-          if (federationCode) {
-            this.selectedFederation = federations.find((fed) => fed.code === federationCode) || null;
-          } else {
-            this.selectedFederation = null; // Set to "All Federations"
-          }
-
           this.loadDataModels();
         },
         error: (error) => console.error('Error loading federations:', error),
@@ -74,89 +74,83 @@ export class VisualizationComponent  implements OnInit, OnChanges {
     });
   }
 
-  loadDataModels(): void {
-    console.log("Loading data models...");
-    if (this.selectedFederation) {
-      console.log("Selected federation detected:", this.selectedFederation);
+  loadAllDataModels(): void {
+    this.dataModelService.getAllDataModels().subscribe({
+      next: (dataModels) => {
+        this.setDataModelCategories(dataModels);
+        this.loadData(); // Ensure visualization refresh
+      },
+      error: (error) => console.error('Error loading all data models:', error),
+    });
+  }
 
-      // Load data models by IDs for the selected federation
+  loadDataModels(): void {
+    if (this.selectedFederation) {
       this.dataModelService.getDataModelsByIds(this.selectedFederation.dataModelIds).subscribe({
         next: (dataModels) => {
-          console.log("Data models retrieved for federation:", dataModels);
           this.setDataModelCategories(dataModels);
+          this.loadData(); // Ensure visualization refresh
         },
-        error: (error) => console.error("Error loading federation data models:", error),
+        error: (error) => console.error('Error loading federation data models:', error),
       });
     } else {
-      console.log("No specific federation selected, loading all data models...");
-
-      // Load all data models if "All Federations" is selected
-      this.dataModelService.loadAllDataModels().subscribe({
-        next: (dataModels) => {
-          console.log("All data models retrieved:", dataModels);
-          this.setDataModelCategories(dataModels);
-        },
-        error: (error) => console.error("Error loading all data models:", error),
-      });
+      this.loadAllDataModels()
     }
-    this.loadData();
   }
 
-  // Helper function to separate data models into cross-sectional and longitudinal
-  setDataModelCategories(dataModels: any[]): void {
-    console.log("Categorizing data models into Cross-Sectional and Longitudinal...");
 
-    // Separate data models by type
+  setDataModelCategories(dataModels: any[]): void {
+    this.crossSectionalModels = [];
+    this.longitudinalModels = [];
+
+    console.log("[setDataModelCategories] dataModels", dataModels)
     this.crossSectionalModels = dataModels
-      .filter((model) => model.longitudinal === false)
-      .map((model) => {
-        const formattedModel = { fullname: `${model.code}_${model.version}`, name: model.name };
-        console.log("Cross-Sectional model added:", formattedModel);
-        return formattedModel;
-      });
+      .filter((model) => !model.longitudinal)
+      .map((model) => ({ fullname: `${model.code}_${model.version}`, name: model.name }));
 
     this.longitudinalModels = dataModels
-      .filter((model) => model.longitudinal === true)
-      .map((model) => {
-        const formattedModel = { fullname: `${model.code}_${model.version}`, name: model.name };
-        console.log("Longitudinal model added:", formattedModel);
-        return formattedModel;
-      });
+      .filter((model) => model.longitudinal)
+      .map((model) => ({ fullname: `${model.code}_${model.version}`, name: model.name }));
 
-    console.log("Cross-Sectional Models:", this.crossSectionalModels);
-    console.log("Longitudinal Models:", this.longitudinalModels);
-
-    // Default to the first available data model in cross-sectional or longitudinal
+    // Set a default model if one exists
     const firstModel = this.crossSectionalModels[0] || this.longitudinalModels[0];
-    if (firstModel) {
-      console.log("Setting default selected data model to:", firstModel.fullname);
-      this.selectedDataModelFullname.set(firstModel.fullname);
-    } else {
-      console.warn("No data models found to set as default.");
-      this.selectedDataModelFullname.set('');
-    }
+    this.selectedDataModelFullname.set(firstModel ? firstModel.fullname : null);
   }
-
-
 
   loadData(): void {
     const selectedDataModel = this.selectedDataModelFullname();
-
     if (selectedDataModel) {
       this.dataModelService.getDataModelByFullname(selectedDataModel).subscribe({
         next: (data_model) => {
           const container = this.elementRef.nativeElement.querySelector('#chart');
-          container.innerHTML = ''; // Clear previous chart
-          const d3Hierarchy = this.dataModelService.convertToD3Hierarchy(data_model);
-          console.log('Data model converted to D3 hierarchy format:', d3Hierarchy);
-          if (d3Hierarchy) {
-            this.d3Data = d3Hierarchy;
-            this.renderVisualization(container);
-          }
-          this.selectedNode = {"data": {"name": d3Hierarchy.name, "code": d3Hierarchy.code}, children: d3Hierarchy.children};
+          container.innerHTML = '';
+          this.d3Data = this.dataModelService.convertToD3Hierarchy(data_model);
+          this.renderChart();
+          this.selectedNode = {
+            data: { name: this.d3Data.name, code: this.d3Data.code },
+            children: this.d3Data.children,
+          };
         },
         error: (error) => console.error('Error:', error),
       });
+    }
+  }
+
+  renderChart(): void {
+    const container = this.elementRef.nativeElement.querySelector('#chart');
+    container.innerHTML = '';
+    switch (this.visualizationType) {
+      case 'ZoomableCirclePacking':
+        createZoomableCirclePacking(this.d3Data, container, this);
+        break;
+      case 'ZoomableSunburst':
+        createSunburst(this.d3Data, container, this);
+        break;
+      case 'TidyTree':
+        createTidyTree(this.d3Data, container, this);
+        break;
+      default:
+        console.error('Unknown visualization type:', this.visualizationType);
     }
   }
 
@@ -206,39 +200,72 @@ export class VisualizationComponent  implements OnInit, OnChanges {
   }
 
   gotoAddDataModel(): void {
-    this.router.navigate(['/add-data-model']);
+    this.router.navigate(['/add-data-model']).then(() => {
+      console.log('Navigated to Add Data Model page.');
+    });
     this.optionsVisible.set(false);
   }
 
-  goToUpdateDataModel() {
-    console.log('Navigating to Update Data model');
+
+  goToUpdateDataModel(): void {
     const fullname = this.selectedDataModelFullname();
     if (fullname) {
       this.dataModelService.getDataModelByFullname(fullname).subscribe({
         next: (data_model) => {
           this.router.navigate(['/update-data-model'], {
-            queryParams: { dataModelId: data_model.uuid}
+            queryParams: { dataModelId: data_model.uuid },
           });
         },
-        error: (error) => console.error('Error:', error),
+        error: (error) => console.error('Error fetching data model:', error),
       });
-
     }
     this.optionsVisible.set(false);
   }
 
-  deleteDataModel() {
-    const userConfirmed = window.confirm("Are you sure you want to delete this data model?");
+  deleteDataModel(): void {
+    const userConfirmed = window.confirm(
+      "Are you sure you want to delete this data model?"
+    );
     if (!userConfirmed) {
       return;
     }
-    const selectedDataModel = this.selectedDataModelFullname();
-    if (selectedDataModel){
 
-      this.dataModelService.deleteDataModel(selectedDataModel);
-      this.optionsVisible.set(false);
+    const selectedDataModel = this.selectedDataModelFullname();
+    if (selectedDataModel) {
+      this.dataModelService.deleteDataModel(selectedDataModel).subscribe({
+        next: () => {
+          console.log('Data model deleted successfully.');
+          this.loadAllDataModels();
+        },
+        error: (error: any) => console.error('Error deleting data model:', error),
+      });
     }
+    this.optionsVisible.set(false);
   }
+
+
+  releaseDataModel(): void {
+    const userConfirmed = window.confirm(
+      "Are you sure you want to release this data model? " +
+      "Once released, you will no longer be able to delete, update, or revert this data model."
+    );
+    if (!userConfirmed) {
+      return;
+    }
+
+    const selectedDataModel = this.selectedDataModelFullname();
+    if (selectedDataModel) {
+      this.dataModelService.releaseDataModel(selectedDataModel).subscribe({
+        next: () => {
+          console.log('Data model released successfully.');
+          this.loadAllDataModels(); // Reload data models after release
+        },
+        error: (error: any) => console.error('Error releasing data model:', error),
+      });
+    }
+    this.optionsVisible.set(false);
+  }
+
 
   isSelectedDataModelReleased(): boolean {
     const selectedDataModel = this.selectedDataModelFullname();
@@ -256,19 +283,6 @@ export class VisualizationComponent  implements OnInit, OnChanges {
     return dataModelReleased;
   }
 
-  releaseDataModel() {
-    const userConfirmed = window.confirm(
-      "Are you sure you want to release this data model? " +
-      "Once released, you will no longer be able to delete, update, or revert this data model."
-    );
-    if (!userConfirmed) {
-      return;
-    }    const selectedDataModel = this.selectedDataModelFullname();
-    if (selectedDataModel){
-      this.dataModelService.releaseDataModel(selectedDataModel);
-      this.optionsVisible.set(false);
-    }
-  }
 
   @HostListener('document:keydown.escape', ['$event'])
   onEscape(event: KeyboardEvent) {
@@ -304,6 +318,5 @@ export class VisualizationComponent  implements OnInit, OnChanges {
     if (selectedDataModel) {
       this.dataModelService.exportDataModel(selectedDataModel, fileType);
     }
-
   }
 }

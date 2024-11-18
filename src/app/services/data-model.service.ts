@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {Observable, of} from 'rxjs';
-import {catchError, map, tap} from 'rxjs/operators';
+import {Observable, of, throwError} from 'rxjs';
+import {catchError, map, switchMap, tap} from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
@@ -15,39 +15,10 @@ export class DataModelService {
     this.loadAllDataModels().subscribe();
   }
 
-  deleteDataModel(fullname: string): void {
-    this.getDataModelByFullname(fullname).subscribe({
-      next: (data_model) => {
-        console.log("Data model to be deleted has uuid:", data_model.uuid);
 
-        // Make the DELETE request and subscribe to it
-        this.http.delete<void>(`${this.apiUrl}/${data_model.uuid}`).subscribe({
-          next: () => console.log(`Data model with uuid ${data_model.uuid} deleted successfully.`),
-          error: (error) => console.error('Error deleting data model:', error)
-        });
-      },
-      error: (error) => console.error('Error finding data model for deletion:', error),
-    });
-  }
-
-  releaseDataModel(fullname: string): void {
-    this.getDataModelByFullname(fullname).subscribe({
-      next: (data_model) => {
-        console.log("Data model to be released has uuid:", data_model.uuid);
-
-        // Make the POST request to release the data model
-        this.http.post<void>(`${this.apiUrl}/${data_model.uuid}/release`, {}).subscribe({
-          next: () => console.log(`Data model with uuid ${data_model.uuid} released successfully.`),
-          error: (error) => console.error('Error releasing data model:', error)
-        });
-      },
-      error: (error) => console.error('Error finding data model for release:', error),
-    });
-  }
 
   // Update the cache with all data models from the API and return an Observable
   loadAllDataModels(): Observable<any[]> {
-    console.log('loadAllDataModels called');
 
     // Only fetch data models if not already loaded
     if (!this.dataModelsLoaded) {
@@ -72,7 +43,6 @@ export class DataModelService {
 
   // Retrieve all data models, using the cache if available
   getAllReleasedDataModels(): Observable<any[]> {
-    console.log('getAllDataModels called');
 
     // Ensure data models are loaded before returning
     return this.loadAllDataModels().pipe(
@@ -83,7 +53,6 @@ export class DataModelService {
 
   // Retrieve all data models, using the cache if available
   getAllDataModels(): Observable<any[]> {
-    console.log('getAllDataModels called');
 
     // Ensure data models are loaded before returning
     return this.loadAllDataModels().pipe(
@@ -94,7 +63,6 @@ export class DataModelService {
   getDataModelsByIds(ids: string[]): Observable<any[]> {
     return this.getAllDataModels().pipe(
       map((dataModels: any[]): any[] => {
-        console.log('Filtering data models by IDs');
         return dataModels.filter(model => ids.includes(model.uuid));
       }),
       catchError(error => {
@@ -108,7 +76,6 @@ export class DataModelService {
   getDataModelsFullNamesByIds(ids: string[]): Observable<string[]> {
     return this.getAllDataModels().pipe(
       map((dataModels: any[]): string[] => {
-        console.log('Mapping data models to full names');
         return ids.map(id => {
           const dataModel = dataModels.find(model => model.uuid === id);
           return dataModel ? `${dataModel.code}_${dataModel.version}` : 'Unknown Data Model';
@@ -131,13 +98,11 @@ export class DataModelService {
 
     return this.getAllDataModels().pipe(
       map((dataModels: any[]) => {
-        console.log('Searching for data model in cached models...');
         const foundModel = dataModels.find(
           (model) => model.code === code && model.version === version
         );
 
         if (foundModel) {
-          console.log('Data model found:', foundModel);
           return foundModel
         } else {
           console.error(`Data model with code ${code} and version ${version} not found.`);
@@ -151,58 +116,6 @@ export class DataModelService {
     );
   }
 
-
-  createDataModelFromExcel(file:File, version:string, longitudinal:string){
-    const url = `${this.apiUrl}/import`;
-
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('version', version);
-    formData.append('longitudinal', longitudinal);
-
-    this.http.post(url, formData).subscribe();
-  }
-
-  createDataModelFromJson(file:File){
-    const url = `${this.apiUrl}`;
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        const dataModelDTO = JSON.parse(reader.result as string);
-        this.http.post(url, dataModelDTO).subscribe();
-      } catch (error) {
-        console.error('Error parsing JSON file:', error);
-      }
-    };
-    reader.readAsText(file);
-  }
-
-  updateDataModelFromExcel(dataModelId:string, file:File, version:string, longitudinal:string){
-    const url = `${this.apiUrl}/${dataModelId}/excel`;
-
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('version', version);
-    formData.append('longitudinal', longitudinal);
-
-    this.http.put(url, formData).subscribe();
-  }
-
-  updateDataModelFromJson(dataModelId:string, file:File){
-    const url = `${this.apiUrl}/${dataModelId}`;
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        const dataModelDTO = JSON.parse(reader.result as string);
-        this.http.put(url, dataModelDTO).subscribe();
-      } catch (error) {
-        console.error('Error parsing JSON file:', error);
-      }
-    };
-    reader.readAsText(file);
-  }
 
   exportDataModel(fullname: string, fileType: 'json' | 'xlsx'): void {
     this.getDataModelByFullname(fullname).subscribe({
@@ -247,10 +160,26 @@ export class DataModelService {
     });
   }
 
+  reloadDataModels(): Observable<any[]> {
+    return this.http.get<any[]>(this.apiUrl).pipe(
+      tap((dataModels: any[]) => {
+        console.log("dataModels:", dataModels)
+        this.dataModels = dataModels;
+        this.dataModelsLoaded = true;
+      }),
+      catchError((error) => {
+        console.error('Error occurred while reloading data models from API:', error);
+        this.dataModels = [];
+        this.dataModelsLoaded = false;
+        return of([]);
+      })
+    );
+  }
+
+
 
   // Convert a data model to D3 hierarchy format
   convertToD3Hierarchy(data: any): any {
-    console.log('Converting data model to D3 hierarchy format:', data);
 
     const convertVariables = (variables: any) =>
       variables.map((v: any) => ({
@@ -276,7 +205,7 @@ export class DataModelService {
         ],
       }));
 
-    const d3Hierarchy = {
+    return  {
       name: data.label,
       code: data.code,
       children: [
@@ -285,7 +214,127 @@ export class DataModelService {
       ],
     };
 
-    console.log('Converted D3 hierarchy:', d3Hierarchy);
-    return d3Hierarchy;
+  }
+
+  //CRUD:
+
+  deleteDataModel(fullname: string): Observable<any[]> {
+    return this.getDataModelByFullname(fullname).pipe(
+      switchMap((data_model) =>
+        this.http.delete<void>(`${this.apiUrl}/${data_model.uuid}`).pipe(
+          tap(() => console.log(`Data model with uuid ${data_model.uuid} deleted successfully.`)),
+          switchMap(() => this.reloadDataModels()) // Reload data models after deletion
+        )
+      ),
+      catchError((error) => {
+        console.error('Error deleting data model:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  releaseDataModel(fullname: string): Observable<any[]> {
+    return this.getDataModelByFullname(fullname).pipe(
+      switchMap((data_model) =>
+        this.http.post<void>(`${this.apiUrl}/${data_model.uuid}/release`, {}).pipe(
+          tap(() => console.log(`Data model with uuid ${data_model.uuid} released successfully.`)),
+          switchMap(() => this.reloadDataModels()) // Reload data models after release
+        )
+      ),
+      catchError((error) => {
+        console.error('Error releasing data model:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  createDataModelFromExcel(file: File, version: string, longitudinal: string): Observable<any[]> {
+    const url = `${this.apiUrl}/import`;
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('version', version);
+    formData.append('longitudinal', longitudinal);
+
+    return this.http.post<void>(url, formData).pipe(
+      switchMap(() => this.reloadDataModels()), // Reload data models after creation
+      tap(() => console.log('Data model created successfully from Excel.')),
+      catchError((error) => {
+        console.error('Error creating Excel data model:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+
+  createDataModelFromJson(file: File): Observable<void> {
+    const url = `${this.apiUrl}`;
+    return new Observable<void>((observer) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const dataModelDTO = JSON.parse(reader.result as string);
+          this.http.post<void>(url, dataModelDTO).subscribe({
+            next: () => {
+              console.log('Data model created successfully from JSON.');
+              this.reloadDataModels().subscribe(() => {
+                console.log('Data models reloaded after JSON creation.');
+                observer.next();
+                observer.complete();
+              });
+            },
+            error: (error) => observer.error(error),
+          });
+        } catch (error) {
+          observer.error('Error parsing JSON file: ' + error);
+        }
+      };
+      reader.readAsText(file);
+    });
+  }
+
+
+
+  updateDataModelFromJson(dataModelId: string, file: File): Observable<void> {
+    const url = `${this.apiUrl}/${dataModelId}`;
+    return new Observable<void>((observer) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const dataModelDTO = JSON.parse(reader.result as string);
+          this.http.put<void>(url, dataModelDTO).subscribe({
+            next: () => {
+              console.log('Data model updated successfully (JSON).');
+              this.reloadDataModels().subscribe(() => {
+                console.log('Data models reloaded after JSON update.');
+                observer.next();
+                observer.complete();
+              });
+            },
+            error: (error) => observer.error(error),
+          });
+        } catch (error) {
+          observer.error('Error parsing JSON file: ' + error);
+        }
+      };
+      reader.readAsText(file);
+    });
+  }
+
+  updateDataModelFromExcel(dataModelId: string, file: File, version: string, longitudinal: string): Observable<any[]> {
+    const url = `${this.apiUrl}/${dataModelId}/excel`;
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('version', version);
+    formData.append('longitudinal', longitudinal);
+
+    return this.http.put<void>(url, formData).pipe(
+      switchMap(() => this.reloadDataModels()), // Reload data models after update
+      tap(() => console.log('Data model updated successfully (Excel).')),
+      catchError((error) => {
+        console.error('Error updating data model (Excel):', error);
+        return throwError(() => error);
+      })
+    );
   }
 }
