@@ -1,0 +1,38 @@
+<section class="federation-form">
+  <h1>Add New Federation</h1>
+
+  <form [formGroup]="federationForm" (ngSubmit)="submitForm()">
+    <label for="code">Code</label>
+    <input id="code" formControlName="code" type="text" required />
+
+    <label for="title">Title</label>
+    <input id="title" formControlName="title" type="text" required />
+
+    <label for="description">Description</label>
+    <textarea id="description" formControlName="description" rows="4" required></textarea>
+
+    <label for="institutions">Institutions</label>
+    <input id="institutions" formControlName="institutions" type="text" required />
+
+    <label for="records">Records</label>
+    <input id="records" formControlName="records" type="text" required />
+
+    <!-- Data Models Checkboxes -->
+    <div class="data-models-section">
+      <h2>Select Data Models</h2>
+      <div class="data-models-grid">
+        @for (model of dataModels; track model){
+          <div class="data-model-card">
+            <label>
+              <input type="checkbox" [value]="model.uuid" (change)="onDataModelChange($event)" />
+              <span class="data-model-name">{{ model.code }}_{{ model.version }}</span>
+            </label>
+          </div>
+        }
+      </div>
+    </div>
+
+    <button (click)="submitForm()">Create Federation</button>
+
+  </form>
+</section>
