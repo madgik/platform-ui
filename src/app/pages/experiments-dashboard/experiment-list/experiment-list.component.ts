@@ -1,6 +1,6 @@
-import { Component, Output, EventEmitter } from '@angular/core';
+import { Component, Output, EventEmitter, signal, output } from '@angular/core';
 import { ExperimentsDashboardService } from '../../../services/experiments-dashboard.service';
-import { Experiment } from '../../../interfaces/experiments-dashboard.interface';
+import { Experiment } from '../../../models/experiments-dashboard.model';
 
 @Component({
   selector: 'app-experiments-list',
@@ -9,11 +9,12 @@ import { Experiment } from '../../../interfaces/experiments-dashboard.interface'
   styleUrls: ['./experiment-list.component.css']
 })
 export class ExperimentsListComponent {
+  // @Output() experimentSelected = new EventEmitter<Experiment>(); // Emits the selected experiment to parent
+  // @Output() isAddingExperiment = new EventEmitter<void>();
+  experimentSelected = output<Experiment>();
+  isAddingExperiment = output();
   menuExpanded = false; // Controls the visibility of the experiment list
-  experiments: Experiment[] = []; // Array of experiments
-
-  @Output() experimentSelected = new EventEmitter<Experiment>(); // Emits the selected experiment to parent
-  @Output() isAddingExperiment = new EventEmitter<void>();
+  deleteExperiment = '';
 
   // Define the menu items with icons and optional routes
   experimentMenuItems = [
@@ -25,13 +26,10 @@ export class ExperimentsListComponent {
     { label: 'Download PDF', icon: 'fas fa-file-pdf', action: 'download' }
   ];
 
-  constructor(
-    private experimentsService: ExperimentsDashboardService,
-  ) {
-    // Fetch experiments from the service
-    this.experimentsService.getExperiments().subscribe((experiments: Experiment[]) => {
-      this.experiments = experiments;
-    });
+  constructor(public experimentsService: ExperimentsDashboardService) {}
+
+  ngOnInit() {
+    this.experimentsService.getUserExperiments();
   }
 
   // Emits the selected experiment to parent component
@@ -81,4 +79,5 @@ export class ExperimentsListComponent {
   trackByItem(index: number, item: any): any {
     return item.label;
   }
+
 }

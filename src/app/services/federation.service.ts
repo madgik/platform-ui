@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import {Federation} from "../interfaces/federations.interface";
+import {Federation} from "../models/federations.interface";
 
 @Injectable({
   providedIn: 'root',  // Ensure it's provided at root level

@@ -13,11 +13,16 @@
     </a>
     @if(menuExpanded) {
       <ul class="nested-experiment-list">
-        @for (experiment of experiments; track experiment) {
+        @for (experiment of experimentsService.experiments(); track experiment) {
           <li (click)="selectExperiment(experiment)">
             <i class="fas fa-vial"></i>
             <span>{{ experiment.name }}</span>
           </li>
+        }
+        @empty {
+          <div class="sidebar-section">
+            <p>No experiments yet!</p>
+          </div>
         }
       </ul>
     }
