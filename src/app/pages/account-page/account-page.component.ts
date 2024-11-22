@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { AuthService } from "../../services/auth.service";
 import { UserService } from "../../services/user.service";
-import {User} from "../../interfaces/user.interface";
+import { User } from '../../models/user.interface';
 
 @Component({
   selector: 'app-account-page',
