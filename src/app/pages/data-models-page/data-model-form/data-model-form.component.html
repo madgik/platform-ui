@@ -1,13 +1,20 @@
 <section class="data-model-form">
+  <nav class="breadcrumb">
+    <a href="#">Home</a> / <a href="#">Data Models</a> / Add New Data Model
+  </nav>
+
   <h1>{{ selectedDataModelID ? 'Update Data Model' : 'Add New Data Model' }}</h1>
 
   <form [formGroup]="dataModelForm" (ngSubmit)="submitForm()">
-    <label for="file-type">Select File Type</label>
-    <select id="file-type" formControlName="fileType" (change)="onFileTypeChange($event)">
-      <option value="" disabled>Select file type</option>
-      <option value="json">JSON</option>
-      <option value="xlsx">XLSX</option>
-    </select>
+    <div class="input-with-icon">
+      <label for="file-type">Select File Type</label>
+      <select id="file-type" formControlName="fileType" (change)="onFileTypeChange($event)">
+        <option value="" disabled>Select file type</option>
+        <option value="json">JSON</option>
+        <option value="xlsx">XLSX</option>
+      </select>
+      <span class="icon">📂</span>
+    </div>
 
     <div *ngIf="selectedFileType">
       <label for="file">Choose {{ selectedFileType.toUpperCase() }} File</label>

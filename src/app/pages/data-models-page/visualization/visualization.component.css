@@ -40,3 +40,12 @@
   display: inline-block;
   vertical-align: top;
 }
+
+.error-message {
+  color: red;
+  font-size: 1.2em;
+  text-align: center;
+  padding: 20px;
+  border: 1px solid red;
+  background-color: #ffe5e5;
+}

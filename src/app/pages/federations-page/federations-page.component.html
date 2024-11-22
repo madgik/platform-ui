@@ -13,7 +13,7 @@
   </div>
 </section>
 
-<section class="federations-list">
+<section class="federations-list" *ngIf="!isChildRouteActive()">
   <!-- Add New Federation Card (Visible only to DC_ADMIN) -->
   @if (isAdmin) {
     <div class="federation-card add-new-card" (click)="goToAddFederation()">
@@ -60,3 +60,6 @@
     </div>
   }
 </section>
+
+<!-- Child route outlet for Add and Update forms -->
+<router-outlet></router-outlet>

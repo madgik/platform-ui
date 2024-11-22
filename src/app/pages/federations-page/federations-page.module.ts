@@ -1,18 +1,17 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Routes } from '@angular/router';
-
-import { FederationsPageComponent } from './federations-page.component'; // Could be standalone, but managed by a module
-
-const routes: Routes = [
-  { path: '', component: FederationsPageComponent }
-];
+import { FederationsPageComponent } from './federations-page.component';
+import { FederationsPageRoutingModule } from './federations-page-routing.module';
+import { FederationFormComponent } from './federation-form/federation-form.component';
 
 @NgModule({
-  declarations: [],
   imports: [
     CommonModule,
-    RouterModule.forChild(routes) // Child routing inside the feature module
-  ]
+    FederationsPageRoutingModule,
+    FederationsPageComponent,
+    FederationFormComponent,
+    // Import the routing module for this page
+  ],
+  exports: [FederationsPageComponent], // Export the main component
 })
-export class FederationsModule { }
+export class FederationsPageModule {}

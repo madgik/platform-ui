@@ -1,4 +1,4 @@
-<div class="container">
+<div class="container" *ngIf="!isChildRouteActive()">
   <div class="top-bar">
     <!-- Dropdowns container for data model-specific settings -->
     <div class="dropdown-container">
@@ -44,3 +44,6 @@
     ></app-node-info>
   </div>
 </div>
+
+<!-- Child route outlet for Add and Update forms -->
+<router-outlet></router-outlet>

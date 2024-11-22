@@ -1,0 +1,199 @@
+/* General container styling */
+.data-model-form {
+  background: linear-gradient(145deg, #ffffff, #f7f7f7);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  margin: 50px auto;
+  padding: 40px;
+  border-radius: 12px;
+  font-family: 'Poppins', sans-serif;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.data-model-form:hover {
+  transform: scale(1.01); /* Slight hover scaling effect */
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Form heading */
+.data-model-form h1 {
+  font-size: 28px;
+  margin-bottom: 20px;
+  text-align: center;
+  font-weight: bold;
+  color: #333;
+}
+
+/* Labels */
+.data-model-form label {
+  font-weight: 600;
+  margin-top: 15px;
+  display: block;
+  font-size: 14px;
+  color: #444;
+}
+
+/* Input fields */
+.data-model-form input[type="text"],
+.data-model-form input[type="file"],
+.data-model-form select,
+.data-model-form textarea {
+  width: 100%;
+  padding: 12px;
+  margin-top: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+  font-size: 14px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.data-model-form input[type="text"]:focus,
+.data-model-form input[type="file"]:focus,
+.data-model-form select:focus,
+.data-model-form textarea:focus {
+  border-color: #4CAF50;
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.2);
+  outline: none;
+}
+
+/* Textarea field */
+.data-model-form textarea {
+  resize: vertical;
+}
+
+/* Icon container for inputs */
+.input-with-icon {
+  position: relative;
+}
+
+.input-with-icon input,
+.input-with-icon select {
+  padding-left: 40px;
+}
+
+.input-with-icon .icon {
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  transform: translateY(-50%);
+  font-size: 16px;
+  color: #888;
+}
+
+/* Section for data models */
+.data-models-section {
+  margin-top: 30px;
+}
+
+.data-models-section h2 {
+  font-size: 20px;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.data-models-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.data-model-card {
+  background-color: #f9f9f9;
+  transition: background-color 0.3s, box-shadow 0.3s;
+  flex: 1 1 45%;
+  padding: 15px;
+  border: 1px solid #e6e6e6;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.data-model-card:hover {
+  border: 1px solid #4CAF50;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  background-color: #4CAF50;
+  color: white;
+}
+
+/* Button */
+.data-model-form button[type="submit"] {
+  width: 100%;
+  padding: 12px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition: background-color 0.3s, transform 0.3s;
+  margin-top: 20px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.data-model-form button[type="submit"]:hover {
+  background-color: #45a049;
+  transform: scale(1.02);
+}
+
+.data-model-form button[type="submit"]:disabled {
+  background-color: #ddd;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+  margin-bottom: 20px;
+  font-size: 14px;
+  color: #666;
+}
+
+.breadcrumb a {
+  text-decoration: none;
+  color: #4CAF50;
+  transition: color 0.3s;
+}
+
+.breadcrumb a:hover {
+  color: #388e3c;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .data-model-form {
+    padding: 20px;
+  }
+
+  .data-model-card {
+    flex: 1 1 100%;
+  }
+
+  button {
+    font-size: 14px;
+    padding: 10px;
+  }
+}
+
+/* Spinner animation for buttons */
+.button-spinner {
+  width: 16px;
+  height: 16px;
+  border: 3px solid white;
+  border-top: 3px solid transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

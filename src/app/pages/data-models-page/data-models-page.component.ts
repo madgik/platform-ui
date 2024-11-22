@@ -4,7 +4,7 @@ import { CommonModule } from "@angular/common";
 import { Federation } from "../../interfaces/federations.interface";
 import { FederationService } from "../../services/federation.service";
 import { DataModelService } from "../../services/data-model.service";
-import { ActivatedRoute, Router } from '@angular/router';
+import {ActivatedRoute, Router, RouterOutlet} from '@angular/router';
 import { AuthService } from "../../services/auth.service";
 import { MatMenu, MatMenuItem, MatMenuTrigger } from "@angular/material/menu";
 import { MatIcon } from "@angular/material/icon";
@@ -16,11 +16,12 @@ import { ActionMenuComponent } from "./action-menu/action-menu.component";
 import { NodeInfoComponent } from "./node-info/node-info.component";
 import { DataModelSelectorComponent } from "./data-model-selector/data-model-selector.component";
 import { ExportOptionsComponent } from "./export-options/export-options.component";
+import {ErrorService} from "./services/error.service";
 
 @Component({
-  selector: 'app-visualization-wrapper',
-  templateUrl: './visualization-wrapper.component.html',
-  styleUrls: ['./visualization-wrapper.component.css'],
+  selector: 'app-data-models-page',
+  templateUrl: './data-models-page.component.html',
+  styleUrls: ['./data-models-page.component.css'],
   imports: [
     CommonModule,
     FormsModule,
@@ -34,13 +35,14 @@ import { ExportOptionsComponent } from "./export-options/export-options.componen
     ActionMenuComponent,
     NodeInfoComponent,
     DataModelSelectorComponent,
-    ExportOptionsComponent
+    ExportOptionsComponent,
+    RouterOutlet
   ],
   standalone: true
 })
 //TODO:request access for federation
 //TODO:filters
-export class VisualizationWrapperComponent implements OnInit{
+export class DataModelsPageComponent implements OnInit{
   visualizationType = 'ZoomableCirclePacking';
   d3Data: any;
   federations: Federation[] = [];
@@ -59,6 +61,7 @@ export class VisualizationWrapperComponent implements OnInit{
     private federationService: FederationService,
     private dataModelService: DataModelService,
     private authService: AuthService,
+    private errorService: ErrorService,
     private route: ActivatedRoute,
     private router: Router
   ) {}
@@ -69,7 +72,8 @@ export class VisualizationWrapperComponent implements OnInit{
     // Check for the user's role first
     this.authService.hasRole('DC_DOMAIN_EXPERT').subscribe((hasRole) => {
       this.isDomainExpert = hasRole;
-    });
+    })
+
 
     // Load federations and query params together
     this.federationService.getFederationsWithModels().subscribe({
@@ -86,7 +90,10 @@ export class VisualizationWrapperComponent implements OnInit{
           this.loadDataModels(); // Only load data models after federations and params are processed
         });
       },
-      error: (error) => console.error('Error loading federations:', error),
+      error: (error) => {
+        console.error('Error loading federations:', error);
+        this.errorService.setError('Failed to load federations.');
+      },
     });
   }
 
@@ -144,10 +151,10 @@ export class VisualizationWrapperComponent implements OnInit{
     console.log('Action Triggered:', action);
     switch (action) {
       case 'add':
-        this.gotoAddOrUpdateDataModel(false);
+        this.goToAddDataModel();
         break;
       case 'update':
-        this.gotoAddOrUpdateDataModel(true);
+        this.goToUpdateDataModel();
         break;
       case 'delete':
         this.deleteDataModel();
@@ -160,16 +167,21 @@ export class VisualizationWrapperComponent implements OnInit{
     }
   }
 
-  gotoAddOrUpdateDataModel(isUpdate: boolean): void {
-    if (isUpdate && this.selectedDataModel) {
-      this.router.navigate(['/data-model'], { queryParams: { dataModelId: this.selectedDataModel.uuid } }).then(() => {
-      });
-    } else {
-      this.router.navigate(['/data-model']).then(() => {
-      });
+  goToAddDataModel(): void {
+    this.router.navigate(['/data-models/add']);
+  }
+
+  goToUpdateDataModel(): void {
+    if (this.selectedDataModel) {
+      this.router.navigate(['/data-models/update'], {queryParams: {dataModelId: this.selectedDataModel.uuid}});
     }
   }
 
+  // Check if the current route is a child route
+  isChildRouteActive(): boolean {
+    const currentPath = this.router.url;
+    return currentPath.includes('/data-models/add') || currentPath.includes('/data-models/update');
+  }
   deleteDataModel(): void {
     if (!this.selectedDataModel) {
       console.error('No data model selected to delete.');
@@ -228,5 +240,4 @@ export class VisualizationWrapperComponent implements OnInit{
   handleMenuToggle(visible: boolean): void {
     this.menuVisible.set(visible);
   }
-
 }

@@ -5,14 +5,16 @@ import {CommonModule} from "@angular/common";
 import {DataModelService} from "../../../services/data-model.service";
 
 @Component({
-  selector: 'app-data-model',
+  selector: 'app-data-model-form',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './data-model.component.html',
-  styleUrls: ['./data-model.component.css'],
+  templateUrl: './data-model-form.component.html',
+  styleUrls: ['./data-model-form.component.css'],
 })
-export class DataModelComponent implements OnInit {
+export class DataModelFormComponent implements OnInit {
   dataModelForm: FormGroup;
+  isUpdateMode: boolean = false;
+
   selectedFileType: string = 'json';
   file: File | null = null;
   selectedDataModelID: string | undefined;
@@ -32,9 +34,15 @@ export class DataModelComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe((params) => {
-      this.selectedDataModelID = params['dataModelId'];
+    this.route.data.subscribe((data) => {
+      this.isUpdateMode = data['isUpdate'];
+    });
+
+    if (this.isUpdateMode) {
+      this.route.queryParams.subscribe((params) => {
+        this.selectedDataModelID = params['dataModelId'];
       });
+    }
   }
 
   onFileTypeChange(event: Event): void {
@@ -51,7 +59,7 @@ export class DataModelComponent implements OnInit {
   }
 
   submitForm(): void {
-    if (this.selectedDataModelID) {
+    if (this.isUpdateMode && this.selectedDataModelID) {
       this.handleUpdateMode();
     } else {
       this.handleAddMode();
@@ -69,7 +77,7 @@ export class DataModelComponent implements OnInit {
         this.dataModelService.updateDataModelFromJson(this.selectedDataModelID, this.file).subscribe({
           next: () => {
             console.log('Data Model updated successfully (JSON).');
-            this.router.navigate(['/visualization']);
+            this.router.navigate(['/data-models']);
           },
           error: (error) => console.error('Error updating data model (JSON):', error),
         });
@@ -79,7 +87,7 @@ export class DataModelComponent implements OnInit {
         this.dataModelService.updateDataModelFromExcel(this.selectedDataModelID, this.file, version, longitudinal).subscribe({
           next: () => {
             console.log('Data Model updated successfully (Excel).');
-            this.router.navigate(['/visualization']);
+            this.router.navigate(['/data-models']);
           },
           error: (error) => console.error('Error updating data model (Excel):', error),
         });
@@ -99,7 +107,7 @@ export class DataModelComponent implements OnInit {
       this.dataModelService.createDataModelFromJson(this.file).subscribe({
         next: () => {
           console.log('JSON Data Model created successfully.');
-          this.router.navigate(['/visualization']);
+          this.router.navigate(['/data-models']);
         },
         error: (error) => console.error('Error creating JSON Data Model:', error),
       });
@@ -109,7 +117,7 @@ export class DataModelComponent implements OnInit {
       this.dataModelService.createDataModelFromExcel(this.file, version, longitudinal).subscribe({
         next: () => {
           console.log('Excel Data Model created successfully.');
-          this.router.navigate(['/visualization']);
+          this.router.navigate(['/data-models']);
         },
         error: (error) => console.error('Error creating Excel Data Model:', error),
       });

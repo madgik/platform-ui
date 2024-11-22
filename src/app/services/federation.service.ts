@@ -56,10 +56,8 @@ export class FederationService {
     );
   }
 
-  deleteFederation(code: string): void {
-    this.http.delete<void>(`${this.apiUrl}/${code}`).subscribe({
-      next: () => console.log(`Federation with code ${code} deleted successfully.`),
-      error: (error) => console.error('Error deleting federation:', error)
-    });
+
+  deleteFederation(federationCode: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${federationCode}`); // Use HttpClient's `delete` method
   }
 }
