@@ -1,5 +1,4 @@
 import * as d3 from 'd3';
-import { VisualizationComponent } from "./visualization.component";
 
 interface ArcNode extends d3.HierarchyRectangularNode<any> {
     x0: number;
@@ -10,12 +9,12 @@ interface ArcNode extends d3.HierarchyRectangularNode<any> {
     target: ArcNode;
 }
 
-export function createSunburst(data: any, container: HTMLElement, component: VisualizationComponent): void {
+export function createSunburst(data: any, container: HTMLElement, onNodeClick: (node: any) => void): void {
   // Clear the container completely to ensure a fresh start
   container.innerHTML = "";
 
   const width = 928;
-  const height = width;
+  const height = 928;
   const radius = width / 6;
 
   const color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, data.children.length + 1));
@@ -54,7 +53,7 @@ export function createSunburst(data: any, container: HTMLElement, component: Vis
     .attr("d", d => arc((d as ArcNode).current))
     .style("cursor", "pointer")
     .on("click", (event: any, d: any) => {
-      component.setSelectedNode(d);
+      onNodeClick(d.data);
       clicked(event, d as ArcNode);
     });
 

@@ -1,8 +1,7 @@
 import * as d3 from 'd3';
 import { HierarchyPointNode, HierarchyPointLink } from 'd3-hierarchy';
-import { VisualizationComponent } from "./visualization.component";
 
-export function createTidyTree(data: any, container: HTMLElement, component: VisualizationComponent): void {
+export function createTidyTree(data: any, container: HTMLElement, onNodeClick: (node: any) => void): void {
   const width = 1500;
 
   const root = d3.hierarchy(data);
@@ -67,7 +66,7 @@ export function createTidyTree(data: any, container: HTMLElement, component: Vis
     .attr("transform", d => `translate(${d.y},${d.x})`)
     .style("cursor", "pointer")
     .on("click", (event, d) => {
-      component.setSelectedNode(d);
+      onNodeClick(d.data);
     });  // Make each node clickable
 
   node.append("circle")

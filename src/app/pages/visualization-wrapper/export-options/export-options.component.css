@@ -1,0 +1,42 @@
+
+/* Export options container for the export dropdown */
+.export-options {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Export label styling */
+.export-label {
+  font-size: 14px;
+  color: #333;
+  font-weight: bold;
+}
+
+/* Export button styling */
+.export-confirm-button {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: bold;
+  background-color: #4CAF50;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.export-confirm-button:hover {
+  background-color: #45a049;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* Printer icon styling within Export button */
+.printer-icon::before {
+  content: "\1F5A8";
+  font-size: 16px;
+  margin-right: 4px;
+  color: #fff;
+}

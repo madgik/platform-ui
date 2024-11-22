@@ -23,7 +23,7 @@ export class FederationsPageComponent implements OnInit {
   constructor(private federationService: FederationService, private authService: AuthService, private router: Router) {}
 
   ngOnInit(): void {
-    this.federationService.getFederationsWithFullDataModelNames().subscribe({
+    this.federationService.getFederationsWithModels().subscribe({
       next: (federations) => {
         this.federations = federations;
         this.filteredFederations = federations;  // If you use a filtered list

@@ -34,7 +34,7 @@
         <p>Data Models:</p>
         <ul>
           @for(dataModel of federation.dataModels; track dataModel) {
-            <li>{{ dataModel }}</li>
+            <li>{{ dataModel.code + '_' + dataModel.version }}</li>
           }
         </ul>
         <p class="federation-description">{{ federation.description }}</p>

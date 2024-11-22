@@ -1,8 +1,6 @@
 import * as d3 from 'd3';
-import {VisualizationComponent} from "./visualization.component";
 
-
-export function createZoomableCirclePacking(data: any, container: HTMLElement, component: VisualizationComponent): void {
+export function createZoomableCirclePacking(data: any, container: HTMLElement, onNodeClick: (node: any) => void): void {
   const width = 928;
   const height = 928;
 
@@ -66,7 +64,7 @@ export function createZoomableCirclePacking(data: any, container: HTMLElement, c
 
   function zoom(event: MouseEvent, d: any) {
     focus = d;
-    component.setSelectedNode(d);
+    onNodeClick(d.data);
 
     if (!d.children) {
       return;

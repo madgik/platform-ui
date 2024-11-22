@@ -4,6 +4,7 @@ import { Observable, forkJoin, of } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
 import { Federation } from '../interfaces/federations.interface';
 import { DataModelService } from './data-model.service';
+import {DataModel} from "../interfaces/data-model.interface";
 
 @Injectable({
   providedIn: 'root',
@@ -13,25 +14,25 @@ export class FederationService {
 
   constructor(private http: HttpClient, private dataModelService: DataModelService) {}
 
-
-  // Fetch federations and resolve data model IDs to full names
-  getFederationsWithFullDataModelNames(): Observable<Federation[]> {
+  getFederationsWithModels(): Observable<Federation[]> {
     return this.http.get<Federation[]>(this.apiUrl).pipe(
-      switchMap((federations) => {
-        const federationObservables = federations.map(federation =>
-          this.dataModelService.getDataModelsFullNamesByIds(federation.dataModelIds).pipe(
-            map((fullNames) => ({
-              ...federation,
-              dataModels: fullNames,
-            })),
-            catchError((error) => {
-              console.error(`Error resolving data models for federation ${federation.code}:`, error);
-              return of({ ...federation, dataModels: ['Error loading data models'] });
-            })
+      switchMap((federations) =>
+        forkJoin(
+          federations.map((federation) =>
+            this.dataModelService.getDataModelsByIds(federation.dataModelIds).pipe(
+              map((dataModels: DataModel[]) => ({
+                ...federation,
+                dataModels, // Assign correctly typed DataModel objects
+              })),
+              catchError(() => of({
+                ...federation,
+                dataModels: [], // Fallback to an empty array if fetching data models fails
+              }))
+            )
           )
-        );
-        return forkJoin(federationObservables);
-      })
+        )
+      ),
+      catchError(() => of([])) // Return an empty array if fetching federations fails
     );
   }
 

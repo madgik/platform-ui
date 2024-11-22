@@ -4,8 +4,6 @@ import { DataModelService } from '../../../services/data-model.service';
 import { CommonModule } from '@angular/common';
 import {FederationService} from "../../../services/federation.service";
 import {ActivatedRoute, Router} from "@angular/router";
-import {catchError, map} from "rxjs/operators";
-import {of} from "rxjs";
 
 @Component({
   selector: 'app-update-federation',
@@ -40,7 +38,7 @@ export class UpdateFederationComponent implements OnInit {
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
       const federationCode = params['federationCode'];
-      this.federationService.getFederationsWithFullDataModelNames().subscribe({
+      this.federationService.getFederationsWithModels().subscribe({
         next: (federations) => {
           const federation = federations.find((fed) => fed.code === federationCode) || null;
 

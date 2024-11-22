@@ -28,7 +28,7 @@ export class LandingPageComponent implements OnInit {
     // Check if user is logged in
 
     // Load federations
-    this.federationService.getFederationsWithFullDataModelNames().subscribe({
+    this.federationService.getFederationsWithModels().subscribe({
       next: (federations) => {
         this.federations = federations;
       },
