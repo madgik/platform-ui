@@ -1,28 +1,31 @@
 <!-- Experiment details container -->
-<div class="experiment-details" *ngIf="selectedExperiment">
-  <h2>Experiment: {{ selectedExperiment.name }}</h2>
+  @if (selectedExperiment()) {
+  <div class="experiment-details">
+    <h2>Experiment: {{ selectedExperiment()?.name }}</h2>
 
-  <div class="experiment-meta">
-    <p><strong>Description:</strong> {{ selectedExperiment.description }}</p>
-    <p><strong>Date Created:</strong> {{ selectedExperiment.dateCreated }}</p>
-    <p><strong>Status:</strong> {{ selectedExperiment.status }}</p>
-    <p><strong>Data Records:</strong> {{ selectedExperiment.records }}</p>
-  </div>
+    <div class="experiment-meta">
+      <p><strong>Description:</strong> {{ selectedExperiment()?.description }}</p>
+      <p><strong>Date Created:</strong> {{ selectedExperiment()?.dateCreated }}</p>
+      <p><strong>Status:</strong> {{ selectedExperiment()?.status }}</p>
+    </div>
 
-  <div class="experiment-data">
-    <h3>Experiment Data</h3>
-    <p>Charts, graphs, or tables to display the experiment’s results or data.</p>
-  </div>
+    <div class="experiment-data">
+      <h3>Experiment Data</h3>
+      <p>Charts, graphs, or tables to display the experiment’s results or data.</p>
+    </div>
 
-  <div class="experiment-actions">
-    <button (click)="runExperiment()">Run Again</button>
-    <button (click)="editExperiment()">Edit Experiment</button>
-    <button (click)="deleteExperiment()">Delete Experiment</button>
+    <div class="experiment-actions">
+      <button (click)="runExperiment()">Run Again</button>
+      <button (click)="editExperiment()">Edit Experiment</button>
+      <button (click)="onDelete(selectedExperiment()?.id ?? 'No-ID')">Delete Experiment</button>
+    </div>
   </div>
-</div>
+}
 
 <!-- Fallback content when no experiment is selected -->
-<div class="no-experiment-selected" *ngIf="!selectedExperiment">
-  <h3>No Experiment Selected</h3>
-  <p>Please select an experiment from the list to view its details.</p>
-</div>
+ @if(!selectedExperiment()) {
+   <div class="no-experiment-selected">
+     <h3>No Experiment Selected</h3>
+     <p>Please select an experiment from the list to view its details.</p>
+   </div>
+ }

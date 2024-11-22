@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { NavbarComponent } from '../navbar/navbar.component';
 import {NavigationEnd, Router, RouterModule} from '@angular/router';
-import { AuthService } from "../../services/auth.service";
+import { AuthService } from '../../../services/auth.service';
 import {Component, OnInit} from "@angular/core";
 import {filter} from "rxjs";
 

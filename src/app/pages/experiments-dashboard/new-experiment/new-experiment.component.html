@@ -1,0 +1,35 @@
+<div class="modal-overlay" (click)="closeModal()"></div>
+<dialog open>
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>New Experiment</h2>
+      <button class="close-btn" (click)="closeModal()">×</button>
+    </div>
+    <form (ngSubmit)="onCreateExperiment()">
+      <div class="modal-body">
+        <label for="experimentName">Experiment Name</label>
+        <input id="experimentName" type="text" name="experimentName" placeholder="Enter experiment name" [(ngModel)]="experimentName" validate/>
+
+        <label for="experimentDescription">Experiment Description</label>
+        <textarea id="experimentDescription" name="experimentDescription" placeholder="Provide a brief description of the experiment" [(ngModel)]="description"></textarea>
+
+        <label for="dateCreated">Date Created</label>
+        <input id="dateCreated" type="date" name="dateCreated" [(ngModel)]="date"/> <!-- Automatically add todays date, it should be grayed out -->
+
+        <label for="status">Status</label>
+        <input id="status" type="drop-down" name="status" [(ngModel)]="status" /> <!-- TODO: Add automatically in progress -->
+      </div>
+      <div class="dialog-actions">
+        <button type="submit" class="btn-create" (click)="onCreateExperiment()">Create Experiment</button>
+        <button type="button" class="btn-cancel" (click)="closeModal()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</dialog>
+<!--
+id: string;
+name: string;
+description: string;
+dateCreated: string;  // Adjust based on your date format
+status: string;
+records: number; ? Do we need it? -->

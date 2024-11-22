@@ -1,6 +1,6 @@
 import { Component, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AccordionComponent } from '../../../shared/accordion/accordion.component';
+import { AccordionComponent } from '../../shared/accordion/accordion.component';
 
 @Component({
   selector: 'app-transformations-panel',

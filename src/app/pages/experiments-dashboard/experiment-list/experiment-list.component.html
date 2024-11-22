@@ -11,13 +11,18 @@
       <span>Experiment List</span>
       <i [class]="menuExpanded ? 'fas fa-chevron-up' : 'fas fa-chevron-down'"></i>
     </a>
-    @if (menuExpanded) {
+    @if(menuExpanded) {
       <ul class="nested-experiment-list">
-        @for (experiment of experiments; track experiment) {
+        @for (experiment of experimentsService.experiments(); track experiment) {
           <li (click)="selectExperiment(experiment)">
             <i class="fas fa-vial"></i>
             <span>{{ experiment.name }}</span>
           </li>
+        }
+        @empty {
+          <div class="sidebar-section">
+            <p>No experiments yet!</p>
+          </div>
         }
       </ul>
     }
@@ -27,7 +32,7 @@
   <ul class="static-menu">
     @for (item of experimentMenuItems; track item) {
       <li>
-        <a [routerLink]="item.route">
+        <a (click)="onMenuItemClick(item)"> <!-- </a>[routerLink]="item.route"> -->
           <i [class]="item.icon"></i> <span>{{ item.label }}</span>
         </a>
       </li>

@@ -1,6 +1,6 @@
-import { FooterComponent } from './shared/footer/footer.component';
+import { FooterComponent } from './pages/shared/footer/footer.component';
 import { Component } from '@angular/core';
-import { HeaderComponent } from './shared/header/header.component';
+import { HeaderComponent } from './pages/shared/header/header.component';
 import { RouterModule } from '@angular/router';
 
 @Component({
