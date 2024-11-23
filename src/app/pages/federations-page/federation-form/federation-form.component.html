@@ -1,5 +1,9 @@
 <section class="federation-form">
-  <h1>{{ isUpdateMode ? 'Update Federation' : 'Add Federation' }}</h1>
+  <nav class="breadcrumb">
+    <a href="/federations">Federations</a> / {{ isUpdateMode ? 'Update Federation' : 'Add New Federation' }}
+  </nav>
+
+  <h1>{{ isUpdateMode ? 'Update Federation' : 'Add New Federation' }}</h1>
 
   <form [formGroup]="federationForm" (ngSubmit)="submitForm()">
     <label for="code">Code</label>
@@ -21,25 +25,25 @@
     <input id="records" formControlName="records" type="text" required />
 
     <!-- Data Models Checkboxes -->
+    <!-- Data Models Checkboxes -->
     <div class="data-models-section">
       <h2>Select Data Models</h2>
       <div class="data-models-grid">
-        <div
+        <label
           *ngFor="let model of dataModels"
           class="data-model-card"
         >
-          <label>
-            <input
-              type="checkbox"
-              [value]="model.uuid"
-              (change)="onDataModelChange($event)"
-              [checked]="selectedDataModels.includes(model.uuid)"
-            />
-            <span class="data-model-name">{{ model.code }}_{{ model.version }}</span>
-          </label>
-        </div>
+          <input
+            type="checkbox"
+            [value]="model.uuid"
+            (change)="onDataModelChange($event)"
+            [checked]="selectedDataModels.includes(model.uuid)"
+          />
+          <span class="data-model-name">{{ model.code }}_{{ model.version }}</span>
+        </label>
       </div>
     </div>
+
 
     <button type="submit">{{ isUpdateMode ? 'Update Federation' : 'Create Federation' }}</button>
   </form>

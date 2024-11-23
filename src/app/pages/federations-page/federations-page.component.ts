@@ -1,23 +1,33 @@
 import { Component, OnInit } from '@angular/core';
-import {Router, RouterLink, RouterOutlet, NavigationEnd} from '@angular/router';
+import {Router, NavigationEnd, RouterOutlet} from '@angular/router';
 import { FederationService } from '../../services/federation.service';
 import { AuthService } from '../../services/auth.service';
 import { Federation } from '../../interfaces/federations.interface';
-import {CommonModule} from "@angular/common";
-import {filter} from "rxjs";
+import { filter } from 'rxjs';
+import {FilterComponent} from "./filter/filter.component";
+import {FederationCardComponent} from "./federation-card/federation-card.component";
+import {NgForOf, NgIf} from "@angular/common";
+import {AddFederationCardComponent} from "./add-federation-card/add-federation-card.component";
 
 @Component({
   selector: 'app-federations',
-  standalone: true,
-  imports: [CommonModule, RouterLink, RouterOutlet],
   templateUrl: './federations-page.component.html',
   styleUrls: ['./federations-page.component.css'],
+  imports: [
+    FilterComponent,
+    RouterOutlet,
+    FederationCardComponent,
+    NgForOf,
+    AddFederationCardComponent,
+    NgIf
+  ],
+  standalone: true
 })
 export class FederationsPageComponent implements OnInit {
-  filters = ['All', 'Public', 'Accessed', 'Request Access', 'Pathology']; // Define filter options
-  selectedFilter = 'All'; // Default filter selection
-  federations: Federation[] = []; // Federations data from the service
-  filteredFederations: Federation[] = []; // To store filtered federations
+  filters = ['All', 'Public', 'Accessed', 'Request Access', 'Pathology'];
+  selectedFilter = 'All';
+  federations: Federation[] = [];
+  filteredFederations: Federation[] = [];
   isAdmin = false;
 
   constructor(
@@ -28,18 +38,14 @@ export class FederationsPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadFederations();
-
-    // Listen for navigation events to reload federations
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
-      .subscribe((event) => {
-        const url = (event as NavigationEnd).urlAfterRedirects;
-        if (url === '/federations') {
-          this.loadFederations(); // Reload federations when returning to the federations list
+      .subscribe(() => {
+        if (this.router.url === '/federations') {
+          this.loadFederations();
         }
       });
 
-    // Subscribe to role check
     this.authService.hasRole('DC_ADMIN').subscribe((isAdmin) => {
       this.isAdmin = isAdmin;
     });
@@ -60,37 +66,25 @@ export class FederationsPageComponent implements OnInit {
   }
 
   goToUpdateFederation(federationCode: string): void {
-    this.router.navigate(['/federations/update'], {
-      queryParams: { federationCode },
-    });
-  }
+    this.router.navigate(['/federations/update'], {queryParams: {federationCode}}).then(() => null);
+   }
 
-
-  goToVisualization(federationCode: string) {
-    this.router.navigate(['/data-models'], {
-      queryParams: { federationCode },
-    });
-  }
+  goToVisualization(federationCode: string): void {
+    this.router.navigate(['/data-models'], {queryParams: {federationCode}}).then(() => null);
+   }
 
   deleteFederation(federationCode: string): void {
     if (confirm('Are you sure you want to delete this federation?')) {
       this.federationService.deleteFederation(federationCode).subscribe({
-        next: () => {
-          console.log(`Federation ${federationCode} deleted successfully.`);
-          this.loadFederations(); // Reload federations after successful deletion
-        },
-        error: (error) => {
-          console.error(`Error deleting federation ${federationCode}:`, error);
-        },
+        next: () => this.loadFederations(),
+        error: (error) => console.error(`Error deleting federation:`, error),
       });
     }
   }
 
-
-  selectFilter(filter: string) {
+  selectFilter(filter: string): void {
     this.selectedFilter = filter;
     this.filteredFederations = this.federations;
-    // TODO: Add logic to filter federations based on the selected filter
   }
 
   // Check if the current route is a child route

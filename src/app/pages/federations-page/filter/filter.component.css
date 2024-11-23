@@ -1,0 +1,23 @@
+.filter-links {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  font-size: 1em;
+  font-family: 'Roboto', sans-serif;
+  margin-bottom: 20px;
+}
+
+.filter-links span {
+  cursor: pointer;
+  color: #c0c0c0;
+  transition: color 0.3s ease, font-weight 0.3s ease;
+}
+
+.filter-links span:hover {
+  color: #18a2b8; /* Blue accent on hover */
+}
+
+.filter-links .active-filter {
+  color: #18a2b8;
+  font-weight: bold;
+}

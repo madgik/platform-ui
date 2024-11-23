@@ -1,65 +1,22 @@
-<section class="filter-section">
-  <div class="filter-links">
-    @for(filter of filters; track $index) {
-      <ng-container>
-        <span [ngClass]="{'active-filter': filter === selectedFilter}" (click)="selectFilter(filter)">
-          {{ filter }}
-        </span>
-        @if ($index < filters.length - 1) {
-          <span> | </span>
-        }
-      </ng-container>
-    }
-  </div>
-</section>
+<app-filter
+  [filters]="filters"
+  [selectedFilter]="selectedFilter"
+  (filterChange)="selectFilter($event)"
+></app-filter>
 
 <section class="federations-list" *ngIf="!isChildRouteActive()">
-  <!-- Add New Federation Card (Visible only to DC_ADMIN) -->
-  @if (isAdmin) {
-    <div class="federation-card add-new-card" (click)="goToAddFederation()">
-      <div class="add-card-content">
-        <div class="add-icon">+</div>
-        <h3>Add New Federation</h3>
-      </div>
-    </div>
-  }
 
-  <!-- Existing Federation Cards -->
-  @for(federation of filteredFederations; track federation) {
-    <div class="federation-card">
-      <img [src]="'assets/' + federation.code + '.png'" alt="{{ federation.title }}" class="federation-image">
-      <div class="federation-content">
-        <h3>{{ federation.title }}</h3>
-        <p>Data Records: {{ federation.records }} | Institutions: {{ federation.institutions }}</p>
-        <p>Data Models:</p>
-        <ul>
-          @for(dataModel of federation.dataModels; track dataModel) {
-            <li>{{ dataModel.code + '_' + dataModel.version }}</li>
-          }
-        </ul>
-        <p class="federation-description">{{ federation.description }}</p>
-        <!-- Federation Public URL -->
-        <p>
-          Public URL:
-          <a [href]="federation.url" target="_blank">{{ federation.url }}</a>
-        </p>
-        <div class="federation-buttons">
-          <button class="data-model-btn" (click)="goToVisualization(federation.code)">Data Model</button>
-          <button class="request-access-btn">Request Access</button>
-          <!-- Update and Delete buttons (Visible only to DC_ADMIN) -->
-          @if (isAdmin) {
-            <button class="update-btn" (click)="goToUpdateFederation(federation.code)">
-              ✏️ Update
-            </button>
-            <button class="delete-btn" (click)="deleteFederation(federation.code)">
-              🗑️ Delete
-            </button>
-          }
-        </div>
-      </div>
-    </div>
-  }
+  <app-add-federation-card *ngIf="isAdmin" (addNew)="goToAddFederation()"></app-add-federation-card>
+
+  <app-federation-card
+    *ngFor="let federation of filteredFederations"
+    [federation]="federation"
+    [isAdmin]="isAdmin"
+    (updateFederation)="goToUpdateFederation($event)"
+    (deleteFederation)="deleteFederation($event)"
+    (visualizeDataModel)="goToVisualization($event)"
+  ></app-federation-card>
 </section>
 
-<!-- Child route outlet for Add and Update forms -->
+  <!-- Child route outlet for Add and Update forms -->
 <router-outlet></router-outlet>
