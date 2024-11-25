@@ -1,0 +1,28 @@
+<div class="federation-card">
+  <img [src]="'assets/' + federation.code + '.png'" alt="{{ federation.title }}" class="federation-image">
+  <div class="federation-content">
+    <h3>{{ federation.title }}</h3>
+    <p>Data Records: {{ federation.records }} | Institutions: {{ federation.institutions }}</p>
+    <p>Data Models:</p>
+    <ul>
+      @for (dataModel of federation.dataModels; track dataModel){
+        <li>
+          {{ dataModel.code + '_' + dataModel.version }}
+        </li>
+      }
+    </ul>
+    <p class="federation-description">{{ federation.description }}</p>
+    <p>
+      Public URL:
+      <a [href]="federation.url" target="_blank">{{ federation.url }}</a>
+    </p>
+    <div class="federation-buttons">
+      <button class="data-model-btn" (click)="viewDataModel()">Data Model</button>
+      <button class="request-access-btn">Request Access</button>
+      @if (isAdmin){
+        <button class="update-btn" (click)="update()">✏️ Update</button>
+        <button class="delete-btn" (click)="delete()">🗑️ Delete</button>
+      }
+    </div>
+  </div>
+</div>

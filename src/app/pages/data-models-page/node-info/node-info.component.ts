@@ -1,53 +1,10 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import {NgIf} from "@angular/common";
 
 @Component({
   selector: 'app-node-info',
-  template: `
-    <div class="node-info">
-      <button class="toggle-node-info-button" (click)="toggleVisibility()">
-        {{ visible ? 'Hide Node Info' : 'Show Node Info' }}
-      </button>
-
-      <div *ngIf="visible">
-        <h3>{{ hasChildren ? 'Group Information' : 'Variable Information' }}</h3>
-
-        <p><strong>Code:</strong> {{ selectedNode.code || 'N/A' }}</p>
-        <p><strong>Name:</strong> {{ selectedNode.name || 'N/A' }}</p>
-
-        <div *ngIf="hasChildren; else variableDetails">
-          <p><strong>Number of Variables:</strong> {{ countLeafNodes() }}</p>
-        </div>
-
-        <ng-template #variableDetails>
-          <p *ngIf="fieldExists('description')">
-            <strong>Description:</strong> {{ selectedNode.description }}
-          </p>
-          <p *ngIf="fieldExists('sql_type')">
-            <strong>SQL Type:</strong> {{ selectedNode.sql_type }}
-          </p>
-          <p *ngIf="fieldExists('isCategorical')">
-            <strong>Is Categorical:</strong>
-            {{ selectedNode.isCategorical ? 'Yes' : 'No' }}
-          </p>
-          <p *ngIf="fieldExists('units')">
-            <strong>Units:</strong> {{ selectedNode.units }}
-          </p>
-          <p *ngIf="fieldExists('minValue')">
-            <strong>Min Value:</strong> {{ selectedNode.minValue }}
-          </p>
-          <p *ngIf="fieldExists('maxValue')">
-            <strong>Max Value:</strong> {{ selectedNode.maxValue }}
-          </p>
-        </ng-template>
-      </div>
-    </div>
-  `,
+  templateUrl: './node-info.component.html',
   styleUrls: ['./node-info.component.css'],
   standalone: true,
-  imports: [
-    NgIf
-  ]
 })
 export class NodeInfoComponent {
   @Input() selectedNode: any | null = null;

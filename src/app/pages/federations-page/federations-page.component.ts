@@ -1,13 +1,14 @@
-import { Component, OnInit } from '@angular/core';
-import {Router, NavigationEnd, RouterOutlet} from '@angular/router';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Router, NavigationEnd, RouterOutlet } from '@angular/router';
 import { FederationService } from '../../services/federation.service';
 import { AuthService } from '../../services/auth.service';
 import { Federation } from '../../interfaces/federations.interface';
-import { filter } from 'rxjs';
-import {FilterComponent} from "./filter/filter.component";
-import {FederationCardComponent} from "./federation-card/federation-card.component";
-import {NgForOf, NgIf} from "@angular/common";
-import {AddFederationCardComponent} from "./add-federation-card/add-federation-card.component";
+import { filter, Subject, takeUntil } from 'rxjs';
+import { FilterComponent } from "./filter/filter.component";
+import { FederationCardComponent } from "./federation-card/federation-card.component";
+import { AddFederationCardComponent } from "./add-federation-card/add-federation-card.component";
+import {MatDialog} from "@angular/material/dialog";
+import {ConfirmationDialogComponent} from "./confirmation-dialog/confirmation-dialog.component";
 
 @Component({
   selector: 'app-federations',
@@ -17,38 +18,50 @@ import {AddFederationCardComponent} from "./add-federation-card/add-federation-c
     FilterComponent,
     RouterOutlet,
     FederationCardComponent,
-    NgForOf,
     AddFederationCardComponent,
-    NgIf
   ],
   standalone: true
 })
-export class FederationsPageComponent implements OnInit {
+export class FederationsPageComponent implements OnInit, OnDestroy {
   filters = ['All', 'Public', 'Accessed', 'Request Access', 'Pathology'];
   selectedFilter = 'All';
   federations: Federation[] = [];
   filteredFederations: Federation[] = [];
   isAdmin = false;
 
+  private destroy$ = new Subject<void>();
+
   constructor(
     private federationService: FederationService,
     private authService: AuthService,
     private router: Router,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
     this.loadFederations();
+
     this.router.events
-      .pipe(filter((event) => event instanceof NavigationEnd))
+      .pipe(
+        filter((event) => event instanceof NavigationEnd),
+        takeUntil(this.destroy$)
+      )
       .subscribe(() => {
         if (this.router.url === '/federations') {
           this.loadFederations();
         }
       });
 
-    this.authService.hasRole('DC_ADMIN').subscribe((isAdmin) => {
-      this.isAdmin = isAdmin;
-    });
+    this.authService.hasRole('DC_ADMIN')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((isAdmin) => {
+        this.isAdmin = isAdmin;
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadFederations(): void {
@@ -74,15 +87,25 @@ export class FederationsPageComponent implements OnInit {
    }
 
   deleteFederation(federationCode: string): void {
-    if (confirm('Are you sure you want to delete this federation?')) {
-      this.federationService.deleteFederation(federationCode).subscribe({
-        next: () => this.loadFederations(),
-        error: (error) => console.error(`Error deleting federation:`, error),
-      });
-    }
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      data: {
+        title: 'Delete Federation',
+        message: 'Are you sure you want to delete this federation? This action cannot be undone.'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed) => {
+      if (confirmed) {
+        this.federationService.deleteFederation(federationCode).subscribe({
+          next: () => this.loadFederations(),
+          error: (error) => console.error('Error deleting federation:', error),
+        });
+      }
+    });
   }
 
   selectFilter(filter: string): void {
+    //TODO
     this.selectedFilter = filter;
     this.filteredFederations = this.federations;
   }

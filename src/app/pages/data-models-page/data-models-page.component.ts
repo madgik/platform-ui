@@ -17,6 +17,10 @@ import { NodeInfoComponent } from "./node-info/node-info.component";
 import { DataModelSelectorComponent } from "./data-model-selector/data-model-selector.component";
 import { ExportOptionsComponent } from "./export-options/export-options.component";
 import {ErrorService} from "./services/error.service";
+import {ConfirmationDialogComponent} from "./confirmation-dialog/confirmation-dialog.component";
+import {MatDialog} from "@angular/material/dialog";
+import {DataModelFormComponent} from "./data-model-form/data-model-form.component";
+
 
 @Component({
   selector: 'app-data-models-page',
@@ -43,7 +47,7 @@ import {ErrorService} from "./services/error.service";
 //TODO:request access for federation
 //TODO:filters
 export class DataModelsPageComponent implements OnInit{
-  visualizationType = 'ZoomableCirclePacking';
+  visualizationType = 'TidyTree';
   d3Data: any;
   federations: Federation[] = [];
   selectedFederation: Federation | null = null;
@@ -63,7 +67,8 @@ export class DataModelsPageComponent implements OnInit{
     private authService: AuthService,
     private errorService: ErrorService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private dialog: MatDialog
   ) {}
 
 
@@ -72,8 +77,7 @@ export class DataModelsPageComponent implements OnInit{
     // Check for the user's role first
     this.authService.hasRole('DC_DOMAIN_EXPERT').subscribe((hasRole) => {
       this.isDomainExpert = hasRole;
-    })
-
+    });
 
     // Load federations and query params together
     this.federationService.getFederationsWithModels().subscribe({
@@ -84,11 +88,12 @@ export class DataModelsPageComponent implements OnInit{
         this.route.queryParams.subscribe((params) => {
           const federationCode = params['federationCode'];
 
+          // Set selectedFederation based on federationCode
           this.selectedFederation = federationCode
-            ? this.federations.find((fed) => fed.code === federationCode) || this.federations[0] : this.federations[0];
-
-          this.loadDataModels(); // Only load data models after federations and params are processed
+            ? this.federations.find((fed) => fed.code === federationCode) || null
+            : null;
         });
+        this.loadDataModels()
       },
       error: (error) => {
         console.error('Error loading federations:', error);
@@ -97,7 +102,9 @@ export class DataModelsPageComponent implements OnInit{
     });
   }
 
+
   loadDataModels(): void {
+
     if (this.selectedFederation) {
 
       this.dataModelService.getDataModelsByIds(this.selectedFederation.dataModelIds).subscribe((dataModels) => {
@@ -107,6 +114,7 @@ export class DataModelsPageComponent implements OnInit{
 
     } else {
       this.dataModelService.getAllDataModels().subscribe((dataModels) => {
+        console.log("this.selectedDataModel",this.selectedDataModel)
         this.handleDataModelResponse(dataModels);
       });
     }
@@ -119,6 +127,7 @@ export class DataModelsPageComponent implements OnInit{
     if (dataModels.length > 0) {
       this.selectedDataModel = crossSectional[0] || longitudinal[0] || null;
     }
+    console.log("this.selectedDataModel",this.selectedDataModel)
     this.loadVisualizationData();
   }
 
@@ -147,6 +156,7 @@ export class DataModelsPageComponent implements OnInit{
   onNodeInfoVisibilityChange(visible: boolean): void {
     this.nodeInfoVisible = visible;
   }
+
   handleAction(action: string): void {
     console.log('Action Triggered:', action);
     switch (action) {
@@ -168,65 +178,104 @@ export class DataModelsPageComponent implements OnInit{
   }
 
   goToAddDataModel(): void {
-    this.router.navigate(['/data-models/add']);
+    const dialogRef = this.dialog.open(DataModelFormComponent, {
+      data: { isUpdateMode: false }, // Pass props for add mode
+    });
+
+    dialogRef.componentInstance.dataModelUpdated.subscribe(() => {
+      this.onDataModelUpdated(); // Refresh data models after adding
+      dialogRef.close(); // Close the dialog after the operation
+    });
   }
 
   goToUpdateDataModel(): void {
     if (this.selectedDataModel) {
-      this.router.navigate(['/data-models/update'], {queryParams: {dataModelId: this.selectedDataModel.uuid}});
+      const dialogRef = this.dialog.open(DataModelFormComponent, {
+        data: {
+          isUpdateMode: true,
+          dataModelId: this.selectedDataModel.uuid, // Pass the current data model's ID for update mode
+        },
+      });
+
+      dialogRef.componentInstance.dataModelUpdated.subscribe(() => {
+        this.onDataModelUpdated(); // Refresh data models after updating
+        dialogRef.close(); // Close the dialog after the operation
+      });
     }
   }
+
+  onDataModelUpdated(): void {
+    this.loadDataModels();
+  }
+
 
   // Check if the current route is a child route
   isChildRouteActive(): boolean {
     const currentPath = this.router.url;
     return currentPath.includes('/data-models/add') || currentPath.includes('/data-models/update');
   }
+
   deleteDataModel(): void {
-    if (!this.selectedDataModel) {
+    if (!this.selectedDataModel) { // Ensure selectedDataModel is defined
       console.error('No data model selected to delete.');
       return;
     }
 
-    const userConfirmed = window.confirm(
-      'Are you sure you want to delete this data model?'
-    );
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      data: {
+        title: 'Delete DataModel',
+        message: 'Are you sure you want to delete this data model? This action cannot be undone.'
+      }
+    });
 
-    if (!userConfirmed) {
-      return;
-    }
-
-    this.dataModelService.deleteDataModel(this.selectedDataModel.uuid).subscribe({
-      next: () => {
-        this.dataModelService.getAllDataModels().subscribe((dataModels) => {
-          this.handleDataModelResponse(dataModels);
-        }); // Reload models after successful deletion
-      },
-      error: (error) => console.error('Error deleting data model:', error),
+    dialogRef.afterClosed().subscribe((confirmed) => {
+      if (confirmed) {
+        const uuid = this.selectedDataModel?.uuid; // Safe optional chaining for uuid
+        if (uuid) { // Ensure uuid exists
+          this.dataModelService.deleteDataModel(uuid).subscribe({
+            next: () => {
+              this.dataModelService.getAllDataModels().subscribe((dataModels) => {
+                this.handleDataModelResponse(dataModels);
+              }); // Reload models after successful deletion
+            },
+            error: (error) => console.error('Error deleting data model:', error),
+          });
+        } else {
+          console.error('Selected data model does not have a valid UUID.');
+        }
+      }
     });
   }
 
   releaseDataModel(): void {
-    if (!this.selectedDataModel) {
+    if (!this.selectedDataModel) { // Ensure selectedDataModel is defined
       console.error('No data model selected to release.');
       return;
     }
 
-    const userConfirmed = window.confirm(
-      'Are you sure you want to release this data model? Once released, you will no longer be able to delete, update, or revert this data model.'
-    );
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      data: {
+        title: 'Release DataModel',
+        message: 'Are you sure you want to release this data model? Once released, you will no longer be able to delete, update, or revert this data model.'
+      }
+    });
 
-    if (!userConfirmed) {
-      return;
-    }
-
-    this.dataModelService.releaseDataModel(this.selectedDataModel.uuid).subscribe({
-      next: () => {
-        this.dataModelService.getAllDataModels().subscribe((dataModels) => {
-          this.handleDataModelResponse(dataModels);
-        }); // Reload models after successful release
-      },
-      error: (error) => console.error('Error releasing data model:', error),
+    dialogRef.afterClosed().subscribe((confirmed) => {
+      if (confirmed) {
+        const uuid = this.selectedDataModel?.uuid; // Safe optional chaining for uuid
+        if (uuid) { // Ensure uuid exists
+          this.dataModelService.releaseDataModel(uuid).subscribe({
+            next: () => {
+              this.dataModelService.getAllDataModels().subscribe((dataModels) => {
+                this.handleDataModelResponse(dataModels);
+              }); // Reload models after successful release
+            },
+            error: (error) => console.error('Error releasing data model:', error),
+          });
+        } else {
+          console.error('Selected data model does not have a valid UUID.');
+        }
+      }
     });
   }
 

@@ -1,48 +1,14 @@
 import { Component, Input, Output, EventEmitter, SimpleChanges, OnChanges, OnInit } from '@angular/core';
 import {FormsModule} from "@angular/forms";
-import {NgForOf, NgIf} from "@angular/common";
 import {DataModel} from "../../../interfaces/data-model.interface";
 
 @Component({
   selector: 'app-data-model-selector',
-  template: `
-    <div>
-      <label for="dataModel">Select Data Model:</label>
-      <select
-        class="dropdown"
-        id="dataModel"
-        [(ngModel)]="selectedDataModel"
-        (change)="onDataModelChange()"
-        aria-labelledby="dataModel"
-      >
-        <!-- Cross-Sectional Data Models Group -->
-        <optgroup *ngIf="crossSectionalModels.length > 0" label="Cross-Sectional">
-          <option
-            *ngFor="let model of crossSectionalModels"
-            [ngValue]="model"
-          >
-            {{ model.code + '_' + model.version }}
-          </option>
-        </optgroup>
-
-        <!-- Longitudinal Data Models Group -->
-        <optgroup *ngIf="longitudinalModels.length > 0" label="Longitudinal">
-          <option
-            *ngFor="let model of longitudinalModels"
-            [ngValue]="model"
-          >
-            {{ model.code + '_' + model.version }}
-          </option>
-        </optgroup>
-      </select>
-    </div>
-  `,
+  templateUrl: './data-model-selector.component.html',
   styleUrls: ['./data-model-selector.component.css'],
   standalone: true,
   imports: [
     FormsModule,
-    NgForOf,
-    NgIf
   ]
 })
 export class DataModelSelectorComponent implements OnChanges, OnInit {
@@ -60,7 +26,11 @@ export class DataModelSelectorComponent implements OnChanges, OnInit {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['defaultModel']) {
+    if (changes['defaultModel'] && changes['defaultModel'].currentValue !== this.defaultModel) {
+      this.selectedDataModel = this.defaultModel;
+    }
+    if (changes['crossSectionalModels'] || changes['longitudinalModels']) {
+      // Reset selected data model if inputs change
       this.selectedDataModel = this.defaultModel;
     }
   }

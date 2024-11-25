@@ -29,18 +29,19 @@
     <div class="data-models-section">
       <h2>Select Data Models</h2>
       <div class="data-models-grid">
-        <label
-          *ngFor="let model of dataModels"
-          class="data-model-card"
-        >
-          <input
-            type="checkbox"
-            [value]="model.uuid"
-            (change)="onDataModelChange($event)"
-            [checked]="selectedDataModels.includes(model.uuid)"
-          />
-          <span class="data-model-name">{{ model.code }}_{{ model.version }}</span>
-        </label>
+        @for (model of dataModels; track model){
+          <label
+            class="data-model-card"
+          >
+            <input
+              type="checkbox"
+              [value]="model.uuid"
+              (change)="onDataModelChange($event)"
+              [checked]="selectedDataModels.includes(model.uuid)"
+            />
+            <span class="data-model-name">{{ model.code }}_{{ model.version }}</span>
+          </label>
+        }
       </div>
     </div>
 

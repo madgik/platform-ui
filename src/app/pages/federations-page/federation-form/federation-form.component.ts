@@ -3,7 +3,6 @@ import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataModelService } from '../../../services/data-model.service';
 import { FederationService } from '../../../services/federation.service';
-import {NgForOf} from "@angular/common";
 
 @Component({
   selector: 'app-federation-form',
@@ -11,7 +10,6 @@ import {NgForOf} from "@angular/common";
   styleUrls: ['./federation-form.component.css'],
   imports: [
     ReactiveFormsModule,
-    NgForOf
   ],
   standalone: true
 })

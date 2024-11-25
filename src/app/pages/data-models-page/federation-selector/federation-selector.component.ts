@@ -2,35 +2,14 @@ import {Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges
 import {FormsModule} from "@angular/forms";
 import {Federation} from "../../../interfaces/federations.interface";
 import {FederationService} from "../../../services/federation.service";
-import {NgForOf, NgIf} from "@angular/common";
 
 @Component({
   selector: 'app-federation-selector',
-  template: `
-    <div>
-      <label for="federation">Select Federation:</label>
-      <select
-        id="federation"
-        class="dropdown"
-        [(ngModel)]="selectedFederation"
-        (change)="onFederationChange()"
-      >
-        <option *ngIf="isDomainExpert" [ngValue]="null">---</option>
-        <option
-          *ngFor="let federation of federations"
-          [ngValue]="federation"
-        >
-          {{ federation.code }}
-        </option>
-      </select>
-    </div>
-  `,
   styleUrls: ['./federation-selector.component.css'],
+  templateUrl: './federation-selector.component.html',
   standalone: true,
   imports: [
     FormsModule,
-    NgIf,
-    NgForOf
   ]
 })
 export class FederationSelectorComponent implements OnInit , OnChanges {

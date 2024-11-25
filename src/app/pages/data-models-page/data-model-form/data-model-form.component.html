@@ -1,7 +1,7 @@
 <section class="data-model-form">
-  <nav class="breadcrumb">
-    <a href="/data-models">Data Models</a> / {{ selectedDataModelID ? 'Update Data Model' : 'Add New Data Model' }}
-  </nav>
+<!--  <nav class="breadcrumb">-->
+<!--    <a href="/data-models">Data Models</a> / {{ selectedDataModelID ? 'Update Data Model' : 'Add New Data Model' }}-->
+<!--  </nav>-->
 
   <h1>{{ selectedDataModelID ? 'Update Data Model' : 'Add New Data Model' }}</h1>
 
@@ -16,18 +16,23 @@
       <span class="icon">📂</span>
     </div>
 
-    <div *ngIf="selectedFileType">
-      <label for="file">Choose {{ selectedFileType.toUpperCase() }} File</label>
-      <input id="file" type="file" (change)="onFileChange($event)" accept=".json, .xlsx" />
-    </div>
+    @if(selectedFileType){
+      <div>
+        <label for="file">Choose {{ selectedFileType.toUpperCase() }} File</label>
+        <input id="file" type="file" (change)="onFileChange($event)" accept=".json, .xlsx" />
+      </div>
+    }
 
-    <div *ngIf="selectedFileType === 'xlsx'">
-      <label for="version">Version</label>
-      <input id="version" type="text" formControlName="version" placeholder="Enter version (e.g., 1.0)" />
+    @if(selectedFileType === 'xlsx'){
+      <div>
+        <label for="version">Version</label>
+        <input id="version" type="text" formControlName="version" placeholder="Enter version (e.g., 1.0)" />
 
-      <label for="longitudinal">Is Longitudinal</label>
-      <input id="longitudinal" type="checkbox" formControlName="longitudinal" />
-    </div>
+        <label for="longitudinal">Is Longitudinal</label>
+        <input id="longitudinal" type="checkbox" formControlName="longitudinal" />
+      </div>
+    }
+
 
     <button type="submit" [disabled]="!file">
       {{ selectedDataModelID ? 'Update' : 'Upload' }} Data Model

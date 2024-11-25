@@ -1,0 +1,58 @@
+<div class="node-info">
+  <button class="toggle-node-info-button" (click)="toggleVisibility()">
+    {{ visible ? 'Hide Node Info' : 'Show Node Info' }}
+  </button>
+
+  @if(visible){
+    <div>
+      <h3>{{ hasChildren ? 'Group Information' : 'Variable Information' }}</h3>
+
+      <p><strong>Code:</strong> {{ selectedNode.code || 'N/A' }}</p>
+      <p><strong>Name:</strong> {{ selectedNode.name || 'N/A' }}</p>
+
+      @if(hasChildren){
+        <p><strong>Number of Variables:</strong> {{ countLeafNodes() }}</p>
+      } @else {
+        <ng-template>
+          @if(fieldExists('description')){
+            <p>
+              <strong>Description:</strong> {{ selectedNode.description }}
+            </p>
+          }
+
+          @if(fieldExists('sql_type')){
+            <p>
+              <strong>SQL Type:</strong> {{ selectedNode.sql_type }}
+            </p>
+          }
+
+          @if(fieldExists('isCategorical')){
+            <p>
+              <strong>Is Categorical:</strong>
+              {{ selectedNode.isCategorical ? 'Yes' : 'No' }}
+            </p>
+          }
+
+          @if(fieldExists('units')){
+            <p>
+              <strong>Units:</strong> {{ selectedNode.units }}
+            </p>
+          }
+
+          @if(fieldExists('minValue')){
+            <p>
+              <strong>Min Value:</strong> {{ selectedNode.minValue }}
+            </p>
+          }
+
+          @if(fieldExists('maxValue')){
+            <p>
+              <strong>Max Value:</strong> {{ selectedNode.maxValue }}
+            </p>
+          }
+        </ng-template>
+      }
+    </div>
+  }
+
+</div>

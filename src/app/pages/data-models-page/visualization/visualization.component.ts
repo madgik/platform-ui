@@ -3,41 +3,15 @@ import { createSunburst } from './zoomable-sunburst';
 import { createTidyTree } from './tidy-tree';
 import {FormsModule} from "@angular/forms";
 import {createZoomableCirclePacking} from "./zoomable circle-packing";
-import {NgIf} from "@angular/common";
 import {ErrorService} from "../services/error.service";
 
 @Component({
   selector: 'app-visualization',
-  template: `
-    <div class="visualization-type-container">
-      <label for="visualization">Select Visualization:</label>
-      <select class="dropdown" id="visualization" (change)="onVisualizationTypeChange($event)">
-        <option value="ZoomableCirclePacking">Zoomable Circle Packing</option>
-        <option value="ZoomableSunburst">Zoomable Sunburst</option>
-        <option value="TidyTree">TidyTree</option>
-      </select>
-    </div>
-
-    <div id="chart-container">
-      <ng-container *ngIf="!error; else errorTemplate">
-        <!-- Chart will render here -->
-      </ng-container>
-      <ng-template #errorTemplate>
-        <div class="error-message">
-          {{ error }}
-        </div>
-      </ng-template>
-      <div id="chart" style="width: 100%; height: 800px;">
-        <!-- Chart container always exists -->
-      </div>
-    </div>
-
-  `,
+  templateUrl: './visualization.component.html',
   styleUrls: ['./visualization.component.css'],
   standalone: true,
   imports: [
     FormsModule,
-    NgIf
   ],
 })
 export class VisualizationComponent implements OnChanges {
@@ -57,7 +31,8 @@ export class VisualizationComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['d3Data'] && this.d3Data) {
       this.errorService.clearError(); // Clear any previous error
-      this.renderChart();
+      setTimeout(() => this.renderChart());
+
     }
   }
 
@@ -68,7 +43,12 @@ export class VisualizationComponent implements OnChanges {
 
   renderChart(): void {
     const container = this.elementRef.nativeElement.querySelector('#chart');
+    if (!container) {
+      this.errorService.setError('Chart container is not available.');
+      return;
+    }
     container.innerHTML = ''; // Clear previous chart
+
 
     if (!this.d3Data) {
       this.errorService.setError('No data available for visualization.');

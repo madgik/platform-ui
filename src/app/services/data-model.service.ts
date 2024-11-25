@@ -120,13 +120,6 @@ export class DataModelService {
     return { crossSectional, longitudinal };
   }
 
-
-  // Utility to find the default data model (first available)
-  getDefaultDataModel(dataModels: any[]): DataModel | null {
-    const { crossSectional, longitudinal } = this.categorizeDataModels(dataModels);
-    return crossSectional[0] || longitudinal[0] || null;
-  }
-
   // Convert data model to D3 hierarchy format
   convertToD3Hierarchy(data: any): any {
     const convertVariables = (variables: any[]) =>
