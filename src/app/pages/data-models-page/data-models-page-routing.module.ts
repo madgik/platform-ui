@@ -1,16 +1,16 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { FederationFormComponent } from './federation-form/federation-form.component';
+import {DataModelFormComponent} from "./data-model-form/data-model-form.component";
 
 const routes: Routes = [
   {
     path: 'add',
-    component: FederationFormComponent,
+    component: DataModelFormComponent,
     data: { isUpdate: false },
   },
   {
     path: 'update',
-    component: FederationFormComponent,
+    component: DataModelFormComponent,
     data: { isUpdate: true },
   },
 ];
@@ -19,4 +19,4 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule],
 })
-export class FederationsPageRoutingModule {}
+export class DataModelsPageRoutingModule {}

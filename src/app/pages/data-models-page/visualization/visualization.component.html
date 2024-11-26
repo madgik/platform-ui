@@ -1,0 +1,19 @@
+<div class="visualization-type-container">
+  <label for="visualization">Select Visualization:</label>
+  <select class="dropdown" id="visualization" (change)="onVisualizationTypeChange($event)">
+    <option value="ZoomableCirclePacking">Zoomable Circle Packing</option>
+    <option value="ZoomableSunburst">Zoomable Sunburst</option>
+    <option value="TidyTree">TidyTree</option>
+  </select>
+</div>
+
+<div id="chart-container">
+  @if (!error) {
+    <!-- Chart will render here -->
+    <div id="chart" style="width: 100%; height: 800px;"></div>
+  } @else {
+    <div class="error-message">
+      {{ error }}
+    </div>
+  }
+</div>

@@ -1,0 +1,12 @@
+<div class="filter-links">
+  @for(filter of filters; track $index) {
+    <ng-container>
+    <span [ngClass]="{'active-filter': filter === selectedFilter}" (click)="onFilterSelect(filter)">
+      {{ filter }}
+    </span>
+      @if ($index < filters.length - 1){
+        <span> | </span>
+      }
+    </ng-container>
+  }
+</div>

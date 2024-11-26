@@ -1,94 +1,17 @@
-/* federations.component.css */
-
-/* Filter Section Styling */
-.filter-section {
-  display: flex;
-  justify-content: flex-end;
-  padding: 15px;
-  margin-top: 20px;
-  margin-bottom: 20px;
-  border-bottom: 1px solid #ddd;
-}
-
-.filter-links {
-  font-size: 1em;
-  font-family: 'Roboto', sans-serif;
-}
-
-.filter-links span {
-  cursor: pointer;
-  color: #c0c0c0;
-  transition: color 0.3s ease;
-}
-
-.filter-links span:hover {
-  color: #18a2b8; /* Blue accent on hover */
-}
-
-.filter-links .active-filter {
-  color: #18a2b8; /* Change color to highlight the active filter */
-  font-weight: bold;
-}
-
-/* Federation Cards Styling */
+/* General Page Styling */
 .federations-list {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  padding: 0 20px;
-}
-
-.federation-card {
-  font-family: 'Roboto', sans-serif;
-  display: flex;
-  align-items: center;
   padding: 20px;
-  border-radius: 15px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  background-color: #fff;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.federation-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-}
-
-.federation-image {
-  width: 150px;
-  height: auto;
-  border-radius: 15px;
-  margin-right: 20px;
-}
-
-.federation-content {
-  flex: 1;
-}
-
-.federation-description {
-  margin-top: 10px;
-  font-size: 0.9em;
-  color: #666;
-}
-
-.federation-buttons {
+.filter-section {
   display: flex;
-  gap: 10px;
-  margin-top: 15px;
-}
-
-.data-model-btn, .request-access-btn {
-  background-color: #18a2b8;
-  color: white;
-  border: none;
-  padding: 10px 15px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.data-model-btn:hover, .request-access-btn:hover {
-  background-color: #127a91;
+  justify-content: space-between;
+  padding: 15px 20px;
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 20px;
 }
 
 /* Responsive Design */
@@ -100,46 +23,6 @@
 
   .federation-image {
     width: 100%;
-    margin-right: 0;
     margin-bottom: 15px;
   }
-
-  /* Add New Federation Card Styling */
-  .add-new-card {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    cursor: pointer;
-    padding: 30px; /* Reduced padding */
-    border: 2px dashed #18a2b8;
-    border-radius: 12px; /* Slightly smaller border radius */
-    color: #18a2b8;
-    background-color: #f8f9fa;
-    transition: transform 0.3s ease, background-color 0.3s ease;
-  }
-
-  .add-new-card:hover {
-    background-color: #e9f5f7;
-    transform: scale(1.05);
-  }
-
-  .add-card-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .add-icon {
-    font-size: 30px; /* Reduced font size */
-    font-weight: bold;
-    margin-bottom: 8px; /* Reduced margin */
-    color: #18a2b8;
-  }
-
-  .add-new-card h3 {
-    font-size: 1em; /* Slightly smaller font size for the title */
-  }
-
-
 }

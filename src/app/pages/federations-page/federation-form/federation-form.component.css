@@ -1,0 +1,166 @@
+/* General container styling */
+.federation-form {
+  background: linear-gradient(145deg, #ffffff, #f9f9f9); /* Subtle gradient */
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1); /* Soft shadow */
+  max-width: 700px;
+  margin: 50px auto;
+  padding: 40px;
+  border-radius: 12px;
+  font-family: 'Poppins', sans-serif;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.federation-form:hover {
+  transform: scale(1.01); /* Slight scaling effect on hover */
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Form heading */
+.federation-form h1 {
+  font-size: 28px;
+  margin-bottom: 20px;
+  text-align: center;
+  font-weight: bold;
+  color: #333;
+}
+
+/* Labels */
+.federation-form label {
+  font-weight: 600;
+  margin-top: 15px;
+  display: block;
+  font-size: 14px;
+  color: #444;
+}
+
+/* Input fields */
+.federation-form input[type="text"],
+.federation-form input[type="url"],
+.federation-form input[type="file"],
+.federation-form select,
+.federation-form textarea {
+  width: 100%;
+  padding: 12px;
+  margin-top: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+  font-size: 14px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.federation-form input[type="text"]:focus,
+.federation-form input[type="url"]:focus,
+.federation-form select:focus,
+.federation-form textarea:focus {
+  border-color: #4CAF50;
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.2);
+  outline: none;
+}
+
+/* Textarea field */
+.federation-form textarea {
+  resize: vertical;
+}
+
+/* Data Models Section */
+.data-models-section {
+  margin-top: 30px;
+}
+
+.data-models-section h2 {
+  font-size: 20px;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.data-models-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.data-model-card {
+  background-color: #f9f9f9;
+  transition: background-color 0.3s, box-shadow 0.3s;
+  flex: 1 1 calc(50% - 15px); /* Two-column layout with gap */
+  padding: 15px;
+  border: 1px solid #e6e6e6;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.data-model-card:hover {
+  border: 1px solid #4CAF50;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  background-color: #4CAF50;
+  color: white;
+}
+
+.data-model-card label {
+  font-size: 14px;
+  font-weight: normal;
+  color: #555;
+}
+
+/* Button */
+.federation-form button[type="submit"] {
+  width: 100%;
+  padding: 12px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition: background-color 0.3s, transform 0.3s;
+  margin-top: 20px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.federation-form button[type="submit"]:hover {
+  background-color: #45a049;
+  transform: scale(1.02);
+}
+
+.federation-form button[type="submit"]:disabled {
+  background-color: #ddd;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .federation-form {
+    padding: 20px;
+  }
+
+  .data-model-card {
+    flex: 1 1 100%; /* Stack cards on smaller screens */
+  }
+
+  button {
+    font-size: 14px;
+    padding: 10px;
+  }
+}
+
+/* Breadcrumb */
+.breadcrumb {
+  margin-bottom: 20px;
+  font-size: 14px;
+  color: #666;
+}
+
+.breadcrumb a {
+  text-decoration: none;
+  color: #4CAF50;
+  transition: color 0.3s;
+}
+
+.breadcrumb a:hover {
+  color: #388e3c;
+}

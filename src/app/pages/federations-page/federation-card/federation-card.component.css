@@ -1,0 +1,100 @@
+.federation-card {
+  font-family: 'Roboto', sans-serif;
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  border-radius: 10px; /* Slightly less rounded */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: #f9f9f9; /* Softer background color */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.federation-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.federation-image {
+  width: 120px;
+  height: auto;
+  border-radius: 10px;
+  margin-right: 20px;
+}
+
+.federation-content {
+  flex: 1;
+}
+
+.federation-content h3 {
+  font-size: 1.2em;
+  margin-bottom: 8px;
+  color: #444; /* Slightly softer color */
+}
+
+.federation-content p {
+  font-size: 0.95em;
+  color: #666; /* Softer text color */
+  margin: 4px 0;
+  line-height: 1.4;
+}
+
+.federation-description {
+  font-style: italic;
+  color: #777;
+}
+
+.federation-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+/* Buttons Styling */
+button {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px; /* Softer edges */
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+button:hover {
+  transform: scale(1.02); /* Subtle hover effect */
+}
+
+.data-model-btn {
+  background-color: #007b8f; /* Darker, more neutral teal */
+  color: #f0f0f0;
+}
+
+.data-model-btn:hover {
+  background-color: #005f6e;
+}
+
+.request-access-btn {
+  background-color: #20964f; /* Muted green */
+  color: #f0f0f0;
+}
+
+.request-access-btn:hover {
+  background-color: #176a36;
+}
+
+.update-btn {
+  background-color: #d39e00; /* Muted yellow */
+  color: #fff;
+}
+
+.update-btn:hover {
+  background-color: #a67700;
+}
+
+.delete-btn {
+  background-color: #b52e31; /* Muted red */
+  color: #fff;
+}
+
+.delete-btn:hover {
+  background-color: #8b2325;
+}

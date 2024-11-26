@@ -1,0 +1,51 @@
+/* Common dropdown styling for all select elements */
+.dropdown {
+  padding: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #333;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  max-width: 220px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Hover and focus styling for dropdowns */
+.dropdown:hover,
+.dropdown:focus {
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* Visualization type container */
+.visualization-type-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+/* Chart container styling */
+#chart-container {
+  padding: 5px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  overflow-x: auto;
+  overflow-y: auto;
+  height: calc(100vh - 250px);
+  width: calc(87% - 20px);
+  display: inline-block;
+  vertical-align: top;
+}
+
+.error-message {
+  color: red;
+  font-size: 1.2em;
+  text-align: center;
+  padding: 20px;
+  border: 1px solid red;
+  background-color: #ffe5e5;
+}

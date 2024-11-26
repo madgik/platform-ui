@@ -7,19 +7,28 @@ import { ExperimentStudioComponent } from './pages/experiment-studio/experiment-
 import { AuthGuard } from './guards/auth.guard';
 import {NgModule} from "@angular/core";
 import {AuthCallbackComponent} from "./callback/authcallback.component";
-import {VisualizationComponent} from "./pages/visualization/visualization.component";
-import {AddFederationPageComponent} from "./pages/federations-page/add-federation/add-federation-page.component";
-import {AddDataModelPageComponent} from "./pages/visualization/add-data-model/add-data-model-page.component";
+import {DataModelsPageComponent} from "./pages/data-models-page/data-models-page.component";
+
 
 export const appRoutes: Routes = [
   { path: 'home', component: LandingPageComponent },
-  { path: 'federations', component: FederationsPageComponent},
+  {
+    path: 'federations',
+    component: FederationsPageComponent, // This is fine for the parent page
+    loadChildren: () =>
+      import('./pages/federations-page/federations-page.module').then(
+        (m) => m.FederationsPageModule // Ensure you're importing the main module here
+      ),
+  },
   { path: 'experiments', component: ExperimentsDashboardComponent},
   { path: 'account', component: AccountPageComponent, canActivate: [AuthGuard] },
   { path: 'experiment-studio', component: ExperimentStudioComponent},
-  { path: 'visualization', component: VisualizationComponent},
-  { path: 'add-federation', component: AddFederationPageComponent},
-  { path: 'add-data-model', component: AddDataModelPageComponent},
+  { path: 'data-models', component: DataModelsPageComponent,
+    loadChildren: () =>
+      import('./pages/data-models-page/data-models-page.module').then(
+        (m) => m.DataModelsPageModule // Ensure you're importing the main module here
+      ),
+  },
   { path: 'auth-callback', component: AuthCallbackComponent },
   { path: '', redirectTo: 'home', pathMatch: 'full' },
   { path: '**', redirectTo: 'home' }

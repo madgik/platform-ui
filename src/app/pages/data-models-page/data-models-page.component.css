@@ -1,0 +1,26 @@
+/* Central container styling */
+.container {
+  display: flex;
+  flex-direction: column;
+  margin-top: 40px;
+  background-color: #fafafa;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Top bar container */
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 25px 0;
+}
+
+/* Dropdown container styling */
+.dropdown-container {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+

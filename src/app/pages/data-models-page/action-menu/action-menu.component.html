@@ -1,0 +1,43 @@
+<div class="action-menu" role="menu" aria-label="Action Menu">
+  <!-- Three-dots button to open/close the menu -->
+  <button
+    class="three-dots-button"
+    aria-haspopup="true"
+    [attr.aria-expanded]="menuVisible"
+    aria-controls="options-menu"
+    aria-label="Open actions menu"
+    (click)="toggleMenu()"
+  >
+    &#8942;
+  </button>
+
+  <!-- Menu backdrop (only visible when menu is open) -->
+  @if (menuVisible){
+    <div class="menu-backdrop" (click)="toggleMenu()"></div>
+
+  <!-- Options menu for actions -->
+    <div class="options-menu" role="menu" id="options-menu">
+      <button (click)="emitAction('add')" role="menuitem">Add Data Model</button>
+      @if(!isSelectedDataModelReleased){
+        <button
+          (click)="emitAction('update')"
+          role="menuitem"
+        >
+          Update Data Model
+        </button>
+        <button
+          (click)="emitAction('delete')"
+          role="menuitem"
+        >
+          Delete Data Model
+        </button>
+        <button
+          (click)="emitAction('release')"
+          role="menuitem"
+        >
+          Release Data Model
+        </button>
+      }
+    </div>
+  }
+</div>
