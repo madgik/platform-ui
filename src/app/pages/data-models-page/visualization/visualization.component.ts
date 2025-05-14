@@ -1,6 +1,4 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, ElementRef } from '@angular/core';
-import { createSunburst } from './zoomable-sunburst';
-import { createTidyTree } from './tidy-tree';
 import {FormsModule} from "@angular/forms";
 import {createZoomableCirclePacking} from "./zoomable circle-packing";
 import {ErrorService} from "../services/error.service";
@@ -15,7 +13,6 @@ import {ErrorService} from "../services/error.service";
   ],
 })
 export class VisualizationComponent implements OnChanges {
-  @Input() visualizationType = 'ZoomableCirclePacking';
   @Input() d3Data: any;
   @Output() selectedNodeChange = new EventEmitter<any>();
 
@@ -36,11 +33,6 @@ export class VisualizationComponent implements OnChanges {
     }
   }
 
-  onVisualizationTypeChange(event: any): void {
-    this.visualizationType = event.target.value;
-    this.renderChart();
-  }
-
   renderChart(): void {
     const container = this.elementRef.nativeElement.querySelector('#chart');
     if (!container) {
@@ -48,7 +40,6 @@ export class VisualizationComponent implements OnChanges {
       return;
     }
     container.innerHTML = ''; // Clear previous chart
-
 
     if (!this.d3Data) {
       this.errorService.setError('No data available for visualization.');
@@ -60,19 +51,7 @@ export class VisualizationComponent implements OnChanges {
     };
 
     try {
-      switch (this.visualizationType) {
-        case 'ZoomableCirclePacking':
-          createZoomableCirclePacking(this.d3Data, container, handleNodeClick);
-          break;
-        case 'ZoomableSunburst':
-          createSunburst(this.d3Data, container, handleNodeClick);
-          break;
-        case 'TidyTree':
-          createTidyTree(this.d3Data, container, handleNodeClick);
-          break;
-        default:
-          this.errorService.setError('Unknown visualization type.');
-      }
+      createZoomableCirclePacking(this.d3Data, container, handleNodeClick);
     } catch (e) {
       if (e instanceof Error) {
         this.errorService.setError(`An error occurred while rendering the chart: ${e.message}`);

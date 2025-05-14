@@ -1,0 +1,238 @@
+.modal-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Gray Overlay */
+.modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1;
+}
+
+/* Modal Container */
+.filter-modal {
+  width: 800px;
+  max-width: 95%;
+  background: white !important;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  z-index: 1000;
+}
+
+/* Header */
+.filter-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: linear-gradient(90deg, #00758c, #00a6c0);
+  color: white;
+}
+
+.filter-modal-header h3 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.close-btn:hover {
+  transform: scale(1.1);
+}
+
+/* Modal Body */
+.filter-modal-body {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem 1.2rem;
+}
+
+/* Query Builder */
+::ng-deep .query-builder {
+  background: white !important;
+  padding: 1.2rem !important;
+  border-radius: 6px;
+  border: 1px solid #ddd !important;
+}
+
+/* Rule Groups */
+::ng-deep .query-builder .rules-group-container {
+  border: 1px solid #ddd !important;
+  border-radius: 8px;
+  padding: 1rem;
+  background: #f8f9fa !important;
+  box-shadow: none !important;
+}
+
+/* Group Header */
+::ng-deep .query-builder .rules-group-header {
+  background: #f8f9fa !important;
+  border: none !important;
+  padding: 10px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* Group "Add Rule" & "Add Group" */
+::ng-deep .query-builder .rule-actions {
+  display: flex;
+  gap: 6px;
+}
+
+/* Make "Add Rule" & "Add Group" Look Good */
+::ng-deep .query-builder .btn-success {
+  background: #28a745 !important;
+  color: white !important;
+  font-weight: bold !important;
+  border-radius: 6px !important;
+  padding: 6px 14px !important;
+  margin: 2px !important;
+  box-shadow: none !important;
+}
+
+/* AND / OR Button Group */
+::ng-deep .query-builder .btn-group {
+  display: flex !important;
+  gap: 4px !important;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+/* Updated AND / OR Buttons */
+::ng-deep .query-builder .btn-primary {
+  background: #008b99 !important; /* Teal Color */
+  color: white !important;
+  font-weight: bold !important;
+  border-radius: 6px !important;
+  padding: 6px 14px !important;
+  margin: 2px !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+  cursor: pointer !important;
+  transition: background 0.2s ease-in-out;
+}
+
+/* When AND/OR is active, highlight it */
+::ng-deep .query-builder .btn-primary.active {
+  background: #006b77 !important; /* Darker Teal for Active */
+}
+
+/* Hover Effect for AND / OR */
+::ng-deep .query-builder .btn-primary:hover {
+  background: #007a88 !important; /* Slightly darker teal */
+}
+
+/* Align Rule Elements in One Line */
+::ng-deep .query-builder .rule-container {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  width: 100%;
+  justify-content: space-between;
+}
+
+/* Make Dropdowns & Inputs Responsive */
+::ng-deep .query-builder select,
+::ng-deep .query-builder input {
+  background: white !important;
+  border: 1px solid #ccc !important;
+  border-radius: 6px !important;
+  padding: 8px !important;
+  font-size: 1rem !important;
+  color: #333 !important;
+  width: auto !important;
+  min-width: 150px !important;
+}
+
+/* Move Delete Button to End */
+::ng-deep .query-builder .rule-actions {
+  margin-left: auto !important;
+}
+
+/* Style Delete Button as Trash Bin */
+::ng-deep .query-builder .btn-danger {
+  background: none !important;
+  border: none !important;
+  color: #dc3545 !important;
+  font-size: 1.2rem !important;
+  cursor: pointer !important;
+  padding: 4px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Change Hover Effect for Bin Icon */
+::ng-deep .query-builder .btn-danger:hover {
+  color: #c9302c !important;
+  transform: scale(1.1);
+}
+
+/* Trash Icon Inside Delete Button */
+::ng-deep .query-builder .btn-danger i {
+  font-size: 1.2rem !important;
+}
+
+/* Footer Buttons */
+.filter-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: white;
+  border-top: 1px solid #ddd;
+}
+
+.save-btn {
+  background: linear-gradient(90deg, #00758c, #00a6c0);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: all 0.2s ease-in-out;
+}
+
+.save-btn:hover {
+  background: linear-gradient(90deg, #00687a, #0093a8);
+}
+
+.cancel-btn {
+  background: #b0b3b8;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.cancel-btn:hover {
+  background: #888b90;
+}

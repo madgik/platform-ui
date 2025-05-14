@@ -2,15 +2,20 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
 import { catchError, map, switchMap, tap } from 'rxjs/operators';
-import {DataModel} from "../interfaces/data-model.interface";
+import { DataModel } from '../models/data-model.interface';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DataModelService {
-  private apiUrl = '/services/datamodels';
+  private apiUrl = '/services/data-models';
   private dataModels: any[] = []; // Cache for all data models
   private dataModelsLoaded = false; // Flag to track cache loading
+  crossSectionalModels: DataModel[] = [];
+  longitudinalModels: DataModel[] = [];
+  selectedDataModel: DataModel | null | undefined;
+  d3Data: any;
+  selectedNode: any;
 
   constructor(private http: HttpClient) {}
 
@@ -30,6 +35,7 @@ export class DataModelService {
     }
     return of(this.dataModels);
   }
+
 
   // Retrieve all data models, using the cache if available
   getAllReleasedDataModels(): Observable<any[]> {
@@ -218,6 +224,31 @@ export class DataModelService {
   }
 
 
+  loadDataModels(): void {
+    this.getAllDataModels().subscribe((dataModels) => {
+      console.log("dataModels", dataModels);
+      console.log("this.selectedDataModel",this.selectedDataModel)
+      this.handleDataModelResponse(dataModels);
+    });
+  }
+
+  handleDataModelResponse(dataModels: DataModel[]): void {
+    const { crossSectional, longitudinal } = this.categorizeDataModels(dataModels);
+    this.crossSectionalModels = crossSectional;
+    this.longitudinalModels = longitudinal;
+    if (dataModels.length > 0) {
+      this.selectedDataModel = crossSectional[0] || longitudinal[0] || null;
+    }
+    console.log("this.selectedDataModel",this.selectedDataModel)
+    this.loadVisualizationData();
+  }
+
+  loadVisualizationData(): void {
+    if (this.selectedDataModel) {
+      this.d3Data = this.convertToD3Hierarchy(this.selectedDataModel);
+      this.selectedNode = this.d3Data;
+    }
+  }
 
   updateDataModelFromJson(dataModelId: string, file: File): Observable<void> {
     const url = `${this.apiUrl}/${dataModelId}`;

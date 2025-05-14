@@ -1,12 +1,18 @@
-<div class="panels-container">
-  <app-workflow></app-workflow>
+<div class="experiment-studio">
+  <div class="experiment-studio">
+    <!-- <form>
+      <label for="name">Name:</label>
+      <input type="text" id="name" [(ngModel)]="experimentName" name="name" />
 
-  <app-variables-panel (variableSelected)="onVariableSelected($event)"></app-variables-panel>
-  <app-statistic-analysis-panel></app-statistic-analysis-panel>
+      <label for="date">Date Created:</label>
+      <input type="datetime-local" id="date" [(ngModel)]="experimentDate" name="date" />
 
-  <app-transformations-panel (transformationApplied)="transformationName = $event"></app-transformations-panel>
-  <app-filters-panel (filterApplied)="filterName = $event"></app-filters-panel>
+      <label for="description">Description:</label>
+      <textarea id="description" [(ngModel)]="experimentDescription" name="description"></textarea>
+    </form> -->
+  </div>
+  <app-variables-panel (variableSelected)="onVariableSelected($event)">
+  </app-variables-panel>
 
-  <app-algorithm-panel (algorithmConfigured)="onAlgorithmConfigured($event)"></app-algorithm-panel>
-  <app-results-panel></app-results-panel>
+  <app-algorithm-panel></app-algorithm-panel>
 </div>

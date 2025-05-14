@@ -1,0 +1,48 @@
+<div class="search-container">
+  <!-- Search Bar Input -->
+  <input
+    type="text"
+    placeholder="Search..."
+    [(ngModel)]="searchQuery"
+    (focus)="toggleDropdown()"
+    (input)="onSearchInput()"
+    class="search-input"
+  />
+
+  <!-- Dropdown Menu Overlay -->
+  @if (isDropdownOpen) {
+    <div class="dropdown-menu">
+      <!-- Variables Section -->
+      <div class="dropdown-section">
+        <h4>Variables</h4>
+        @if (filteredVariables.length > 0) {
+          @for (variable of filteredVariables; track variable) {
+            <div class="dropdown-item" (click)="selectItem(variable)">
+              <div class="variable-name">{{ variable.name }}</div>
+              <div class="variable-type">
+                <i class="fa-solid fa-circle-info info-icon"></i>
+                type: {{ variable.type }}
+              </div>
+            </div>
+          }
+        } @else {
+          <div class="dropdown-item">No variables found</div>
+        }
+      </div>
+
+      <!-- Groups Section -->
+      <div class="dropdown-section">
+        <h4>Groups</h4>
+        @if (filteredGroups.length > 0) {
+          @for (group of filteredGroups; track group) {
+            <div class="dropdown-item" (click)="selectItem(group)">
+              {{ group.name }}
+            </div>
+          }
+        } @else {
+          <div class="dropdown-item">No groups found</div>
+        }
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,138 @@
+<div class="parameters-section">
+  <!-- Header -->
+  <div class="parameters-header">
+    <label>Parameters</label>
+  </div>
+
+  <!-- Content -->
+  <div class="parameters-content">
+    <!-- Variables Section -->
+    <div class="section-container">
+      <div class="panel-controls">
+        <div class="button-container">
+          <button class="variable-btn" (click)="addVariable()">
+            + Add Variable
+          </button>
+          <span class="counter">{{ variables.length }}</span>
+        </div>
+        @if (variables.length > 0) {
+        <button class="bin-btn" (click)="clearList('variables')">
+          <i class="fa fa-trash"></i>
+        </button>
+        }
+      </div>
+      <div class="panel-container">
+        <div class="panel">
+          <ul class="horizontal-list">
+            @for (variable of variables; track variable) {
+            <li class="horizontal-item">
+              <div class="variable-info">
+                <span class="variable-name">{{ variable.name }}</span>
+                <span class="variable-type">type: {{ variable.type }}</span>
+              </div>
+              <button
+                class="remove-btn"
+                (click)="removeItem(variable, 'variables')"
+              >
+                ✖
+              </button>
+            </li>
+            }
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Repeat for Covariates and Filters -->
+    <!-- Covariates Section -->
+    <div class="section-container">
+      <div class="panel-controls">
+        <div class="button-container">
+          <button class="covariate-btn" (click)="addCovariate()">
+            + Add Covariate
+          </button>
+          <span class="counter">{{ covariates.length }}</span>
+        </div>
+        @if (covariates.length > 0) {
+        <button class="bin-btn" (click)="clearList('covariates')">
+          <i class="fa fa-trash"></i>
+        </button>
+        }
+      </div>
+      <div class="panel-container">
+        <div class="panel">
+          <ul class="horizontal-list">
+            @for (covariate of covariates; track covariate) {
+            <li class="horizontal-item">
+              <div class="variable-info">
+                <span class="variable-name">{{ covariate.name }}</span>
+                <span class="variable-type">type: {{ covariate.type }}</span>
+              </div>
+              <button
+                class="remove-btn"
+                (click)="removeItem(covariate, 'covariates')"
+              >
+                ✖
+              </button>
+            </li>
+            }
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!--Filters section -->
+    <div class="section-container">
+      <div class="panel-controls">
+        <div class="button-container">
+          <button class="covariate-btn" (click)="addFilter()">
+            + Add Filter
+          </button>
+          <span class="counter">{{ filters.length }}</span>
+        </div>
+        @if (filters.length > 0) {
+        <button class="bin-btn" (click)="clearList('filters')">
+          <i class="fa fa-trash"></i>
+        </button>
+        }
+      </div>
+      <div class="panel-container">
+        <div class="panel">
+          <ul class="horizontal-list">
+            @for (filter of filters; track filter) {
+            <li class="horizontal-item">
+              <div class="variable-info">
+                <span class="variable-name">{{ filter.name }}</span>
+                <span class="variable-type">type: {{ filter.type }}</span>
+              </div>
+              <button
+                class="remove-btn"
+                (click)="removeItem(filter, 'filters')"
+              >
+                ✖
+              </button>
+            </li>
+            }
+          </ul>
+        </div>
+        <button
+          class="cog-btn"
+          (click)="openFilterConfig()"
+          [disabled]="filters.length === 0"
+          [ngClass]="{ disabled: filters.length === 0 }"
+        >
+          <i class="fa fa-cog"></i>
+        </button>
+      </div>
+      @if (isFilterConfigOpen) {
+      <app-filter-config-modal
+        [filters]="filters"
+        [availableVariables]="availableVariables"
+        (filtersChange)="onFiltersChange($event)"
+        (closeModal)="onModalClose()"
+      ></app-filter-config-modal>
+
+      }
+    </div>
+  </div>
+</div>

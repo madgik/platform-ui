@@ -1,43 +1,47 @@
-import { Component } from '@angular/core';
+import { BubbleData } from './../../models/experiment-studio.model';
+import { Component, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { WorkflowComponent } from './workflow/workflow.component';
 import { VariablesPanelComponent } from './variables-panel/variables-panel.component';
-import { TransformationsPanelComponent } from './transformations-panel/transformations-panel.component';
-import { FiltersPanelComponent } from './filters-panel/filters-panel.component';
+import { ActivatedRoute } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { ExperimentStudioService } from '../../services/experiment-studio.service';
 import { AlgorithmPanelComponent } from './algorithm-panel/algorithm-panel.component';
-import { ResultsPanelComponent } from './results-panel/results-panel.component';
-import { StatisticAnalysisPanelComponent } from './statistic-analysis-panel/statistic-analysis-panel.component';
 
 @Component({
   selector: 'app-experiment-studio',
   standalone: true,
-  imports: [
-    CommonModule,
-    MatExpansionModule,
-    WorkflowComponent,
-    VariablesPanelComponent,
-    TransformationsPanelComponent,
-    FiltersPanelComponent,
-    AlgorithmPanelComponent,
-    ResultsPanelComponent,
-    StatisticAnalysisPanelComponent
-  ],
+  imports: [CommonModule, VariablesPanelComponent, AlgorithmPanelComponent, FormsModule],
   templateUrl: './experiment-studio.component.html',
-  styleUrls: ['./experiment-studio.component.css']
+  styleUrls: ['./experiment-studio.component.css'],
 })
 export class ExperimentStudioComponent {
-  currentStep: number = 1;
-  variableName: string = '';
-  transformationName: string = '';
-  filterName: string = '';
 
-  onVariableSelected(variable: string) {
-    this.variableName = variable;
-    this.currentStep = 2; // Move to the next step after variable selection
+  experimentName: string | null = null;
+  experimentDate: string | null = null;
+  experimentDescription: string | null = null;
+  selectedVariableData: any = null;
+
+  constructor(private route: ActivatedRoute, private expStudioService: ExperimentStudioService) {}
+
+  ngOnInit(): void {
+    // Retrieve query parameters
+    this.route.queryParams.subscribe((params) => {
+      this.experimentName = params['name'] || 'Untitled Experiment';
+      this.experimentDate = params['date'] || new Date().toISOString();
+      this.experimentDescription = params['description'] || '';
+    });
   }
 
-  onAlgorithmConfigured(algorithm: string) {
-    console.log(`Algorithm Configured: ${algorithm}`);
+  onVariableSelected(variable: BubbleData): void {
+    const algorithmName = "multiple_histograms";
+    console.log("variable: ", variable);
+    this.expStudioService.getAlgorithmResults(algorithmName, variable.code).subscribe(
+      (response) => {
+        this.selectedVariableData = response?.output?.histogram || null;
+      },
+      (error) => {
+        console.error("Error fetching variable distribution data:", error);
+      }
+    )
   }
 }

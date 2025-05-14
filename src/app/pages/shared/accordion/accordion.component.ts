@@ -11,7 +11,6 @@ import { CommonModule } from '@angular/common';
 export class AccordionComponent {
   @Input() accordionTitle: string = '';
   @Input() openByDefault: boolean = false;
-  @Input() padding: string = '20px';
   @Input() fontSize: string = '1.2rem';
 
   isOpen: boolean = this.openByDefault;

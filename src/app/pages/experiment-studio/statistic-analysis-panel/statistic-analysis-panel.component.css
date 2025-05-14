@@ -1,0 +1,236 @@
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  opacity: 1;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.modal-container {
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  width: 85%;
+  max-width: 1000px;
+  border-radius: 12px;
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.3);
+  z-index: 1100;
+  padding: 25px;
+  opacity: 1;
+  font-family: 'Roboto', sans-serif;
+  transition: transform 0.4s ease-in-out, opacity 0.3s ease-in-out;
+}
+
+.modal-body {
+  overflow-y: auto;
+  flex-grow: 1;
+  padding: 15px;
+  max-height: 70vh;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background: linear-gradient(90deg, #00758c, #00a6c0);
+  color: white;
+  font-size: 22px;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  width: 102%;
+  height: 50px;
+  margin-top: -2.5%;
+  margin-left: -2.5%;
+  z-index: 10;
+}
+
+.modal-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  text-align: right;
+}
+
+.close-btn {
+  background: none;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: normal;
+}
+
+.close-btn:hover {
+  color: #f8d7da;
+}
+
+modal-footer .close-btn {
+  /* background: gray; */
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: normal;
+}
+
+
+/* Accordion Styling */
+.accordion-header {
+  background: linear-gradient(90deg, #00758c, #00a6c0);
+  color: white;
+  padding: 10px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 16px;
+  border-radius: 6px;
+  margin-top: 8px;
+}
+
+.accordion-body {
+  display: none;
+  padding: 12px;
+  background: white;
+  border-radius: 6px;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.accordion-body.open {
+  display: block;
+}
+
+/* Expand/Collapse Buttons */
+.accordion-controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.expand-all, .collapse-all {
+  background: linear-gradient(90deg, #00758c, #00a6c0);
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: normal;
+}
+
+.expand-all:hover, .collapse-all:hover {
+  background: linear-gradient(90deg, #00687a, #0093a8);
+}
+
+/* Table Header (Gradient) */
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(90deg, #00758c, #00a6c0);
+  color: white;
+  padding: 12px 15px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 8px 8px 0 0;
+  position: relative;
+}
+
+/* Table Structure */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* Table Head with Gradient */
+.data-table thead {
+  background: linear-gradient(90deg, #00758c, #00a6c0);
+  color: white;
+  font-weight: bold;
+}
+
+/* **✅ Adjusted Row Spacing to Restore Clean Look** */
+.data-table th,
+.data-table td {
+  padding: 8px; /* Reduced padding for compact, clean look */
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+/* Remove rounding between Metric and Value headers */
+.data-table thead tr:first-child th {
+  border-radius: 0;
+}
+
+/* Table Body Styling */
+.data-table tbody tr:nth-child(odd) {
+  background: #f8fcfd;
+}
+
+.data-table tbody tr:nth-child(even) {
+  background: #eef7f9;
+}
+
+/* Export Button Inside Table Header */
+.export-table {
+  background: white;
+  color: #00758c;
+  border: 2px solid #00758c;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease-in-out;
+  position: absolute;
+  right: 15px;
+  top: 8px;
+}
+
+.export-table:hover {
+  background: #00758c;
+  color: white;
+}
+
+/* Loading Spinner */
+.loading-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px 0;
+  font-size: 16px;
+  color: #00758c;
+}
+
+.spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-left-color: #00758c;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-top: 10px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

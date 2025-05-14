@@ -1,0 +1,197 @@
+.parameters-content {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem; /* Larger gap for better spacing */
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+  padding: 0.5rem; /* Add padding for better alignment */
+}
+
+/* Section Container */
+.section-container {
+  display: flex;
+  flex-direction: column; /* Stack controls and panel */
+  gap: 0.5rem; /* Space between controls and panel */
+  width: 100%; /* Full width for alignment */
+}
+
+/* Panel Controls */
+.panel-controls {
+  display: flex;
+  justify-content: space-between; /* Align button and bin on sides */
+  align-items: center;
+}
+
+/* Button and Bin */
+.button-with-bin {
+  display: flex;
+  align-items: center; /* Align button and counter */
+  gap: 0.5rem; /* Space between button and counter */
+}
+
+.horizontal-list {
+  list-style-type: none; /* Removes the bullet points */
+  padding: 0; /* Removes padding */
+  margin: 0; /* Removes margin */
+}
+
+
+.variable-btn,
+.covariate-btn,
+.filter-btn {
+  position: relative; /* Required for the counter to position correctly */
+  color: #fff;
+  background: linear-gradient(90deg, #00758c, #00a6c0);
+  border-color: #1aa9c2;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+  width: 150px;
+}
+
+.bin-btn {
+  background-color: rgb(240, 240, 240);
+  color: #d9534f;
+  border-radius: 50%;
+  border-color: gray;
+  width: 35px;
+  height: 35px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1rem;
+}
+
+.bin-btn:hover {
+  background-color: #c9302c;
+  color: white;
+}
+
+.horizontal-item {
+  display: flex;
+  justify-content: space-between; /* Space between variable info and remove button */
+  align-items: center; /* Vertically align items */
+  padding: 0.5rem 0; /* Add some vertical padding */
+  border-bottom: 1px solid #eee; /* Optional: visual separation between items */
+}
+
+.variable-info {
+  display: flex;
+  flex-direction: column; /* Stack name and type vertically */
+  flex-grow: 1; /* Take up available space */
+}
+
+.variable-name {
+  font-weight: normal;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.variable-type {
+  font-size: 0.9rem;
+  color: #777;
+}
+
+.remove-btn {
+  font-size: 1.2rem;
+  color: red;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.remove-btn:hover {
+  transform: scale(1.2); /* Slightly enlarge the button on hover */
+}
+
+.button-container {
+  display: inline-flex; /* Aligns button and counter together */
+  position: relative;
+}
+
+.counter {
+  position: relative;
+  align-self: flex-start; /* Aligns to the top of the button */
+  margin-left: -0.5rem; /* Adjust for exact placement */
+  margin-top: -0.5rem;
+  background-color: #005f73;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+/* Panel Styling */
+.panel-container {
+  position: relative;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  min-height: 8rem;
+  padding: 2px 5px;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+  overflow: visible;
+}
+
+.panel {
+  width: 100%;
+  min-height: 8rem; /* Current minimum height */
+  max-height: 8rem; /* Prevents resizing beyond this height */
+  overflow-y: auto; /* Adds scrollbars if content overflows */
+  position: relative;
+}
+
+
+.cog-btn {
+  position: absolute; /* Change to absolute for relative positioning */
+  bottom: -5px; /* Move it slightly outside the bottom edge */
+  right: -7px; /* Move it outside the right edge */
+  background: linear-gradient(90deg, #00758c, #00a6c0);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 1px 3px 6px rgba(0, 0, 0, 0.363);
+  cursor: pointer;
+  font-size: 1.3rem;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  z-index: 10;
+}
+
+.cog-btn:hover {
+  background: #fff;
+  color: #00758c;
+  transform: scale(1.1);
+}
+
+.cog-btn:disabled {
+  background: black;
+  color: gray;
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none; /* Prevents clicking */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .parameters-content {
+    flex-direction: column;
+  }
+
+  .section-container {
+    width: 100%; /* Full-width on mobile */
+  }
+}

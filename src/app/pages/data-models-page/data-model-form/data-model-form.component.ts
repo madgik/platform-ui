@@ -76,7 +76,6 @@ export class DataModelFormComponent implements OnInit {
     if (this.selectedFileType === 'json') {
       this.dataModelService.createDataModelFromJson(this.file).subscribe({
         next: () => {
-          console.log('JSON Data Model created successfully.');
           this.dataModelUpdated.emit(); // Notify parent
           this.router.navigate(['/data-models/']);
         },
@@ -87,7 +86,6 @@ export class DataModelFormComponent implements OnInit {
       const longitudinal = this.dataModelForm.get('longitudinal')?.value;
       this.dataModelService.createDataModelFromExcel(this.file, version, longitudinal).subscribe({
         next: () => {
-          console.log('Excel Data Model created successfully.');
           this.dataModelUpdated.emit(); // Notify parent
           this.router.navigate(['/data-models']);
         },
@@ -105,7 +103,6 @@ export class DataModelFormComponent implements OnInit {
     if (this.selectedFileType === 'json') {
       this.dataModelService.updateDataModelFromJson(this.selectedDataModelID, this.file).subscribe({
         next: () => {
-          console.log('Data Model updated successfully (JSON).');
           this.dataModelUpdated.emit(); // Notify parent
           this.router.navigate(['/data-models']);
         },
@@ -116,7 +113,6 @@ export class DataModelFormComponent implements OnInit {
       const longitudinal = this.dataModelForm.get('longitudinal')?.value;
       this.dataModelService.updateDataModelFromExcel(this.selectedDataModelID, this.file, version, longitudinal).subscribe({
         next: () => {
-          console.log('Data Model updated successfully (Excel).');
           this.dataModelUpdated.emit(); // Notify parent
           this.router.navigate(['/data-models']);
         },

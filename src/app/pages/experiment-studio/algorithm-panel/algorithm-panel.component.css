@@ -1,54 +1,230 @@
-/* algorithm-panel.component.css */
-
+/* Algorithm Panel */
 .algorithm-panel {
-  padding: 20px;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  font-family: 'Roboto', sans-serif;
-  margin-bottom: 20px;
-  flex: 1;
+  width: 250px;
+  padding: 10px 0;
+  color: black;
+  font-family: Arial, sans-serif;
 }
 
-.algorithm-panel h3 {
-  font-size: 1.5rem;
-  color: #333;
-  margin-bottom: 15px;
+/* Category Headers */
+.category {
+  border: 1px solid #ccc; /* Thin border to separate sections */
+  border-radius: 4px;
+  margin-bottom: 8px;
+  background: white;
+  padding: 5px;
 }
 
-.algorithm-panel ul {
+.category h6 {
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 8px 12px;
+  margin: 0;
+  color: rgb(3, 82, 71);
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.category h6:hover {
+  background: linear-gradient(90deg, #0280806e, #45bfbf57);
+}
+
+.toggle-icon {
+  float: right;
+}
+
+/* Algorithm List - Indented and Slightly Smaller */
+.category ul {
   list-style: none;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
+  padding-left: 15px; /* Indent sublist */
+  margin: 5px 0;
 }
 
-.algorithm-panel li {
-  margin-bottom: 10px;
+.category li {
+  font-size: 13px; /* Make items slightly smaller */
+  padding: 8px;
+  cursor: pointer;
+  border-bottom: 1px solid #ddd;
+  background: white;
+  transition: background 0.2s ease;
 }
 
-.algorithm-panel button {
-  background-color: #18a2b8;
+.category li:hover {
+  background: #e8f7fa;
+  background: linear-gradient(90deg, #04807a91, #59dfdf5b);
+  border-radius: 6px;
+}
+
+.category li.selected {
+  background: linear-gradient(90deg, #048079, #59dfdf);
+  color: white;
+  font-weight: bold;
+  border-radius: 6px;
+}
+
+/* Tooltip */
+.tooltip {
+  position: absolute;
+  background: white;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  padding: 12px;
+  border-radius: 6px;
+  width: 240px;
+  z-index: 10;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.tooltip h5 {
+  margin: 0;
+  font-size: 16px;
+  color: #028080;
+}
+
+.tooltip p {
+  margin: 5px 0;
+  font-size: 12px;
+  color: #555;
+}
+
+/* Algorithm Categories */
+.category-title {
+  font-size: 14px;
+  font-weight: bold;
+  margin-top: 10px;
+  padding-left: 10px;
+  color: white;
+}
+
+/* Tooltip Styles */
+.tooltip {
+  position: fixed;
+  background: white;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  padding: 12px;
+  border-radius: 6px;
+  max-width: 250px;
+  z-index: 1000;
+}
+
+/* Left-aligned expand icon */
+.expand-icon {
+  display: inline-block;
+  margin-right: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  transition: transform 0.2s ease-in-out;
+}
+
+/* Rotate when expanded */
+.expand-icon.expanded {
+  transform: rotate(90deg);
+}
+
+
+/* Run Experiment Button */
+.run-exp-btn {
+  /* background: linear-gradient(90deg, #00758c, #00a6c0); */
+  /* background: linear-gradient(90deg, #028a8a, #66bbbb); */
+  background: linear-gradient(90deg, #028080, #2dcccc);
   color: white;
   border: none;
-  border-radius: 50%;
+  padding: 8px 12px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: background-color 0.3s ease-in-out, transform 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(0.5rem + 1vw);
-  padding: calc(10px + 1vw);
-  width: auto;
-  height: auto;
-  min-width: 80px;
-  min-height: 80px;
-  max-width: 150px;
-  max-height: 150px;
+  font-size: 14px;
+  font-weight: normal;
 }
 
-.algorithm-panel button:hover {
-  background-color: #127a91;
+/* Style the Run Experiment Button */
+.run-button {
+  background: linear-gradient(90deg, #028080, #2dcccc);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  transition: background 0.3s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.run-button:hover {
+  background: linear-gradient(90deg, #048079, #29bbbb);
+  transform: scale(1.05);
+}
+
+/* Place button on Top Right, Next to 'i' and maybe consider placing it on the bottom as an alternative */
+.run-button.top-right {
+  position: absolute;
+  top: 10px;
+  right: 80px;
+}
+
+.experiment-container {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  font-family: Arial, sans-serif;
+  position: relative;
+  min-height: 60vh;
+}
+
+.floating-group {
+  position: absolute;
+  top: 1%;
+  right: 15px;
+  z-index: 0;
+}
+
+/* Floating Info Button */
+.floating-info-button {
+  background: linear-gradient(90deg, #028080, #2dcccc);
+  color: white;
+  border: none;
+  padding: 7px 18px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 22px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: background 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.floating-info-button:hover {
+  background: linear-gradient(90deg, #028080, #2dcccc);
   transform: scale(1.1);
 }
+
+/* Keep the Panel Lower */
+.side-panel {
+  position: absolute;
+  top: 107%;
+  right: -400px;
+  width: 280px;
+  background: white;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  padding: 16px;
+  border-radius: 6px;
+  transition: right 0.3s ease-in-out;
+  z-index: 10;
+}
+
+.side-panel.open {
+  right: 10px;
+}
+
+.close-info-button {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.result-section {
+  margin-top: 1rem;
+}
+

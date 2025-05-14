@@ -18,11 +18,11 @@ export class ExperimentsListComponent {
 
   // Define the menu items with icons and optional routes
   experimentMenuItems = [
-    { label: 'New Experiment', icon: 'fas fa-plus', action: 'new' },
-    { label: 'Edit Experiment', icon: 'fas fa-edit', action: 'edit' },
-    { label: 'Duplicate Experiment', icon: 'fas fa-clone', action: 'duplicate' },
-    { label: 'Compare Experiments', icon: 'fas fa-code-compare', action: 'compare' },
-    { label: 'Delete Experiment', icon: 'fas fa-trash', action: 'delete' },
+    { label: 'New', icon: 'fas fa-plus', action: 'new' },
+    { label: 'Edit', icon: 'fas fa-edit', action: 'edit' },
+    { label: 'Duplicate', icon: 'fas fa-clone', action: 'duplicate' },
+    { label: 'Compare', icon: 'fas fa-code-compare', action: 'compare' },
+    { label: 'Delete', icon: 'fas fa-trash', action: 'delete' },
     { label: 'Download PDF', icon: 'fas fa-file-pdf', action: 'download' }
   ];
 

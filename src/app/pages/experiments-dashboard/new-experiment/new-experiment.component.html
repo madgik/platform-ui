@@ -7,17 +7,42 @@
     </div>
     <form (ngSubmit)="onCreateExperiment()">
       <div class="modal-body">
-        <label for="experimentName">Experiment Name</label>
-        <input id="experimentName" type="text" name="experimentName" placeholder="Enter experiment name" [(ngModel)]="experimentName" validate/>
+        <label for="experimentName">Experiment Name *</label>
+        <input
+          id="experimentName"
+          type="text"
+          name="experimentName"
+          placeholder="Enter experiment name"
+          [(ngModel)]="experimentName"
+          required
+        />
 
-        <label for="experimentDescription">Experiment Description</label>
-        <textarea id="experimentDescription" name="experimentDescription" placeholder="Provide a brief description of the experiment" [(ngModel)]="description"></textarea>
+        <label for="experimentDescription">Experiment Description *</label>
+        <textarea
+          id="experimentDescription"
+          name="experimentDescription"
+          placeholder="Provide a brief description of the experiment"
+          [(ngModel)]="description"
+          required
+        ></textarea>
 
         <label for="dateCreated">Date Created</label>
-        <input id="dateCreated" type="date" name="dateCreated" [(ngModel)]="date"/> <!-- Automatically add todays date, it should be grayed out -->
+        <input
+          id="dateCreated"
+          type="date"
+          name="dateCreated"
+          [(ngModel)]="date"
+          readonly
+        />
 
         <label for="status">Status</label>
-        <input id="status" type="drop-down" name="status" [(ngModel)]="status" /> <!-- TODO: Add automatically in progress -->
+        <input
+          id="status"
+          type="text"
+          name="status"
+          [(ngModel)]="status"
+          readonly
+        />
       </div>
       <div class="dialog-actions">
         <button type="submit" class="btn-create" (click)="onCreateExperiment()">Create Experiment</button>
@@ -26,10 +51,3 @@
     </form>
   </div>
 </dialog>
-<!--
-id: string;
-name: string;
-description: string;
-dateCreated: string;  // Adjust based on your date format
-status: string;
-records: number; ? Do we need it? -->

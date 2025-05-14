@@ -2,7 +2,6 @@
   <div class="main-content">
     <!-- Top section with a button to create new experiments -->
     <div class="top-section">
-      <h1>Experiments Dashboard</h1>
     </div>
 
     <!-- Content section with experiment list and details -->
@@ -16,7 +15,9 @@
       </div>
 
       @if (isAddingExperiment) {
-      <app-new-experiment (cancel)="onCloseNewExperiment()" />
+      <app-new-experiment
+      (createExperiment)="handleExperimentCreation($event)"
+      (cancel)="onCloseNewExperiment()" />
       }
       <!-- Experiment Details -->
       @if (selectedExperiment()) {

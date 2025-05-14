@@ -1,0 +1,60 @@
+#bubbleChart {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+circle {
+  transition: all 0.2s ease-in-out;
+}
+
+circle:hover {
+  stroke-width: 4;
+  transform: scale(1.1);
+}
+
+circle.selected {
+  fill: hsl(200,80%,60%) !important; /* 👈 Slightly different color for selected */
+  stroke: black !important; /* Optional: Add stroke */
+  stroke-width: 2px !important;
+}
+
+/* Visualization type container */
+.visualization-type-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+/* Chart container styling */
+#chart-container {
+  padding: 5px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  overflow-x: auto;
+  overflow-y: auto;
+  /* height: calc(100vh - 250px);
+  width: calc(87% - 20px); */
+  height: auto;
+  width: 100%;
+  display: inline-block;
+  vertical-align: top;
+}
+
+.error-message {
+  color: red;
+  font-size: 1.2em;
+  text-align: center;
+  padding: 20px;
+  border: 1px solid red;
+  background-color: #ffe5e5;
+}
+
+#chart {
+  width: 100%;
+  height: 100%;
+  padding-left: 14px;
+  border-radius: 8px;
+}

@@ -1,12 +1,56 @@
-<app-accordion [accordionTitle]=accordionTitle>
-  <div class="accordion-content">
-    <ul>
-      @for (variable of variables; track variable) {
-        <li>
-          <button (click)="selectVariable(variable)">{{ variable }}</button>
-        </li>
+<app-accordion [accordionTitle]="accordionTitle">
+  <div class="selectors-container">
+    <app-data-model-selector
+      [crossSectionalModels]="crossSectionalModels"
+      [longitudinalModels]="longitudinalModels"
+      [defaultModel]="selectedDataModel!"
+      (dataModelChange)="onSelectedDataModelChange($event)"
+    >
+    </app-data-model-selector>
+
+    <app-dataset-selector
+      [datasets]="availableDatasets"
+      (selectedDatasetsChange)="onDatasetsSelected($event)"
+    >
+    </app-dataset-selector>
+
+    <div id="search-bar-container">
+      <app-search-bar
+        [dataModelHierarchy]="d3Data"
+        (searchResultSelected)="onSearchResult($event)"
+      ></app-search-bar>
+    </div>
+  </div>
+
+  <div class="variables-panel-container">
+    <!-- Bubble Chart -->
+    <div class="bubble-chart-section">
+      @if (selectedDataModel) {
+      <app-bubble-chart
+        [d3Data]="d3Data"
+        (selectedNodeChange)="onSelectedNodeChange($event)"
+      >
+      </app-bubble-chart>
       }
-    </ul>
+    </div>
+    <!-- Selected Variables -->
+    <div class="group-components-vertical">
+      <div class="variable-filter-container">
+        <app-variable-filter-selection
+        [selectedNode]="selectedNode"
+        (filtersChange)="onFilterChange($event)"
+      ></app-variable-filter-selection>
+
+        <!-- Distribution Graph Panel -->
+      </div>
+      <div class="distribution-graph">
+        <section title="Distribution Graph">
+          <p>Distribution Graph</p>
+          <app-distribution-graph
+            [data]="distributionData()"
+          ></app-distribution-graph>
+        </section>
+      </div>
+    </div>
   </div>
 </app-accordion>
-

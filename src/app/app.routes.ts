@@ -20,7 +20,7 @@ export const appRoutes: Routes = [
         (m) => m.FederationsPageModule // Ensure you're importing the main module here
       ),
   },
-  { path: 'experiments', component: ExperimentsDashboardComponent},
+  { path: 'experiments-dashboard', component: ExperimentsDashboardComponent},
   { path: 'account', component: AccountPageComponent, canActivate: [AuthGuard] },
   { path: 'experiment-studio', component: ExperimentStudioComponent},
   { path: 'data-models', component: DataModelsPageComponent,

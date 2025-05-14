@@ -1,0 +1,22 @@
+<div class="dropdown">
+  <button class="dropdown-toggle" (click)="toggleDropdown()">
+    Select Datasets
+  </button>
+  @if (isDropdownOpen) {
+    <ul class="dropdown-menu">
+      @for (dataset of datasets; track dataset) {
+        <li>
+          <label>
+            <input
+              type="checkbox"
+              [checked]="isDatasetSelected(dataset.code)"
+              (change)="toggleDataset(dataset.code)"
+            />
+            {{ dataset.label }}
+          </label>
+        </li>
+      }
+    </ul>
+  }
+</div>
+

@@ -1,0 +1,38 @@
+import { Component, ElementRef, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { createHistogram } from './histogram-chart';
+
+@Component({
+  selector: 'app-histogram',
+  standalone: true,
+  templateUrl: './histogram.component.html',
+  styleUrls: ['./histogram.component.css'],
+})
+export class HistogramComponent implements OnChanges {
+  @Input() data: { bins: string[]; counts: number[]; variableName: string} | null = null; // Data for histogram
+  @Input() config: { color?: string; width?: number; height?: number } = {}; // Configuration for the graph
+  isLoading = true;
+
+  constructor(private elementRef: ElementRef) {}
+
+  ngOnChanges(changes: SimpleChanges): void {
+    this.isLoading = true; // Show loading only if empty
+    if (changes['data'] && changes['data'].currentValue) {
+      this.renderHistogram();
+      this.isLoading = false;
+    }
+  }
+
+  renderHistogram(): void {
+    if (!this.data || !this.data.bins || !this.data.counts) {
+      console.log('No data available to render the histogram.');
+      return;
+    }
+
+    const container = this.elementRef.nativeElement.querySelector('#histogram-chart');
+    if (!container) {
+      console.error('Histogram container not found.');
+      return;
+    }
+    createHistogram(this.data, container, this.config); // Call D3 rendering logic
+  }
+}

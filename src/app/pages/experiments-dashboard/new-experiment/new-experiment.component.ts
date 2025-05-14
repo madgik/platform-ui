@@ -1,39 +1,46 @@
-import { Component, EventEmitter, inject, output, Output } from '@angular/core';
+import { Component, EventEmitter, inject, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { type NewExperimentModalData } from './../../../models/new-experiment.model';
+import { v4 as uuidv4 } from 'uuid';
 import { ExperimentsDashboardService } from '../../../services/experiments-dashboard.service';
-import { v4 as uuidv4} from 'uuid';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-new-experiment',
   standalone: true,
   imports: [FormsModule],
   templateUrl: './new-experiment.component.html',
-  styleUrls: ['./new-experiment.component.css']
+  styleUrls: ['./new-experiment.component.css'],
 })
 export class NewExperimentComponent {
-  cancel = output({});
-  experimentName = "";
-  description = "";
-  date = new Date();
-  status = "";
+  @Output() cancel = new EventEmitter<void>();
+  @Output() createExperiment = new EventEmitter<any>();
 
-  private expDashboardService = inject(ExperimentsDashboardService)
+  constructor(private router: Router) {}
 
-  // Method to create a new experiment and close the modal afterward
+  experimentName = '';
+  description = '';
+  date = new Date(); // .toISOString().split('T')[0] Today's date in YYYY-MM-DD format
+  status = 'In Progress';
+
+  private expDashboardService = inject(ExperimentsDashboardService);
+
   onCreateExperiment() {
-      console.log('Creating new experiment...');
-      this.expDashboardService.addExperiment({
-        name: this.experimentName,
-        description: this.description,
-        dateCreated: this.date,
-        status: this.status
-      });
-    this.cancel.emit(); // Close modal after creating the experiment
+    const newExperiment = {
+      name: this.experimentName,
+      description: this.description,
+      dateCreated: this.date,
+      status: this.status,
+    };
+
+    console.log('Creating new experiment:', newExperiment);
+    this.expDashboardService.addExperiment(newExperiment);
+    this.createExperiment.emit(newExperiment); // Emit created experiment
+    this.router.navigate(['/experiment-studio'], { state: { data: newExperiment } });
   }
 
-  // Method to close the modal directly
   closeModal() {
     this.cancel.emit();
   }
 }
+
+

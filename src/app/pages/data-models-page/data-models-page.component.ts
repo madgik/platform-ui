@@ -9,12 +9,12 @@ import { AuthService } from "../../services/auth.service";
 import { MatMenu, MatMenuItem, MatMenuTrigger } from "@angular/material/menu";
 import { MatIcon } from "@angular/material/icon";
 import { MatIconButton } from "@angular/material/button";
-import { DataModel } from "../../interfaces/data-model.interface";
+import { DataModel } from '../../models/data-model.interface';
 import { FederationSelectorComponent } from "./federation-selector/federation-selector.component";
 import { VisualizationComponent } from "./visualization/visualization.component";
 import { ActionMenuComponent } from "./action-menu/action-menu.component";
 import { NodeInfoComponent } from "./node-info/node-info.component";
-import { DataModelSelectorComponent } from "./data-model-selector/data-model-selector.component";
+import { DataModelSelectorComponent } from "../experiment-studio/variables-panel/data-model-selector/data-model-selector.component";
 import { ExportOptionsComponent } from "./export-options/export-options.component";
 import {ErrorService} from "./services/error.service";
 import {ConfirmationDialogComponent} from "./confirmation-dialog/confirmation-dialog.component";
@@ -108,13 +108,11 @@ export class DataModelsPageComponent implements OnInit{
     if (this.selectedFederation) {
 
       this.dataModelService.getDataModelsByIds(this.selectedFederation.dataModelIds).subscribe((dataModels) => {
-
         this.handleDataModelResponse(dataModels);
       });
 
     } else {
       this.dataModelService.getAllDataModels().subscribe((dataModels) => {
-        console.log("this.selectedDataModel",this.selectedDataModel)
         this.handleDataModelResponse(dataModels);
       });
     }
@@ -127,7 +125,6 @@ export class DataModelsPageComponent implements OnInit{
     if (dataModels.length > 0) {
       this.selectedDataModel = crossSectional[0] || longitudinal[0] || null;
     }
-    console.log("this.selectedDataModel",this.selectedDataModel)
     this.loadVisualizationData();
   }
 
@@ -140,7 +137,6 @@ export class DataModelsPageComponent implements OnInit{
 
   onSelectedNodeChange(node: any): void {
     this.selectedNode = node;
-    console.log("this.selectedNode:", this.selectedNode);
   }
 
   onSelectedDataModelChange(selectedDataModel: DataModel | null): void {
@@ -158,7 +154,6 @@ export class DataModelsPageComponent implements OnInit{
   }
 
   handleAction(action: string): void {
-    console.log('Action Triggered:', action);
     switch (action) {
       case 'add':
         this.goToAddDataModel();

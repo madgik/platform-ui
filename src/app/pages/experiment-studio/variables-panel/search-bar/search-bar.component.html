@@ -1,0 +1,55 @@
+<!-- <div class="search-container"> -->
+  <!-- Circular Button -->
+  <!-- <div
+    *ngIf="!isSearchExpanded"
+    class="search-icon-circle"
+    (click)="expandSearch($event)"
+  >
+    <i class="fas fa-search"></i>
+  </div> -->
+
+  <!-- Search Bar with Integrated Filters -->
+  <!-- <div class="search-expanded"> -->
+    <div class="search-input-container">
+      <input
+        type="text"
+        id="search-bar"
+        placeholder="Search..."
+        [(ngModel)]="searchQuery"
+        (focus)="onSearchFocus()"
+        (input)="handleSearch(searchQuery)"
+      />
+      <!-- Inline Filters -->
+      <div class="inline-filters">
+        <select [(ngModel)]="filterType" (change)="applyFilter(filterType)">
+          <option value="variables">Variables</option>
+          <option value="groups">Groups</option>
+        </select>
+        <div *ngIf="filterType === 'variables'" class="additional-filter">
+          <select [(ngModel)]="variableTypeFilter" (change)="applyVariableTypeFilter(variableTypeFilter)">
+            <option value="">All Types</option>
+            <option *ngFor="let type of variableTypes" [value]="type">{{ type }}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search Suggestions -->
+    <div *ngIf="searchSuggestionsVisible" class="suggestions-container">
+      <div *ngIf="filteredItems.length > 0; else noResults">
+        <ul>
+          <li *ngFor="let item of filteredItems"
+              (click)="onItemClick(item)"
+              [title]="generateTooltip(item)">
+            <strong>{{ item.name || item }}</strong>
+          </li>
+        </ul>
+      </div>
+
+      <!-- No Results Message -->
+      <ng-template #noResults>
+        <div class="no-results">No results found</div>
+      </ng-template>
+    </div>
+  <!-- </div> -->
+<!-- </div> -->

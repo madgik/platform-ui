@@ -55,7 +55,6 @@ export class FederationSelectorComponent implements OnInit , OnChanges {
   }
 
   private emitFederationChange(): void {
-    console.log('Emitting Federation Change:', this.selectedFederation);
     this.federationChange.emit(this.selectedFederation);
   }
 }

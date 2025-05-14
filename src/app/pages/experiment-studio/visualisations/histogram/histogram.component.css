@@ -1,0 +1,68 @@
+
+#histogram-chart {
+  display: block;
+  padding: 0;
+  width: 100%;
+  height: 100%; /* Set to use available height */
+  min-height: 400px; /* Ensure a minimum height */
+  box-sizing: border-box;
+  overflow: visible;
+}
+
+.histogram-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: auto; /* Dynamically adjust based on content */
+  padding: 10px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.chart-description {
+  font-size: 14px;
+  color: #555;
+  text-align: center;
+}
+
+/* Adjust text styles for better readability */
+#histogram-chart text {
+  font-size: 12px; /* Ensure axis labels are readable */
+  font-family: 'Arial', sans-serif; /* Use a clean, legible font */
+  fill: #333; /* Use a dark color for text */
+}
+
+/* Add hover effects for bars if desired */
+.bar:hover {
+  fill: #005f73; /* Darker shade on hover */
+  cursor: pointer; /* Indicate interactivity */
+}
+
+/* Loading Spinner */
+.loading-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px 0;
+  font-size: 16px;
+  color: #00758c;
+}
+
+.spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-left-color: #00758c;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-top: 10px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

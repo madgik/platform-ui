@@ -1,94 +1,95 @@
-/* variables-panel.component.css */
-
-.variables-panel {
-  padding: 20px;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  font-family: 'Roboto', sans-serif;
-  margin-bottom: 20px;
-  flex: 1;
-}
-
-.variables-panel h3 {
-  font-size: 1.5rem;
-  color: #333;
-  margin-bottom: 15px;
-}
-
-.variables-panel ul {
-  list-style: none;
-  padding: 0;
+.variables-panel-container {
   display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  height: 100%;
+  width: 100%;
 }
 
-.variables-panel li {
+.search-bar {
+  width: 100%;
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+  background-color: #f9f9f9;
+}
+
+.main-panel {
+  display: flex;
+  flex-grow: 1;
+  justify-content: space-between;
+  padding: 10px;
+}
+
+.bubble-chart-section {
+  flex-shrink: 0;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #fff;
+  padding: 5px;
+  width: fit-content;
+  min-width: 52%;
+}
+
+.variable-filter-container {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #fff;
+  padding: 5px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.selection-panel {
+  flex: 1;
+  margin-left: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  padding: 10px;
+  overflow-y: auto;
+}
+
+.selection-panel h4 {
   margin-bottom: 10px;
 }
 
-.variables-panel button {
-  background-color: #18a2b8;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: background-color 0.3s ease-in-out, transform 0.3s ease;
+.selection-panel ul {
+  list-style: none;
+  padding: 0;
+}
+
+.selection-panel li {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(0.5rem + 1vw);
-  padding: calc(10px + 1vw);
-  width: auto;
-  height: auto;
-  min-width: 80px;
-  min-height: 80px;
-  max-width: 150px;
-  max-height: 150px;
-}
-
-.variables-panel button:hover {
-  background-color: #127a91;
-  transform: scale(1.1);
-}
-
-/* Styling for accordion layout */
-.accordion-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-}
-
-.accordion-column {
-  flex: 1;
-  min-width: 300px;
-}
-
-.accordion {
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 15px;
-  overflow: hidden;
-}
-
-.accordion-header {
-  padding: 15px;
-  font-size: 1.2rem;
-  cursor: pointer;
-  background-color: #18a2b8;
-  color: white;
-  display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
 }
 
-.accordion-content {
-  padding: 20px;
-  display: none;
+.selectors-container {
+  display: flex;
+  gap: 20px; /* Adjust spacing between dropdowns */
+  align-items: center;
 }
 
-.accordion-content.open {
+.distribution-graph {
   display: block;
+  width: 100%;
+  height: auto; /* Allow it to grow based on content */
+  padding: 10px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-sizing: border-box;
+  margin-bottom: 20px; /* Add space below */
+  overflow: visible; /* Ensure no clipping occurs */
+  padding: 0px;
 }
+
+.group-components-vertical {
+  display: block;
+  width: 60%;
+}
+
+

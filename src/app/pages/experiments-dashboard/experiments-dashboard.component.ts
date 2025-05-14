@@ -44,6 +44,11 @@ export class ExperimentsDashboardComponent implements OnInit {
     this.isAddingExperiment = true;
   }
 
+  handleExperimentCreation(experiment: any) {
+    this.experimentsService.addExperiment(experiment); // Save the experiment
+    this.router.navigate(['/experiment-studio'], { state: experiment }); // Navigate to the studio
+  }
+
   onCloseNewExperiment() {
     this.isAddingExperiment = false;
   }
