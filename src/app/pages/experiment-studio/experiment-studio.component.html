@@ -1,5 +1,11 @@
 <div class="experiment-studio">
   <div class="experiment-studio">
+    <app-login-modal *ngIf="!auth.isLoggedIn()"></app-login-modal>
+
+    <div *ngIf="auth.isLoggedIn()" class="studio-content">
+      <!-- εδώ μπαίνει όλο το υπόλοιπο -->
+    </div>
+
     <!-- <form>
       <label for="name">Name:</label>
       <input type="text" id="name" [(ngModel)]="experimentName" name="name" />

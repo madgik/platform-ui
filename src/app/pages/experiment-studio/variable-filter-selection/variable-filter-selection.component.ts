@@ -1,22 +1,20 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, effect } from '@angular/core';
 import { FilterConfigModalComponent } from '../../shared/filter-config-modal/filter-config-modal.component';
 import { CommonModule } from '@angular/common';
 import { ExperimentStudioService } from '../../../services/experiment-studio.service';
+import { CdkDragDrop, DragDropModule, transferArrayItem } from '@angular/cdk/drag-drop'
+
 
 @Component({
   selector: 'app-variable-filter-selection',
   standalone: true,
   templateUrl: './variable-filter-selection.component.html',
   styleUrls: ['./variable-filter-selection.component.css'],
-  imports: [CommonModule, FilterConfigModalComponent]
+  imports: [CommonModule, FilterConfigModalComponent, DragDropModule]
 })
 export class VariableFilterSelectionComponent implements OnInit {
   @Input() selectedNode: any; // Selected node from the bubble chart
-  // @Input() variables: any[] = []; // Selected variables
-  // @Input() covariates: any[] = []; // Selected covariates
-  // @Input() filters: any[] = []; // Selected filters
-  // @Output() variablesChange = new EventEmitter<any[]>();
-  // @Output() covariatesChange = new EventEmitter<any[]>();
+  @Input() groupVariables: any[] = [];
   @Output() filtersChange = new EventEmitter<any[]>();
   @Input() availableVariables: any[] = [];
   variables: any[] = [];
@@ -24,39 +22,97 @@ export class VariableFilterSelectionComponent implements OnInit {
   filters: any[] = [];
   isFilterConfigOpen = false;
 
-  constructor(private expStudioService: ExperimentStudioService) { }
+  constructor(private expStudioService: ExperimentStudioService) {
+    effect(() => {
+      // activates availableGroupedAlgorithms to recalculate available algorithms
+      this.expStudioService.availableGroupedAlgorithms();
+    });
+
+    effect(() => {
+      this.variables = this.expStudioService.selectedVariables();
+    });
+
+    effect(() => {
+      this.covariates = this.expStudioService.selectedCovariates();
+    });
+
+    effect(() => {
+      this.filters = this.expStudioService.selectedFilters();
+    });
+  }
 
   ngOnInit(): void {
-    this.expStudioService.variables$.subscribe((variables) => {
-      console.log("Received updated variables:", variables);
-      this.variables = variables;
-    });
 
-    this.expStudioService.covariates$.subscribe((covariates) => {
-      console.log("Received updated covariates:", covariates);
-      this.covariates = covariates;
-    });
+  }
 
-    this.expStudioService.filters$.subscribe((filters) => {
-      console.log("Received updated filters:", filters);
-      this.filters = filters;
-    });
+  private getLeafNodes(node: any): any[] {
+    const leaves: any[] = [];
+
+    function collectLeaves(n: any) {
+      if (!n.children || n.children.length === 0) {
+        leaves.push(n);
+      } else {
+        n.children.forEach(collectLeaves);
+      }
+    }
+
+    collectLeaves(node);
+    return leaves;
   }
 
   addItem(listName: 'variables' | 'covariates' | 'filters'): void {
     if (!this.selectedNode) return;
 
-    const list = this[listName];
-    const isDuplicate = list.some((item) => item.code === this.selectedNode.code);
-    if (!isDuplicate) {
-      const updated = [...list, { ...this.selectedNode }];
-      this[listName] = updated;
+    // 🔁 Πάρε όλα τα leafs από το selectedNode (είτε είναι group είτε variable)
+    const itemsToAdd = this.selectedNode.children ? this.getLeafNodes(this.selectedNode) : [this.selectedNode];
 
-      if (listName === 'variables') {
-        this.expStudioService.addVariableAndEnrich(this.selectedNode);
-      } else {
-        this.updateService(listName, updated);
-      }
+    const list = this[listName];
+    const updated = [
+      ...list,
+      ...itemsToAdd.filter(item => !list.some(existing => existing.code === item.code))
+    ];
+
+    this[listName] = updated;
+
+    if (listName === 'variables') {
+      itemsToAdd.forEach(item => this.expStudioService.addVariableAndEnrich(item));
+    } else {
+      this.updateService(listName, updated);
+    }
+  }
+
+
+  drop(event: CdkDragDrop<any[]>, listName: 'variables' | 'covariates' | 'filters') {
+    if (event.previousContainer === event.container) return;
+
+    const item = event.previousContainer.data[event.previousIndex];
+    const targetList = event.container.data;
+    if (targetList.some(v => v.code === item.code)) {
+      return;
+    }
+
+    transferArrayItem(
+      event.previousContainer.data,
+      event.container.data,
+      event.previousIndex,
+      event.currentIndex
+    );
+
+    const updated = event.container.data;
+
+    switch (listName) {
+      case 'variables':
+        this.variables = updated;
+        this.expStudioService.setVariables(this.variables);
+        break;
+      case 'covariates':
+        this.covariates = updated;
+        this.expStudioService.setCovariates(this.covariates);
+        break;
+      case 'filters':
+        this.filters = updated;
+        this.expStudioService.setFilters(this.filters);
+        break;
     }
   }
 
@@ -134,8 +190,8 @@ export class VariableFilterSelectionComponent implements OnInit {
     if (Array.isArray(updatedFilters)) {
       this.filters = [...updatedFilters];
       this.availableVariables = [...updatedFilters];
-      console.log('Filters updated from modal:', this.availableVariables);
-      this.filtersChange.emit(this.filters); // μόνο αν χρησιμοποιείται
+      // console.log('Filters updated from modal:', this.availableVariables);
+      this.filtersChange.emit(this.filters); // this emits an event if a filter exists
       this.updateService('filters', this.filters);
     } else {
       console.error('Invalid filters received from modal:', updatedFilters);

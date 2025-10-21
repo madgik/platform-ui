@@ -4,7 +4,7 @@
       <h6>Available Algorithms</h6>
 
       <div class="category">
-        @for (category of algorithmCategories(); track category) {
+        @for (category of availableAlgorithmCategories(); track category.name) {
         <h6 (click)="toggleCategory(category.name)">
           <span
             class="expand-icon"
@@ -18,6 +18,7 @@
           @for (algorithm of category.algorithms; track algorithm) {
           <li
             (click)="selectAlgorithm(algorithm)"
+            [class.disabled-algo]="algorithm.isDisabled"
             (mouseenter)="showTooltip(algorithm, $event)"
             (mouseleave)="hideTooltip()"
             [class.selected]="algorithm.name === selectedAlgorithm()?.name"
@@ -38,22 +39,59 @@
       >
         <h5>{{ tooltipData?.name }}</h5>
         <p>{{ tooltipData?.description }}</p>
-        <p><strong>Variable:</strong> {{ tooltipData?.variable }}</p>
+        @if (tooltipData?.requiredVariable) {
+        <p><strong>Variable:</strong> {{ tooltipData?.requiredVariable }}</p>
+        } @if (tooltipData?.covariate !== "") {
         <p><strong>Covariate:</strong> {{ tooltipData?.covariate }}</p>
+        }
       </div>
       }
     </aside>
 
     <main class="experiment-panel">
+      @if (isRunning()) {
+        <div class="overlay-loader">
+          <!-- <div class="loader-content" role="status" aria-live="polite">
+            <div class="loader-spinner"></div>
+            <p>Running analysis...</p>
+          </div> -->
+          <app-spinner text="Running analysis..." color="#007d7d" size="72px" />
+          <!-- <app-spinner [text]="'Running analysis...'" [color]="'#006666'" [size]="'72px'"></app-spinner> -->
+
+        </div>
+      }
       <header>
-        <button class="run-button top-right" (click)="onClickRunExp()">
-          Run Experiment
+        <!-- <button
+          class="run-button top-right"
+          [disabled]="
+            !selectedAlgorithm() ||
+            isRunning() ||
+            selectedAlgorithm()?.name === 'multiple_histograms' ||
+            selectedAlgorithm()?.name === 'descriptive_statistics'
+          "
+          [class.loading]="isRunning()"
+          (click)="onClickRunExp()"
+        > Run Experiment
+
+        </button> -->
+        <button
+          class="run-button top-right"
+          [disabled]="
+            !selectedAlgorithm() ||
+            isRunning() ||
+            selectedAlgorithm()?.name === 'multiple_histograms' ||
+            selectedAlgorithm()?.name === 'descriptive_statistics'
+          "
+          (click)="onClickRunExp()"
+        >
+          {{ isRunning() ? "Running..." : "Run Experiment" }}
         </button>
+
         <div class="floating-group">
           <button class="floating-info-button" (click)="toggleInfoPanel()">
             i
           </button>
-          <aside
+          <!-- <aside
             id="info-panel"
             class="side-panel"
             [class.open]="infoPanelOpen"
@@ -67,13 +105,64 @@
             <p>
               <strong>Algorithm Configs:</strong> Alpha = 0.05, Pop. Mean = 0
             </p>
+          </aside> -->
+          <aside
+            id="info-panel"
+            class="side-panel"
+            [class.open]="infoPanelOpen"
+          >
+            <h3>Experiment Info</h3>
+
+            <p>
+              <strong>Experiment Name:</strong>
+              {{ experimentInfo().experimentName }}
+            </p>
+
+            <p>
+              <strong>Datasets:</strong>
+              @if (experimentInfo().datasets.length) { @for (d of
+              experimentInfo().datasets; track d) {
+              {{ d }}@if (!$last) {, } } } @else { None }
+            </p>
+
+            <p>
+              <strong>Variables:</strong>
+              @if (experimentInfo().variables.length) { @for (v of
+              experimentInfo().variables; track v.code) {
+              {{ v.label || v.name || v.code }}@if (!$last) {, } } } @else {
+              None }
+            </p>
+
+            <p>
+              <strong>Covariates:</strong>
+              @if (experimentInfo().covariates.length) { @for (c of
+              experimentInfo().covariates; track c.code) {
+              {{ c.label || c.name || c.code }}@if (!$last) {, } } } @else {
+              None }
+            </p>
+
+            <p>
+              <strong>Filters:</strong>
+              @if (experimentInfo().filters.length) { @for (f of
+              experimentInfo().filters; track f.code) {
+              {{ f.label || f.name || f.code }}@if (!$last) {, } } } @else {
+              None }
+            </p>
+
+            <p>
+              <strong>Algorithm Configs:</strong>
+              @if (objectKeys(experimentInfo().algorithmConfigs).length) { @for
+              (k of objectKeys(experimentInfo().algorithmConfigs); track k) {
+              {{ prettifyKey(k) }} = {{ experimentInfo().algorithmConfigs[k] }}
+              @if (!$last) {, } } } @else { None }
+            </p>
           </aside>
         </div>
       </header>
 
-      @if (selectedAlgorithm()) {
+      @if (selectedAlgorithm() && !isRunning()) {
 
-      <section class="experiment-settings">
+      <!-- <section class="experiment-settings">
         <h5>{{ selectedAlgorithm()?.label }} Configuration</h5>
         <p>{{ selectedAlgorithm()?.description }}</p>
 
@@ -118,15 +207,73 @@
           }
         </form>
         }
+      </section> -->
+      <section class="experiment-settings">
+        <h5 class="config-title">
+          {{ selectedAlgorithm()?.label }} Configuration
+        </h5>
+        <p class="config-description">{{ selectedAlgorithm()?.description }}</p>
+
+        @if (enrichedConfigSchema()) {
+        <form [formGroup]="configForm" class="config-form flex flex-col gap-4">
+          @for (field of enrichedConfigSchema(); track field.key) {
+          <div class="config-field">
+            <label class="font-semibold mb-1 text-[#028080]">
+              {{ prettyFieldLabel(field) }}
+            </label>
+
+            @if (field.type === 'number') {
+            <input
+              type="number"
+              [formControlName]="field.key"
+              class="config-input"
+              placeholder="Enter value..."
+            />
+            } @if (field.type === 'checkbox') {
+            <label class="checkbox-wrapper">
+              <input type="checkbox" [formControlName]="field.key" />
+              <span>Enable</span>
+            </label>
+            } @if (field.type === 'select') {
+            <select [formControlName]="field.key" class="config-select">
+              <option disabled selected value="">-- Select --</option>
+              @for (opt of getOptionsForField(field.key); track
+              getOptionValue(opt)) {
+              <option [value]="getOptionValue(opt)">
+                {{ getOptionLabel(opt) }}
+              </option>
+              }
+            </select>
+            } @if (configForm.get(field.key)?.invalid &&
+            configForm.get(field.key)?.touched) {
+            <div class="validation-message config-error">
+              @if (configForm.get(field.key)?.hasError('required')) {
+              <small>This field is required.</small>
+              } @if (configForm.get(field.key)?.hasError('min')) {
+              <small>Value too small.</small>
+              } @if (configForm.get(field.key)?.hasError('max')) {
+              <small>Value too large.</small>
+              } @if (configForm.get(field.key)?.hasError('pattern')) {
+              <small>Invalid value.</small>
+              }
+            </div>
+            }
+          </div>
+          }
+        </form>
+        }
       </section>
-      } @else if (result()) {
-        <section class="result-section">
-          <h5>Experiment Result</h5>
-          <pre class="bg-gray-100 text-sm p-4 overflow-x-auto rounded">
-            {{ result() | json }}
-          </pre>
-        </section>
+      } @else if (!isRunning() && result()) {
+      <section class="result-section">
+        <h5>Experiment Result</h5>
+        <app-algorithm-result
+          [result]="result()"
+          [schema]="lastUsedSchema()"
+          [algorithm]="lastUsedAlgorithm"
+        />
+      </section>
       }
+
       <!-- save config on submit saveConfig() {
   this.experimentService.setAlgorithmConfig(this.selectedAlgorithm.name, this.configValues);
 } -->

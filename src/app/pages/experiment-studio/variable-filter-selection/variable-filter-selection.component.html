@@ -23,9 +23,17 @@
       </div>
       <div class="panel-container">
         <div class="panel">
-          <ul class="horizontal-list">
+          <ul
+            class="horizontal-list"
+            class="horizontal-list"
+            cdkDropList
+            #varList="cdkDropList"
+            [cdkDropListData]="variables"
+            [cdkDropListConnectedTo]="[covList, filtList]"
+            (cdkDropListDropped)="drop($event, 'variables')"
+          >
             @for (variable of variables; track variable) {
-            <li class="horizontal-item">
+            <li class="horizontal-item" cdkDrag>
               <div class="variable-info">
                 <span class="variable-name">{{ variable.name }}</span>
                 <span class="variable-type">type: {{ variable.type }}</span>
@@ -61,9 +69,17 @@
       </div>
       <div class="panel-container">
         <div class="panel">
-          <ul class="horizontal-list">
+          <ul
+            class="horizontal-list"
+            class="horizontal-list"
+            cdkDropList
+            #covList="cdkDropList"
+            [cdkDropListData]="covariates"
+            [cdkDropListConnectedTo]="[varList, filtList]"
+            (cdkDropListDropped)="drop($event, 'covariates')"
+          >
             @for (covariate of covariates; track covariate) {
-            <li class="horizontal-item">
+            <li class="horizontal-item" cdkDrag>
               <div class="variable-info">
                 <span class="variable-name">{{ covariate.name }}</span>
                 <span class="variable-type">type: {{ covariate.type }}</span>
@@ -98,9 +114,17 @@
       </div>
       <div class="panel-container">
         <div class="panel">
-          <ul class="horizontal-list">
+          <ul
+            class="horizontal-list"
+            class="horizontal-list"
+            cdkDropList
+            #filtList="cdkDropList"
+            [cdkDropListData]="filters"
+            [cdkDropListConnectedTo]="[varList, covList]"
+            (cdkDropListDropped)="drop($event, 'filters')"
+          >
             @for (filter of filters; track filter) {
-            <li class="horizontal-item">
+            <li class="horizontal-item" cdkDrag>
               <div class="variable-info">
                 <span class="variable-name">{{ filter.name }}</span>
                 <span class="variable-type">type: {{ filter.type }}</span>

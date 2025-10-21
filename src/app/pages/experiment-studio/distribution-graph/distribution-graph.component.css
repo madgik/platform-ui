@@ -30,19 +30,6 @@
   box-sizing: border-box;
 }
 
-/* Adjust "No Data Available" Message */
-.no-data-message {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 1.2em;
-  min-height: 450px;
-  color: #666;
-  text-align: center;
-  height: 100%; /* Make it fill the height of the panel */
-  margin: 0; /* Remove any margin that could affect positioning */
-}
-
 .floating-button {
   position: absolute; /* Absolute positioning relative to the parent container */
   bottom: 10px; /* Pin to the bottom of the grandparent container */

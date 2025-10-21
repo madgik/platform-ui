@@ -2,7 +2,10 @@
   position: relative;
   width: fit-content;
   margin: 10px auto;
-  font-family: 'Arial', sans-serif;
+  font-family: 'Roboto', sans-serif;
+  display: inline-block;
+  z-index: 2000;
+  overflow: visible;
 }
 
 .search-input-container {
@@ -10,7 +13,6 @@
   align-items: center;
   border: 1px solid #ccc;
   border-radius: 4px;
-  overflow: hidden;
   padding: 1px 4px;
 }
 
@@ -52,15 +54,15 @@
 
 .suggestions-container {
   position: absolute;
-  top: calc(100% + 1px);
+  top: calc(100% + 4px);
   left: 0;
-  width: 105%;
-  background-color: #fff;
-  border-radius: 6px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
-  max-height: 200px;
+  width: 100%;
+  max-height: 300px;
   overflow-y: auto;
+  background: #fff;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  border-radius: 4px;
+  z-index: 3000;
 }
 
 .suggestions-container ul {

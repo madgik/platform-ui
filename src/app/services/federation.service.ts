@@ -4,7 +4,7 @@ import { Observable, forkJoin, of } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
 import { Federation } from '../interfaces/federations.interface';
 import { DataModelService } from './data-model.service';
-import {DataModel} from "../interfaces/data-model.interface";
+import { DataModel } from '../models/data-model.interface';
 
 @Injectable({
   providedIn: 'root',

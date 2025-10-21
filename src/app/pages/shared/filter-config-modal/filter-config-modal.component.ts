@@ -39,7 +39,7 @@ export class FilterConfigModalComponent implements AfterViewInit {
     }
 
     const queryBuilder = $('#query-builder');
-    console.log("this.filters list: ", this.filters);
+    // console.log("this.filters list: ", this.filters);
 
     queryBuilder.queryBuilder({
       allow_empty: true,

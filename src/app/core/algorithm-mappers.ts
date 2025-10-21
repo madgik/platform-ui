@@ -24,10 +24,11 @@ const CATEGORY_MAPPING: Record<string, string> = {
   // "descriptive_stats": "Statistical Methods",
 };
 
-function guessVariableType(ioField?: { stattypes?: string[] }): string {
+function guessVariableType(ioField?: { types?: string[] }): string {
   if (!ioField) return "None";
-  if (ioField?.stattypes?.includes('numerical')) return "Numerical";
-  if (ioField?.stattypes?.includes('nominal')) return "Nominal";
+  if (ioField?.types?.includes('int')) return "Numerical";
+  if (ioField?.types?.includes('real')) return "Numerical";
+  if (ioField?.types?.includes('text')) return "Nominal";
   return "Any";
 }
 
@@ -49,6 +50,7 @@ function buildConfigSchema(parameters: Record<string, RawParameter>): Array<any>
         label: param.label,
         ...(param.min !== undefined ? { min: +param.min } : {}),
         ...(param.max !== undefined ? { max: +param.max } : {}),
+        ...(param.default !== undefined ? { default: +param.default } : {}),
       });
     } else if (param.types.includes('text')) {
       schema.push({
@@ -66,17 +68,20 @@ export function mapRawAlgorithmToAlgorithmConfig(raw: RawAlgorithmDefinition): A
     name: raw.name,
     label: raw.label,
     description: raw.desc,
-    requiredVariable: guessVariableType(raw.inputdata?.y),
-    covariate: guessVariableType(raw.inputdata?.x),
+    inputdata: raw.inputdata ?? {},
+    requiredVariable: raw.inputdata?.y?.types || [],
+    covariate: raw.inputdata?.x?.types || [],
     category: CATEGORY_MAPPING[raw.name],
     configSchema: buildConfigSchema(raw.parameters),
     type: raw.type || "exareme2",
+    isDisabled: false,
     ...(getOutputSchema(raw.name) ? { outputSchema: getOutputSchema(raw.name) } : {})
   };
 }
 
 
-function getOutputSchema(algorithmName: string): any[] | undefined {
+export function getOutputSchema(algorithmName: string): any[] | undefined {
+  // console.log("algorithm name in mappers: ", algorithmName);
   switch (algorithmName) {
     case 'anova':
       return [
@@ -274,13 +279,13 @@ function getOutputSchema(algorithmName: string): any[] | undefined {
       return [
         { key: 'n_obs', label: 'Observations', type: 'number' },
         {
-          key: 'eigen_vals',
+          key: 'eigenvalues',
           label: 'Eigenvalues',
           type: 'list',
           elementType: 'number'
         },
         {
-          key: 'eigen_vecs',
+          key: 'eigenvectors',
           label: 'Eigenvectors',
           type: 'matrix',
           elementType: 'number'

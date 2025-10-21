@@ -1,0 +1,64 @@
+/* algorithm-result.component.css */
+.panel {
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  overflow: hidden;
+}
+.panel-header {
+  background: #f9f9f9;
+  padding: 1rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+}
+.panel-body {
+  padding: 1rem;
+  background: white;
+}
+
+/* algorithm-result.component.css */
+
+/* Optional padding override */
+:host {
+  display: block;
+  padding: 1rem;
+}
+
+h6 {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  background: var(--color-primary-100, #e0f2f1);
+  color: var(--color-primary-900, #00695c);
+  text-align: left;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+}
+
+td {
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid #e0e0e0;
+  white-space: nowrap;
+}
+
+thead tr {
+  border-bottom: 2px solid #ccc;
+}
+
+tr:hover td {
+  background-color: #f9f9f9;
+}
+
+/* For alternate rows if needed */
+tr:nth-child(even) td {
+  background-color: #f5f5f5;
+}
+

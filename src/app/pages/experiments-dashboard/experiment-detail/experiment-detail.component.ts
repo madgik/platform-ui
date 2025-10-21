@@ -17,17 +17,17 @@ export class ExperimentDetailsComponent {
   }
 
   runExperiment() {
-    console.log('Running experiment:', this.selectedExperiment);
+    // console.log('Running experiment:', this.selectedExperiment);
   }
 
   editExperiment() {
-    console.log('Editing experiment:', this.selectedExperiment);
+    // console.log('Editing experiment:', this.selectedExperiment);
   }
 
   onDelete(experimentId: string | undefined) {
     if (experimentId) {
       this.deleteExperiment.emit(experimentId);
-      console.log('Deleting experiment:', this.selectedExperiment()?.id);
+      // console.log('Deleting experiment:', this.selectedExperiment()?.id);
     }
   }
 }

@@ -14,6 +14,8 @@ import { DatasetSelectorComponent } from './dataset-selector/dataset-selector.co
 import { SearchBarComponent } from './search-bar/search-bar.component';
 import { VariableFilterSelectionComponent } from '../variable-filter-selection/variable-filter-selection.component';
 import { createZoomableCirclePacking } from '../visualisations/bubble-chart/zoomable-circle-packing';
+import { LoadingSpinnerComponent } from '../../shared/loading-spinner/loading-spinner.component';
+
 
 @Component({
   selector: 'app-variables-panel',
@@ -30,19 +32,20 @@ import { createZoomableCirclePacking } from '../visualisations/bubble-chart/zoom
     DataModelSelectorComponent,
     DatasetSelectorComponent,
     SearchBarComponent,
-    VariableFilterSelectionComponent
-  ],
+    VariableFilterSelectionComponent,
+    LoadingSpinnerComponent
+],
 })
 export class VariablesPanelComponent {
   @Input() defaultModel: DataModel | null = null;
   @Output() variableSelected = new EventEmitter<BubbleData>();
   @Input() dataModelHierarchy: any;
+  highlightNode: any = null;
 
   experimentStudioService = inject(ExperimentStudioService);
 
   errorService = inject(ErrorService);
   accordionTitle: string = "Variables and Covariates";
-  // variables = signal<any[]>([]);
   filteredVariables: WritableSignal<any[]> = signal([]);
   filteredGroups: WritableSignal<any[]> = signal([]);
   distributionData = signal<any | null>(null);
@@ -56,15 +59,17 @@ export class VariablesPanelComponent {
   filteredData: any; // Filtered variables and groups
   searchQuery = ''; // Search input
   dataWithName: any;
+  groupVariables: any[] = [];
+  isLoadingHistogram = signal(false);
 
   private originalData: any;
 
   constructor() { }
   // From data-model-page.component.ts
   ngOnInit(): void {
-    console.log("🔥 Sending `d3Data` to SearchBar:", this.d3Data);
     this.selectedDataModel = this.defaultModel;
     this.loadDataModels();
+    // this.fetchFederationHistogram();
 
     // Fetch the federation-wide histogram based on the selected federation
     const federation = this.selectedDataModel;
@@ -87,9 +92,28 @@ export class VariablesPanelComponent {
     }
   }
 
-  onSearchResult(selectedItem: string): void {
-    this.selectSearchResult(selectedItem); // Call your existing method
+  onSearchResult(selectedName: string) {
+    // console.log('Search selected:', selectedName);
+    // console.log('d3data:', this.d3Data);
+    const found = this.filteredVariables().find(v => v.name === selectedName);
+    if (found) {
+      // this.experimentStudioService.addVariableAndEnrich(found);
+      this.highlightNode = found;
+      this.onSelectedNodeChange(this.highlightNode);
+
+    } else {
+      console.warn('No variable "', selectedName);
+      return;
+    }
   }
+
+  // onSearchResult(selectedName: string) {
+  //   const node = this.filteredVariables().find(v => v.name === selectedName);
+  //   if (!node) return;
+  //   this.highlightNode = node;
+  //   // εδώ: το ngOnChanges του BubbleChartComponent θα δει ότι highlightNode άλλαξε…
+  //   // και θα καλέσει zoomToNodeFn(node)
+  // }
 
   selectSearchResult(selected: string): void {
 
@@ -115,15 +139,15 @@ export class VariablesPanelComponent {
   }
 
   get selectedVariables(): any[] {
-    return this.experimentStudioService.getVariables();
+    return this.experimentStudioService.selectedVariables();
   }
 
   get selectedCovariates(): any[] {
-    return this.experimentStudioService.getCovariates();
+    return this.experimentStudioService.selectedCovariates();
   }
 
   get selectedFilters(): any[] {
-    return this.experimentStudioService.getFilters();
+    return this.experimentStudioService.selectedFilters();
   }
 
   findParentNode(currentNode: any, targetNode: any, parent: any = null): any {
@@ -157,7 +181,7 @@ export class VariablesPanelComponent {
     this.experimentStudioService.setFilters(updatedFilters);
   }
 
-  //TODO: Move to service
+  //TODO: Move to service - unused
   fetchDistributionData(variable: any): void {
     // Fetch distribution data for a selected variable
     const algorithmName = "multiple_histograms";
@@ -180,21 +204,43 @@ export class VariablesPanelComponent {
     const { crossSectional, longitudinal } = this.experimentStudioService.categorizeDataModels(dataModels);
     this.crossSectionalModels = crossSectional;
     this.longitudinalModels = longitudinal;
+
     if (dataModels.length > 0) {
+      // console.log("✅ Data models detected. Proceeding...");
       this.selectedDataModel = crossSectional[0] || longitudinal[0] || null;
+      this.selectedDataModel = crossSectional[0] || longitudinal[0] || null;
+      this.experimentStudioService.selectedDataModel = this.selectedDataModel;
+
+      if (this.selectedDataModel) {
+        const algorithmName = "multiple_histograms";
+        this.loadVisualizationData();
+        setTimeout(() => {
+          this.fetchFederationHistogram();
+        });
+
+        this.experimentStudioService.getAlgorithmResults(algorithmName).subscribe({
+          next: (response) => {
+            // console.log('📊 Histogram Response:', response);
+            if (response?.result?.histogram?.[0]) {
+              this.distributionData.set(response.result.histogram[0]);
+            } else {
+              console.warn("No histogram data found for federation.");
+            }
+          },
+          error: (err) => {
+            console.error("Histogram fetch error:", err);
+          }
+        });
+      }
     }
-    this.loadVisualizationData();
+
   }
 
   loadVisualizationData(): void {
     if (this.selectedDataModel) {
       const { hierarchy, allVariables, allDatasets } = this.experimentStudioService.convertToD3Hierarchy(this.selectedDataModel);
 
-      console.log("📌 Extracted Hierarchy:", hierarchy);
-      console.log("📌 Extracted Variables:", allVariables);
-
       this.d3Data = hierarchy;
-      console.log("🔥 d3Data Updated:", this.d3Data);
       this.filteredVariables.set(allVariables); // Flat list of variables
       this.filteredGroups.set(
         this.d3Data.children.filter((item: any) => item.children) // Groups
@@ -206,6 +252,37 @@ export class VariablesPanelComponent {
     }
   }
 
+  fetchFederationHistogram(): void {
+    // console.log("📤 Selected data model:", this.selectedDataModel);
+
+    const federation = this.selectedDataModel;
+    if (!federation) {
+      console.warn('No federation selected.');
+      return;
+    }
+
+    const federationGroups = this.d3Data.children || [];
+    const groupCodes = federationGroups.map((g: any) => g.code);
+
+    // console.log("📤 federationGroups:", federationGroups);
+    // console.log("📤 Step 1 - Group Codes extracted:", groupCodes);
+
+    const algorithmName = "multiple_histograms";
+
+    this.experimentStudioService.getAlgorithmResults(algorithmName, groupCodes).subscribe({
+      next: (response) => {
+        if (response?.result?.histogram?.[0]) {
+          this.distributionData.set(response.result.histogram[0]);
+        } else {
+          console.warn('No histogram data found for federation:', federation.code);
+        }
+      },
+      error: (error) => {
+        console.error('Error fetching federation-wide histogram:', error);
+      },
+    });
+  }
+
   // end of services functions
   onSelectedDataModelChange(selectedDataModel: DataModel | null): void {
     this.selectedDataModel = selectedDataModel;
@@ -213,7 +290,7 @@ export class VariablesPanelComponent {
   }
 
   onDatasetsSelected(selectedDatasets: string[]): void {
-    console.log("Selected Datasets:", selectedDatasets);
+    // console.log("Selected Datasets:", selectedDatasets);
     // Handle the selected datasets here
   }
 
@@ -241,21 +318,44 @@ export class VariablesPanelComponent {
   }
 
   onSelectedItem(item: any): void {
-    console.log('Selected Item:', item);
+    // console.log('Selected Item:', item);
   }
+
+  getAllLeafNodes(node: any): any[] {
+    if (!node.children || node.children.length === 0) {
+      return [];
+    }
+
+    const leaves: any[] = [];
+
+    function collectLeaves(n: any) {
+      if (!n.children || n.children.length === 0) {
+        leaves.push(n);
+      } else {
+        n.children.forEach(collectLeaves);
+      }
+    }
+
+    collectLeaves(node);
+    return leaves;
+  }
+
 
   onSelectedNodeChange(node: any): void {
     this.selectedNode = node;
-    //todo: make it work for superset
-    if (node.children) {
-      console.log('Group selected. Aggregating data for children:', node);
+    this.isLoadingHistogram.set(true);
 
-      const childIds = node.children.map((child: any) => child.code);
+
+    if (node.children) {
+      // 💡 Πάρε μόνο τα leafs του group
+      this.groupVariables = this.getAllLeafNodes(node);
+
+
+      const childIds = this.groupVariables.map((child: any) => child.code);
       const algorithmName = "multiple_histograms";
 
       this.experimentStudioService.getAlgorithmResults(algorithmName, childIds).subscribe({
         next: (response) => {
-          console.log('Group histogram data:', response);
           if (response?.result?.histogram[0]) {
             this.distributionData.set(response.result.histogram[0]);
           } else {
@@ -269,27 +369,61 @@ export class VariablesPanelComponent {
       return;
     }
 
-    // This is here because in the backend we need an array
-    let varCodes = [node.code];
-    this.experimentStudioService.getAlgorithmResults("multiple_histograms", varCodes).subscribe({
+    this.groupVariables = [];
+    this.experimentStudioService.getAlgorithmResults("multiple_histograms", [node.code]).subscribe({
       next: (response) => {
+        this.isLoadingHistogram.set(false);
         const hist = response?.result?.histogram?.[0];
         if (hist) {
           const dataWithName = { ...hist, variableName: node.name };
           this.distributionData.set(dataWithName);
-          console.log("✅ Single variable histogram:", dataWithName);
         } else {
           console.warn("No histogram returned for variable:", node.code);
         }
       },
       error: (err) => {
-        console.error("❌ Error fetching histogram for variable:", node.code, err);
+        this.isLoadingHistogram.set(false);
+        console.error("Error fetching histogram for variable:", node.code, err);
       }
     });
   }
 
-  addGroup(group: any): void {
-    const variables = group.children;
-    // variables.forEach((variable: any) => this.addVariable(variable));
+  addGroupVariables(): void {
+    if (!this.groupVariables.length) return;
+
+    const existingCodes = new Set(this.selectedVariables.map(v => v.code));
+    const newVariables = this.groupVariables.filter((v: any) => !existingCodes.has(v.code));
+
+    newVariables.forEach((variable: any) => {
+      this.experimentStudioService.addVariableAndEnrich(variable);
+    });
+
+    // Ενημέρωσε το signal (προαιρετικά αν χρειαστεί refresh χειροκίνητα)
+    this.onVariableChange([...this.selectedVariables, ...newVariables]);
   }
+
+  // unused
+  private fetchHistogramForNode(node: any): void {
+    const algorithmName = "multiple_histograms";
+
+    const leafCodes = this.getAllLeafNodes(node).map((leaf: any) => leaf.code);
+    if (!leafCodes.length) {
+      console.warn("🚫 No leaf codes found for node:", node);
+      return;
+    }
+
+    this.experimentStudioService.getAlgorithmResults(algorithmName, leafCodes).subscribe({
+      next: (response) => {
+        if (response?.result?.histogram?.length) {
+          this.distributionData.set(response.result.histogram);
+        } else {
+          console.warn("⚠️ Empty histogram for node:", node.code);
+        }
+      },
+      error: (error) => {
+        console.error("❌ Histogram fetch error for node:", node.code, error);
+      }
+    });
+  }
+
 }

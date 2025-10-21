@@ -32,7 +32,7 @@ export class NewExperimentComponent {
       status: this.status,
     };
 
-    console.log('Creating new experiment:', newExperiment);
+    // console.log('Creating new experiment:', newExperiment);
     this.expDashboardService.addExperiment(newExperiment);
     this.createExperiment.emit(newExperiment); // Emit created experiment
     this.router.navigate(['/experiment-studio'], { state: { data: newExperiment } });

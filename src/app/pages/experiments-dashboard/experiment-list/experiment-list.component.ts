@@ -61,18 +61,18 @@ export class ExperimentsListComponent {
 
   // Opens the New Experiment modal using SharedService
   onAddExperiment() {
-    console.log("Creating new Experiment");
+    // console.log("Creating new Experiment");
     this.isAddingExperiment.emit();
   }
 
   // Placeholder method for editing an experiment
   onEditExperiment() {
-    console.log('Editing experiment...');
+    // console.log('Editing experiment...');
   }
 
   // Placeholder method for downloading a PDF
   onDownloadPDF() {
-    console.log('Downloading PDF...');
+    // console.log('Downloading PDF...');
   }
 
   // Track menu items by label to optimize rendering performance

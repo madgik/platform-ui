@@ -34,9 +34,8 @@ export class ExperimentsDashboardComponent implements OnInit {
 
 
   onExperimentSelected(experiment: Experiment) {
-    console.log('this is the experiment object: ', experiment);
+    // console.log('this is the experiment object: ', experiment);
     this.selectedExperiment.set(experiment);
-    console.log("hello", this.selectedExperiment());
   }
 
   // Method to open the New Experiment modal by updating the SharedService state

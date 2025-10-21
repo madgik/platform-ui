@@ -1,0 +1,157 @@
+<!--
+
+      @case ('matrix') {
+      <pre class="text-xs bg-red-50 text-red-800 p-2">
+  {{ result[field.key] | json }}
+</pre
+      >
+
+      <table class="w-full text-sm text-left font-mono border-collapse">
+         <tbody>
+          @for (row of getMatrixRows(result[field.key]); track row) {
+          <tr>
+            @for (val of row; track val) {
+            <td class="px-4 py-2 border-b border-r">{{ val }}</td>
+            }
+          </tr>
+          }
+        </tbody>
+      </table>
+      } @case ('table') {
+      <table class="w-full text-sm text-left font-mono border-collapse">
+        <thead class="bg-primary-100 text-primary-800">
+          <tr>
+            @for (col of getKeys(result[field.key]?.[0] || {}); track col) {
+            <th class="px-4 py-2 border-b">{{ col }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of result[field.key] || []; track row) {
+          <tr>
+            @for (col of getKeys(row); track col) {
+            <td class="px-4 py-2 border-b">{{ row[col] }}</td>
+            }
+          </tr>
+          }
+        </tbody>
+      </table>
+      } @case ('array') {
+      <table class="w-full text-sm text-left font-mono border-collapse">
+        <thead class="bg-primary-100 text-primary-800">
+          <tr>
+            <th class="px-4 py-2 border-b">Index</th>
+            <th class="px-4 py-2 border-b">Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of result[field.key] || []; track item) {
+          <tr>
+            <td class="px-4 py-2 border-b">{{ $index }}</td>
+            <td class="px-4 py-2 border-b">{{ item }}</td>
+          </tr>
+          }
+        </tbody>
+      </table>
+      } @case ('dictionary') {
+      <table class="w-full text-sm text-left font-mono border-collapse">
+        <thead class="bg-primary-100 text-primary-800">
+          <tr>
+            <th class="px-4 py-2 border-b">Key</th>
+            <th class="px-4 py-2 border-b">Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (key of getKeys(result[field.key] || {}); track key) {
+          <tr>
+            <td class="px-4 py-2 border-b">{{ key }}</td>
+            <td class="px-4 py-2 border-b">{{ result[field.key][key] }}</td>
+          </tr>
+          }
+        </tbody>
+      </table>
+      } @default {
+      <p class="text-gray-500 italic">
+        Unsupported field type: {{ field.type }}
+      </p>
+      } }
+    </div>
+  </div>
+  }
+  <pre class="text-xs bg-gray-100 rounded p-2 text-wrap overflow-auto">
+    {{ result | json }}
+  </pre>
+  <button
+    (click)="exportToPDF()"
+    class="mt-4 px-4 py-2 rounded bg-black text-white"
+  >
+    Export as PDF
+  </button>
+</div>
+
+<div class="p-4 space-y-6">
+  <!-- Recursive Table Rendering -->
+  <!-- @if (isRenderable()) {
+    <app-auto-renderer [value]="result" [algorithm]="algorithm"/>
+  } -->
+  <!-- Charts for algorithms-->
+  <!-- @if (renderedCharts().length > 0) {
+  <section class="space-y-6">
+    <h3 class="text-sm font-semibold text-gray-700">Generated Charts</h3>
+    <app-chart-renderer [charts]="renderedCharts()" />
+  </section>
+  } @if (renderedCharts().length === 0){
+  <div class="text-red-600 text-sm">No charts to render (empty array).</div>
+  } -->
+
+  <!-- Placeholder for future graphs -->
+  <!-- <app-graph-result [result]="result" [schema]="schema" /> -->
+
+  <!-- Raw JSON for debugging -->
+  <!-- <details class="text-xs text-gray-500 mt-4">
+    <summary class="cursor-pointer">View Raw JSON</summary>
+    <pre class="bg-gray-100 rounded p-2 overflow-auto">
+      {{ result | json }}
+    </pre>
+  </details> -->
+
+  <!-- <button
+    (click)="exportToPDF()"
+    class="mt-4 px-4 py-2 rounded bg-black text-white"
+  >
+    Export as PDF
+  </button>
+</div> -->
+
+<div class="p-4 space-y-6">
+
+  <!-- Custom structured renderer -->
+  @if (isRenderable()) {
+    <app-auto-renderer [value]="result" [algorithm]="algorithm"/>
+  }
+
+  <!-- Charts -->
+  @if (renderedCharts().length > 0) {
+    <section class="space-y-6">
+      <h3 class="text-sm font-semibold text-gray-700">Generated Charts</h3>
+      <app-chart-renderer [charts]="renderedCharts()" />
+    </section>
+  }
+
+  <!-- Raw fallback -->
+  <details class="text-xs text-gray-500 mt-4">
+    <summary class="cursor-pointer">View Raw JSON</summary>
+    <pre class="bg-gray-100 rounded p-2 overflow-auto">
+      {{ result | json }}
+    </pre>
+  </details>
+
+  <!-- Export button -->
+  <button
+    (click)="exportToPDF()"
+    class="mt-4 px-4 py-2 rounded bg-black text-white"
+  >
+    Export as PDF
+  </button>
+</div>
+

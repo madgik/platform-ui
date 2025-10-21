@@ -1,0 +1,8 @@
+<div *ngIf="charts?.length; else noCharts">
+  <div *ngFor="let chart of charts" class="chart-container">
+    <div echarts [options]="chart" class="chart"></div>
+  </div>
+</div>
+<ng-template #noCharts>
+  <p>No charts to display.</p>
+</ng-template>

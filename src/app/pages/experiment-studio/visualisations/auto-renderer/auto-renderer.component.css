@@ -1,0 +1,110 @@
+:host {
+  display: block;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.875rem;
+  color: #1f2937;
+}
+
+.ar-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.ar-group {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.ar-group-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #0f766e;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid #d1d5db;
+  padding-bottom: 0.25rem;
+}
+
+.ar-entry {
+  display: flex;
+  flex-direction: row;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 0.5rem 0;
+}
+
+.ar-key,
+.ar-value {
+  padding: 0.5rem;
+}
+
+.ar-key {
+  width: 25%;
+  font-weight: 600;
+  color: #0d9488;
+  white-space: nowrap;
+}
+
+.ar-value {
+  color: #374151;
+  flex-grow: 1;
+}
+
+.ar-primitive {
+  font-family: 'Roboto Mono', monospace;
+  background-color: #f9fafb;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  display: inline-block;
+  color: #111827;
+}
+
+.ar-scroll {
+  overflow-x: auto;
+}
+
+.ar-table {
+  border-collapse: collapse;
+  width: 100%;
+  background-color: white;
+}
+
+.ar-th,
+.ar-td {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  font-size: 0.875rem;
+}
+
+.ar-th {
+  background-color: #e0f2f1;
+  color: #00695c;
+  font-weight: 600;
+  border-bottom: 1px solid #ccc;
+}
+
+.ar-td {
+  border-bottom: 1px solid #e5e7eb;
+  color: #374151;
+}
+
+.ar-list {
+  padding-left: 1.25rem;
+  list-style-type: disc;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  color: #374151;
+}
+
+.ar-unsupported {
+  background-color: #f3f4f6;
+  padding: 1rem;
+  border-radius: 6px;
+  overflow-x: auto;
+  font-size: 0.75rem;
+  color: #6b7280;
+}

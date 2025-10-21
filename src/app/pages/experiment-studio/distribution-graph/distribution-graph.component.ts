@@ -20,9 +20,9 @@ export class DistributionGraphComponent {
   ) {}
 
   isButtonDisabled = computed(() =>
-    this.expStudioService.getVariables().length === 0 &&
-    this.expStudioService.getCovariates().length === 0 &&
-    this.expStudioService.getFilters().length === 0
+    this.expStudioService.selectedVariables().length === 0 &&
+    this.expStudioService.selectedCovariates().length === 0 &&
+    this.expStudioService.selectedFilters().length === 0
   );
 
   openStatisticalAnalysis(): void {

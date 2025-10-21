@@ -13,7 +13,11 @@ import { ErrorService } from '../../../data-models-page/services/error.service';
 
 export class BubbleChartComponent implements OnInit, OnChanges {
   @Input() d3Data: any;
+  @Input() highlightNode: any | null = null;
   @Output() selectedNodeChange = new EventEmitter<any>();
+
+  private lastHighlighted: any = null;
+  private zoomToNodeFn!: (d: any) => void;
 
   error: string | null = null; // Holds the current error message
 
@@ -25,13 +29,25 @@ export class BubbleChartComponent implements OnInit, OnChanges {
   }
 
   ngOnInit(): void {
-      this.renderChart();
+    this.renderChart();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['d3Data'] && changes['d3Data'].currentValue) {
-      console.log('d3Data updated:', this.d3Data);
+      // console.log('d3Data updated:', this.d3Data);
       this.renderChart();
+    }
+    if (changes["highlightNode"] && this.highlightNode) {
+     if (this.lastHighlighted?.code === this.highlightNode.code) {
+    // Ίδιο node, skip
+    return;
+  }
+
+  console.log('🔍 highlightNode changed:', this.highlightNode);
+  this.zoomToNodeFn(this.highlightNode);
+  this.lastHighlighted = this.highlightNode;
+    } else {
+      console.warn('ZoomToNodeFn is not set yet.');
     }
   }
 
@@ -41,6 +57,7 @@ export class BubbleChartComponent implements OnInit, OnChanges {
       this.errorService.setError('Chart container is not available.');
       return;
     }
+
     container.innerHTML = ''; // Clear previous chart
 
     if (!this.d3Data) {
@@ -48,43 +65,19 @@ export class BubbleChartComponent implements OnInit, OnChanges {
       return;
     }
 
-    const handleNodeClick = (node: any) => {
-      this.selectedNodeChange.emit(node); // Emit the selected node to parent
-    };
-    createZoomableCirclePacking(this.d3Data, container, handleNodeClick);
+    const { zoomToNode } = createZoomableCirclePacking(
+      this.d3Data,
+      container,
+      node => {
+        this.selectedNodeChange.emit(node);
+        // this.lastHighlighted = node;
+      }
+    );
+    this.zoomToNodeFn = zoomToNode;
   }
 
-  requestBody = {
-    input: {
-      inputdata: {
-        y: ["alzheimerbroadcategory"],
-        x: null,
-        data_model: "dementia:0.1",
-        datasets: [
-          "edsd3",
-          "ppmi9",
-          "ppmi4",
-          "ppmi5",
-          "desd-synthdata7",
-          "desd-synthdata8",
-          "desd-synthdata3",
-          "desd-synthdata4",
-          "desd-synthdata2",
-          "edsd0",
-          "ppmi3",
-        ],
-        filters: null,
-      },
-      parameters: {
-        bins: 19,
-      },
-      test_case_num: 0,
-    },
-  };
-
   onNodeClick(node: any): void {
-    console.log('Node clicked:', node);
+    // console.log("this is the node info: ", node);
     this.selectedNodeChange.emit(node);
-    console.log("this is the node info: ", node);
   }
 }

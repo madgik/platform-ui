@@ -1,4 +1,4 @@
-import {DataModel} from "./data-model.interface";
+import { DataModel } from "../models/data-model.interface";
 
 export interface Federation {
   code: string;

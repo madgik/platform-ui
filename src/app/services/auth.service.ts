@@ -80,7 +80,7 @@ export class AuthService {
   }
 
   isLoggedIn(): boolean {
-    return this.loggedInSubject.value;
+    return this.loggedInSubject.value && this.hasToken();
   }
 
   // Check if the user has a specific role

@@ -10,7 +10,7 @@ import { createHistogram } from './histogram-chart';
 export class HistogramComponent implements OnChanges {
   @Input() data: { bins: string[]; counts: number[]; variableName: string} | null = null; // Data for histogram
   @Input() config: { color?: string; width?: number; height?: number } = {}; // Configuration for the graph
-  isLoading = true;
+  isLoading = false;
 
   constructor(private elementRef: ElementRef) {}
 
@@ -24,7 +24,7 @@ export class HistogramComponent implements OnChanges {
 
   renderHistogram(): void {
     if (!this.data || !this.data.bins || !this.data.counts) {
-      console.log('No data available to render the histogram.');
+      // console.log('No data available to render the histogram.');
       return;
     }
 

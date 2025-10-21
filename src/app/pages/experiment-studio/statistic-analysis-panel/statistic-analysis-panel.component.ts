@@ -26,7 +26,7 @@ export class StatisticAnalysisPanelComponent implements OnInit, OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['processedData']) {
-      console.log("Updated processedData:", this.processedData);
+      // console.log("Updated processedData:", this.processedData);
       this.isLoading = this.processedData.length === 0; // Show loading only if empty
     }
   }
@@ -36,9 +36,9 @@ export class StatisticAnalysisPanelComponent implements OnInit, OnChanges {
     this.isLoading = true;
 
     // Fetch selected items
-    let variables = this.expStudioService.getVariables();
-    let covariates = this.expStudioService.getCovariates();
-    let filters = this.expStudioService.getFilters();
+    let variables = this.expStudioService.selectedVariables();
+    let covariates = this.expStudioService.selectedCovariates();
+    let filters = this.expStudioService.selectedFilters();
 
     // Create a Set for quick lookup
     const filterCodes = new Set(filters.map(filter => filter.code));
@@ -61,14 +61,14 @@ export class StatisticAnalysisPanelComponent implements OnInit, OnChanges {
       return;
     }
 
-    console.log("Final filtered list for statistics:", items);
+    // console.log("Final filtered list for statistics:", items);
 
     // Pass only the codes of selected variables
     const variableCodes = items.map(item => item.code);
 
     this.expStudioService.getAlgorithmResults("descriptive_stats", variableCodes).subscribe(
       (response) => {
-        console.log("Received response:", response?.result?.variable_based);
+        // console.log("Received response:", response?.result?.variable_based);
         if (response?.result?.variable_based) {
           this.processDescriptiveStatsResults(response);
         }
@@ -83,7 +83,7 @@ export class StatisticAnalysisPanelComponent implements OnInit, OnChanges {
 
   processDescriptiveStatsResults(response: any) {
     if (response?.result?.variable_based) {
-      const variableList = this.expStudioService.getVariables();
+      const variableList = this.expStudioService.selectedVariables();
 
       // Map results into a structured format
       const groupedStats = response.result.variable_based
@@ -95,7 +95,7 @@ export class StatisticAnalysisPanelComponent implements OnInit, OnChanges {
 
           // Ensure valid stats object
           const statsData = variableData.data || {};
-          console.log('Processing dataset stats:', JSON.stringify(statsData));
+          // console.log('Processing dataset stats:', JSON.stringify(statsData));
 
           // Ensure the variable exists in accumulator
           if (!acc[variableName]) {
@@ -131,7 +131,7 @@ export class StatisticAnalysisPanelComponent implements OnInit, OnChanges {
       // Convert grouped object into an array for template rendering
       this.processedData = Object.values(groupedStats);
 
-      console.log("Final processed data:", JSON.stringify(this.processedData));
+      // console.log("Final processed data:", JSON.stringify(this.processedData));
     } else {
       console.warn("No descriptive statistics data found in the response.");
     }

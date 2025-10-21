@@ -35,6 +35,7 @@ export interface RawParameter {
   default_value?: string | number;
   min?: string | number;
   max?: string | number;
+  default?: string | number;
   enums?: RawEnumsDefinition;
 }
 

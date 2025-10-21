@@ -6,11 +6,17 @@ import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ExperimentStudioService } from '../../services/experiment-studio.service';
 import { AlgorithmPanelComponent } from './algorithm-panel/algorithm-panel.component';
+import { LoginModalComponent } from '../login-page/login-modal.component';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-experiment-studio',
   standalone: true,
-  imports: [CommonModule, VariablesPanelComponent, AlgorithmPanelComponent, FormsModule],
+  imports: [CommonModule,
+            VariablesPanelComponent,
+            AlgorithmPanelComponent,
+            FormsModule,
+            LoginModalComponent],
   templateUrl: './experiment-studio.component.html',
   styleUrls: ['./experiment-studio.component.css'],
 })
@@ -21,7 +27,7 @@ export class ExperimentStudioComponent {
   experimentDescription: string | null = null;
   selectedVariableData: any = null;
 
-  constructor(private route: ActivatedRoute, private expStudioService: ExperimentStudioService) {}
+  constructor(private route: ActivatedRoute, private expStudioService: ExperimentStudioService, public auth: AuthService) { }
 
   ngOnInit(): void {
     // Retrieve query parameters
@@ -34,8 +40,8 @@ export class ExperimentStudioComponent {
 
   onVariableSelected(variable: BubbleData): void {
     const algorithmName = "multiple_histograms";
-    console.log("variable: ", variable);
-    this.expStudioService.getAlgorithmResults(algorithmName, variable.code).subscribe(
+    // console.log("variable: ", variable);
+    this.expStudioService.getAlgorithmResults(algorithmName, [variable.code]).subscribe(
       (response) => {
         this.selectedVariableData = response?.output?.histogram || null;
       },

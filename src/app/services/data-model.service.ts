@@ -206,9 +206,9 @@ export class DataModelService {
           const dataModelDTO = JSON.parse(reader.result as string);
           this.http.post<void>(url, dataModelDTO).subscribe({
             next: () => {
-              console.log('Data model created successfully from JSON.');
+              // console.log('Data model created successfully from JSON.');
               this.reloadDataModels().subscribe(() => {
-                console.log('Data models reloaded after JSON creation.');
+                // console.log('Data models reloaded after JSON creation.');
                 observer.next();
                 observer.complete();
               });
@@ -226,8 +226,8 @@ export class DataModelService {
 
   loadDataModels(): void {
     this.getAllDataModels().subscribe((dataModels) => {
-      console.log("dataModels", dataModels);
-      console.log("this.selectedDataModel",this.selectedDataModel)
+      // console.log("dataModels", dataModels);
+      // console.log("this.selectedDataModel",this.selectedDataModel)
       this.handleDataModelResponse(dataModels);
     });
   }
@@ -239,7 +239,7 @@ export class DataModelService {
     if (dataModels.length > 0) {
       this.selectedDataModel = crossSectional[0] || longitudinal[0] || null;
     }
-    console.log("this.selectedDataModel",this.selectedDataModel)
+    // console.log("this.selectedDataModel",this.selectedDataModel);
     this.loadVisualizationData();
   }
 
@@ -259,9 +259,9 @@ export class DataModelService {
           const dataModelDTO = JSON.parse(reader.result as string);
           this.http.put<void>(url, dataModelDTO).subscribe({
             next: () => {
-              console.log('Data model updated successfully (JSON).');
+              // console.log('Data model updated successfully (JSON).');
               this.reloadDataModels().subscribe(() => {
-                console.log('Data models reloaded after JSON update.');
+                // console.log('Data models reloaded after JSON update.');
                 observer.next();
                 observer.complete();
               });

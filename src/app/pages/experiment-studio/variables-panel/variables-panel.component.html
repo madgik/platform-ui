@@ -15,10 +15,12 @@
     </app-dataset-selector>
 
     <div id="search-bar-container">
-      <app-search-bar
-        [dataModelHierarchy]="d3Data"
-        (searchResultSelected)="onSearchResult($event)"
-      ></app-search-bar>
+      @if (d3Data) {
+        <app-search-bar
+          [dataModelHierarchy]="d3Data"
+          (searchResultSelected)="onSearchResult($event)"
+        ></app-search-bar>
+      }
     </div>
   </div>
 
@@ -28,6 +30,7 @@
       @if (selectedDataModel) {
       <app-bubble-chart
         [d3Data]="d3Data"
+        [highlightNode]="highlightNode"
         (selectedNodeChange)="onSelectedNodeChange($event)"
       >
       </app-bubble-chart>
@@ -40,12 +43,19 @@
         [selectedNode]="selectedNode"
         (filtersChange)="onFilterChange($event)"
       ></app-variable-filter-selection>
-
-        <!-- Distribution Graph Panel -->
       </div>
-      <div class="distribution-graph">
-        <section title="Distribution Graph">
+
+    <!-- Distribution Graph Panel -->
+      <div class="histogam-placeholder">
+        <section class="distribution-graph" title="Distribution Graph">
           <p>Distribution Graph</p>
+          @if (isLoadingHistogram()) {
+            <app-loading-spinner></app-loading-spinner>
+          } @else if (!selectedNode) {
+            <div class="no-data-message">
+              <h3> Please select a Variable</h3>
+            </div>
+            }
           <app-distribution-graph
             [data]="distributionData()"
           ></app-distribution-graph>
