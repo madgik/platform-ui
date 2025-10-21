@@ -16,7 +16,7 @@ export class AppComponent {
   title = 'fl-platform';
 
   ngOnInit() {
-    this.authService.handleAuthCallback();
+    this.authService.initialize();
   }
 
 }

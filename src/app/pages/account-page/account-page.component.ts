@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { AuthService } from "../../services/auth.service";
-import { UserService } from "../../services/user.service";
 import { User } from '../../models/user.interface';
+import { Subject } from 'rxjs';
+import { filter, takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-account-page',
@@ -12,31 +13,35 @@ import { User } from '../../models/user.interface';
   templateUrl: './account-page.component.html',
   styleUrls: ['./account-page.component.css']
 })
-export class AccountPageComponent implements OnInit {
+export class AccountPageComponent implements OnInit, OnDestroy {
   userName = '';
   userEmail = '';
-  roles : string[] | undefined;
+
+  private destroy$ = new Subject<void>();
 
   constructor(
-    public authService: AuthService,
-    private userService: UserService
+    public authService: AuthService
   ) {}
 
   ngOnInit(): void {
-    this.loadUserDetails();
+    this.authService.initialize();
+    this.authService.authState$
+      .pipe(
+        filter((state) => state.status === 'authenticated'),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((state) => {
+        const user: User | null = state.user ?? null;
+        if (user) {
+          this.userName = user.fullname;
+          this.userEmail = user.email;
+        }
+      });
   }
 
-  loadUserDetails(): void {
-    this.userService.getUserDetails().subscribe({
-      next: (user: User) => {
-        this.userName = user.fullname;
-        this.userEmail = user.email;
-        this.roles = user.roles;
-      },
-      error: (error) => {
-        console.error("Error loading user details:", error);
-      }
-    });
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   signOut(): void {

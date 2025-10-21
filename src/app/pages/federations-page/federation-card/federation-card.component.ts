@@ -9,7 +9,7 @@ import { Federation } from '../../../interfaces/federations.interface';
 })
 export class FederationCardComponent {
   @Input() federation!: Federation;
-  @Input() isAdmin = false;
+  @Input() canManage = false;
   @Output() updateFederation = new EventEmitter<string>();
   @Output() deleteFederation = new EventEmitter<string>();
   @Output() visualizeDataModel = new EventEmitter<string>();

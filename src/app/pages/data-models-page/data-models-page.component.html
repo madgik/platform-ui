@@ -4,7 +4,7 @@
       <!-- Dropdowns container for data model-specific settings -->
       <div class="dropdown-container">
         <app-federation-selector
-          [isDomainExpert]="isDomainExpert"
+          [isDomainExpert]="isAuthenticated"
           [defaultFederation]="selectedFederation"
           (federationChange)="onSelectedFederationChange($event)"
         ></app-federation-selector>
@@ -24,7 +24,7 @@
         ></app-export-options>
       </div>
 
-      @if(isDomainExpert){
+      @if(isAuthenticated){
           <app-action-menu
             [isSelectedDataModelReleased]="selectedDataModel?.released ?? false"
             (action)="handleAction($event)"

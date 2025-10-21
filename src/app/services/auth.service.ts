@@ -1,92 +1,104 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable } from 'rxjs';
-import {map} from "rxjs/operators";
-import {UserService} from "./user.service";
-import {HttpClient} from "@angular/common/http";
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable, of } from 'rxjs';
+import { catchError, filter, map, tap } from 'rxjs/operators';
+import { User } from '../models/user.interface';
+
+export type AuthStatus = 'checking' | 'authenticated' | 'unauthenticated';
+
+export interface AuthState {
+  status: AuthStatus;
+  user?: User | null;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private tokenKey = 'auth_token';
-  private redirectUrlKey = 'redirect_url';
+  private readonly redirectUrlKey = 'redirect_url';
 
-  // Observable to track login state
-  private loggedInSubject = new BehaviorSubject<boolean>(this.hasToken());
+  private readonly authStateSubject = new BehaviorSubject<AuthState>({ status: 'checking' });
+  readonly authState$ = this.authStateSubject.asObservable();
+  readonly isAuthenticated$ = this.authState$.pipe(map((state) => state.status === 'authenticated'));
 
-  constructor(private http: HttpClient, private userService: UserService, private router: Router) {}
+  private initialized = false;
 
-  private hasToken(): boolean {
-    return !!localStorage.getItem(this.tokenKey);
-  }
+  constructor(private http: HttpClient, private router: Router) {}
 
-  // Initiate login by saving intended URL
-  login(redirectUrl: string = '/') {
-    // Save the intended URL to local storage
-    localStorage.setItem(this.redirectUrlKey, redirectUrl);
-
-    // Redirect to backend login
-    window.location.href = '/services/oauth2/authorization/keycloak';
-  }
-
-  // After login, handle callback and redirect to intended URL
-  handleAuthCallback() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
-    if (token) {
-      localStorage.setItem(this.tokenKey, token);
-
-      // Update the logged-in state
-      this.loggedInSubject.next(true);
-
-      // Retrieve the stored URL or default to home
-      const redirectUrl = localStorage.getItem(this.redirectUrlKey);
-
-      // Clear the stored URL and navigate
-      localStorage.removeItem(this.redirectUrlKey);
-      this.router.navigate([redirectUrl]);
-    } else {
-      console.error('No token found in callback URL');
+  initialize(): void {
+    if (this.initialized) {
+      return;
     }
+    this.initialized = true;
+    this.refreshAuthState();
   }
 
-  logout() {
-    // Call the backend logout endpoint to invalidate the session
-    this.http.post('/services/logout', {}).subscribe({
-      next: () => {
-        // On successful logout from backend, clear local data
-        localStorage.removeItem(this.tokenKey);
-        this.loggedInSubject.next(false);
-        localStorage.removeItem(this.redirectUrlKey);
+  refreshAuthState(): void {
+    this.authStateSubject.next({ status: 'checking' });
+    this.refreshUser().subscribe();
+  }
 
-        // Navigate to home and reload to ensure the app is fully reset
-        this.router.navigate(['/']).then(() => {
-          window.location.reload();
-        });
-      },
-      error: (err: any) => {
-        console.error('Error during backend logout:', err);
+  private refreshUser(): Observable<User | null> {
+    return this.http.get<User>('/services/activeUser').pipe(
+      tap((user) => {
+        this.authStateSubject.next({ status: 'authenticated', user });
+        this.consumeRedirect();
+      }),
+      catchError((error) => {
+        if (error.status !== 401 && error.status !== 403) {
+          console.error('Error fetching active user:', error);
+        }
+        this.authStateSubject.next({ status: 'unauthenticated' });
+        return of(null);
+      })
+    );
+  }
 
-        // Fallback: clear local data and reload even if backend logout fails
-        localStorage.removeItem(this.tokenKey);
-        this.loggedInSubject.next(false);
-        localStorage.removeItem(this.redirectUrlKey);
-        this.router.navigate(['/']).then(() => {
-          window.location.reload();
-        });
-      }
+  login(redirectUrl: string = '/'): void {
+    const target = redirectUrl || '/';
+    localStorage.setItem(this.redirectUrlKey, target);
+
+    const normalizedTarget = target.startsWith('/') ? target : `/${target}`;
+
+    const encodedTarget = encodeURIComponent(normalizedTarget);
+    window.location.href = `/services/oauth2/authorization/keycloak?frontend_redirect=${encodedTarget}`;
+  }
+
+  logout(): void {
+    this.http.post('/services/logout', {}).pipe(
+      catchError((error) => {
+        console.error('Error during backend logout:', error);
+        return of(null);
+      })
+    ).subscribe(() => {
+      localStorage.removeItem(this.redirectUrlKey);
+      this.authStateSubject.next({ status: 'unauthenticated' });
+      this.router.navigate(['/']).then(() => window.location.reload());
     });
   }
 
   isLoggedIn(): boolean {
-    return this.loggedInSubject.value && this.hasToken();
+    return this.authStateSubject.value.status === 'authenticated';
   }
 
-  // Check if the user has a specific role
-  hasRole(role: string): Observable<boolean> {
-    return this.userService.getUserRoles().pipe(
-      map((roles) => roles.includes(role))
-    );
+  get currentUser(): User | null {
+    return this.authStateSubject.value.user ?? null;
+  }
+
+  onAuthResolved(): Observable<AuthState> {
+    return this.authState$.pipe(filter((state) => state.status !== 'checking'));
+  }
+
+  private consumeRedirect(): void {
+    const redirectUrl = localStorage.getItem(this.redirectUrlKey);
+    if (!redirectUrl) {
+      return;
+    }
+
+    localStorage.removeItem(this.redirectUrlKey);
+    this.router.navigateByUrl(redirectUrl).catch((error) => {
+      console.error('Navigation to stored redirect failed:', error);
+    });
   }
 }

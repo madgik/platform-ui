@@ -1,13 +1,10 @@
-import { Injectable } from '@angular/core';
-import { HttpInterceptor, HttpRequest, HttpHandler } from '@angular/common/http';
+import { HttpInterceptorFn } from '@angular/common/http';
 
-@Injectable()
-export class AuthInterceptor implements HttpInterceptor {
-  intercept(req: HttpRequest<any>, next: HttpHandler) {
-    const token = localStorage.getItem('auth_token');
-    const authReq = req.clone({
-      headers: req.headers.set('Authorization', `Bearer ${token}`)
-    });
-    return next.handle(authReq);
+const absoluteUrlPattern = /^https?:\/\//i;
+
+export const withCredentialsInterceptor: HttpInterceptorFn = (req, next) => {
+  if (!req.withCredentials && !absoluteUrlPattern.test(req.url)) {
+    return next(req.clone({ withCredentials: true }));
   }
-}
+  return next(req);
+};

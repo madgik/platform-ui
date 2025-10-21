@@ -1,4 +1,4 @@
-import { Component, OnInit, signal} from '@angular/core';
+import { Component, OnDestroy, OnInit, signal} from '@angular/core';
 import { FormsModule } from "@angular/forms";
 import { CommonModule } from "@angular/common";
 import { Federation } from "../../interfaces/federations.interface";
@@ -20,6 +20,8 @@ import {ErrorService} from "./services/error.service";
 import {ConfirmationDialogComponent} from "./confirmation-dialog/confirmation-dialog.component";
 import {MatDialog} from "@angular/material/dialog";
 import {DataModelFormComponent} from "./data-model-form/data-model-form.component";
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 
 @Component({
@@ -46,20 +48,22 @@ import {DataModelFormComponent} from "./data-model-form/data-model-form.componen
 })
 //TODO:request access for federation
 //TODO:filters
-export class DataModelsPageComponent implements OnInit{
+export class DataModelsPageComponent implements OnInit, OnDestroy {
   visualizationType = 'TidyTree';
   d3Data: any;
   federations: Federation[] = [];
   selectedFederation: Federation | null = null;
   selectedDataModel: DataModel | null | undefined;
   selectedNode: any;
-  isDomainExpert = false;
+  isAuthenticated = false;
   selectedFileType = signal<'json' | 'xlsx'>('json');
   nodeInfoVisible: boolean = true;
   crossSectionalModels: DataModel[] = [];
   longitudinalModels: DataModel[] = [];
   menuVisible = signal(false);
 
+
+  private destroy$ = new Subject<void>();
 
   constructor(
     private federationService: FederationService,
@@ -74,10 +78,13 @@ export class DataModelsPageComponent implements OnInit{
 
 
   ngOnInit(): void {
-    // Check for the user's role first
-    this.authService.hasRole('DC_DOMAIN_EXPERT').subscribe((hasRole) => {
-      this.isDomainExpert = hasRole;
-    });
+    // Track authentication state to toggle UI affordances
+    this.authService.initialize();
+    this.authService.isAuthenticated$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((isAuthenticated) => {
+        this.isAuthenticated = isAuthenticated;
+      });
 
     // Load federations and query params together
     this.federationService.getFederationsWithModels().subscribe({
@@ -116,6 +123,11 @@ export class DataModelsPageComponent implements OnInit{
         this.handleDataModelResponse(dataModels);
       });
     }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   handleDataModelResponse(dataModels: DataModel[]): void {

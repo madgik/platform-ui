@@ -27,7 +27,7 @@ export class FederationsPageComponent implements OnInit, OnDestroy {
   selectedFilter = 'All';
   federations: Federation[] = [];
   filteredFederations: Federation[] = [];
-  isAdmin = false;
+  canManageFederations = false;
 
   private destroy$ = new Subject<void>();
 
@@ -39,6 +39,7 @@ export class FederationsPageComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.authService.initialize();
     this.loadFederations();
 
     this.router.events
@@ -52,10 +53,10 @@ export class FederationsPageComponent implements OnInit, OnDestroy {
         }
       });
 
-    this.authService.hasRole('DC_ADMIN')
+    this.authService.isAuthenticated$
       .pipe(takeUntil(this.destroy$))
-      .subscribe((isAdmin) => {
-        this.isAdmin = isAdmin;
+      .subscribe((isAuthenticated) => {
+        this.canManageFederations = isAuthenticated;
       });
   }
 

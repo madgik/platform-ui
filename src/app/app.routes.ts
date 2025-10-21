@@ -6,7 +6,6 @@ import { AccountPageComponent } from './pages/account-page/account-page.componen
 import { ExperimentStudioComponent } from './pages/experiment-studio/experiment-studio.component';
 import { AuthGuard } from './guards/auth.guard';
 import {NgModule} from "@angular/core";
-import {AuthCallbackComponent} from "./callback/authcallback.component";
 import {DataModelsPageComponent} from "./pages/data-models-page/data-models-page.component";
 
 
@@ -35,7 +34,6 @@ export const appRoutes: Routes = [
   //       (m) => m.DataModelsPageModule // Ensure you're importing the main module here
   //     ),
   // },
-  { path: 'auth-callback', component: AuthCallbackComponent },
   { path: '', redirectTo: 'home', pathMatch: 'full' },
   { path: '**', redirectTo: 'home' }
 ];
