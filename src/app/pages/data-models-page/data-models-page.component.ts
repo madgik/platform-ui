@@ -79,7 +79,7 @@ export class DataModelsPageComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     // Track authentication state to toggle UI affordances
-    this.authService.initialize();
+    // this.authService.initialize();
     this.authService.isAuthenticated$
       .pipe(takeUntil(this.destroy$))
       .subscribe((isAuthenticated) => {

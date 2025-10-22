@@ -28,12 +28,6 @@ export const appRoutes: Routes = [
         (m) => m.DataModelsPageModule // Ensure you're importing the main module here
       ),
   },
-  // { path: 'data-models', component: DataModelsPageComponent,
-  //   loadChildren: () =>
-  //     import('./pages/data-models-page/data-models-page.module').then(
-  //       (m) => m.DataModelsPageModule // Ensure you're importing the main module here
-  //     ),
-  // },
   { path: '', redirectTo: 'home', pathMatch: 'full' },
   { path: '**', redirectTo: 'home' }
 ];

@@ -24,7 +24,7 @@ export class AccountPageComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.authService.initialize();
+    // this.authService.initialize();
     this.authService.authState$
       .pipe(
         filter((state) => state.status === 'authenticated'),
