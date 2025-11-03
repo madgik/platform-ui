@@ -7,6 +7,7 @@ import { buildNaiveBayesConfusionChart } from './renderers/naive-bayes-confusion
 import { buildLogRegConfusionChart } from './renderers/log-reg-confusion-matrix-chart';
 import { buildKMeansChart } from './renderers/k-means-chart';
 import { buildMeanPlotChart } from './renderers/mean-plot-chart';
+import { buildBoxPlotChart } from './renderers/box-plot-chart';
 
 export interface AlgorithmChartConfig {
   build: (input: any) => EChartsOption[];
@@ -46,7 +47,10 @@ export const AlgorithmChartRegistry: Record<string, AlgorithmChartConfig> = {
     build: composeCharts(buildBarChart, buildMeanPlotChart),
     inputPath: '',
   },
-
+    descriptive_stats: {
+    build: buildBoxPlotChart,
+    inputPath: '',
+  },
   default: {
     build: () => [],
     inputPath: '',

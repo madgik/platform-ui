@@ -1,20 +1,18 @@
-  <div id="chart">
-    @if (!error) {
-      <!-- Chart will render here -->
-      <svg>
-        <!-- Replace with your D3 rendering logic -->
-         @for (node of d3Data.children; track node) {
-           <g (click)="onNodeClick(node)">
-             <!-- Example circle for a node -->
-             <circle [attr.cx]="node.x" [attr.cy]="node.y" [attr.r]="node.r"></circle>
-             <text>{{ node.name }}</text>
-           </g>
-         }
-      </svg>
-      <div ></div>
-    } @else {
-      <div class="error-message">
-        {{ error }}
-      </div>
+<div id="chart">
+  @if (!error) {
+
+  <svg>
+    @for (node of d3Data.children; track node) {
+    <g (click)="onNodeClick(node)">
+      <circle [attr.cx]="node.x" [attr.cy]="node.y" [attr.r]="node.r"></circle>
+      <text>{{ node.name }}</text>
+    </g>
     }
+  </svg>
+  <div></div>
+  } @else {
+  <div class="error-message">
+    {{ error }}
   </div>
+  }
+</div>

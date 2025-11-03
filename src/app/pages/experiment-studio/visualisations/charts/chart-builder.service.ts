@@ -19,15 +19,12 @@ export class ChartBuilderService {
     // raw input
     const input = getByPath(result, config.inputPath);
 
-    // 🪄 enrich με display names
+    // enrich with display names
     const enrichedInput = this.enrichLabels(input);
 
     return config.build(enrichedInput);
   }
 
-  /**
-   * Κάνει replace όλα τα raw variable codes με τα displayNames από το ExperimentStudioService.
-   */
   private enrichLabels(input: any): any {
     if (!input) return input;
 
@@ -41,7 +38,7 @@ export class ChartBuilderService {
         covariates.find(c => c.code === raw) ||
         filters.find(f => f.code === raw);
 
-      return match?.name || raw; // 👈 εδώ προτιμάμε το .label
+      return match?.name || raw;
     };
 
     if (input?.anova_table) {
@@ -55,7 +52,6 @@ export class ChartBuilderService {
       };
     }
 
-    // γενική περίπτωση: recursive enrichment
     if (typeof input === 'object' && !Array.isArray(input)) {
       return Object.fromEntries(
         Object.entries(input).map(([k, v]) => [k, this.enrichLabels(v)])

@@ -1,6 +1,9 @@
 export interface BubbleData {
   code: string;
-  label: string;
+  name: string;
+  label?: string;
+  type?: string;
+  description?: string;
   value: number;
   group?: string;
   children?: BubbleData[];

@@ -1,236 +1,338 @@
 .modal-backdrop {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 1000;
-  opacity: 1;
-  transition: opacity 0.3s ease-in-out;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 6000;
 }
 
 .modal-container {
   position: fixed;
-  display: flex;
-  flex-direction: column;
-  max-height: 90vh;
-  top: 50%;
+  top: 54%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: white;
-  width: 85%;
-  max-width: 1000px;
+  width: min(80%, 90vw);
+  max-height: 85vh;
+  overflow: auto;
+  background: #fff;
   border-radius: 12px;
-  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.3);
-  z-index: 1100;
-  padding: 25px;
-  opacity: 1;
-  font-family: 'Roboto', sans-serif;
-  transition: transform 0.4s ease-in-out, opacity 0.3s ease-in-out;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+  z-index: 6001;
+  font-family: "Roboto", sans-serif;
+  animation: fadeIn 0.25s ease-out both;
 }
 
-.modal-body {
-  overflow-y: auto;
-  flex-grow: 1;
-  padding: 15px;
-  max-height: 70vh;
-}
-
+/* Header */
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px;
-  background: linear-gradient(90deg, #00758c, #00a6c0);
+  padding: 14px 20px;
+  background: linear-gradient(135deg, #00758c, #00a6c0);
   color: white;
-  font-size: 22px;
   border-top-left-radius: 12px;
   border-top-right-radius: 12px;
-  width: 102%;
-  height: 50px;
-  margin-top: -2.5%;
-  margin-left: -2.5%;
-  z-index: 10;
-}
-
-.modal-footer {
-  position: sticky;
-  bottom: 0;
-  z-index: 10;
-  text-align: right;
 }
 
 .close-btn {
   background: none;
-  color: white;
   border: none;
-  padding: 8px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: normal;
-}
-
-.close-btn:hover {
-  color: #f8d7da;
-}
-
-modal-footer .close-btn {
-  /* background: gray; */
-  color: white;
-  border: none;
-  padding: 8px 12px;
-  border-radius: 6px;
+  color: #fff;
   cursor: pointer;
   font-size: 18px;
-  font-weight: normal;
+  transition: opacity 0.2s ease;
+}
+.close-btn:hover {
+  opacity: 0.7;
 }
 
-
-/* Accordion Styling */
-.accordion-header {
-  background: linear-gradient(90deg, #00758c, #00a6c0);
-  color: white;
-  padding: 10px;
-  cursor: pointer;
+/* Tabs */
+.modal-tabs {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 16px;
-  border-radius: 6px;
-  margin-top: 8px;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 0;
+  background: #f5f8f9;
+  border-bottom: 1px solid #e0e0e0;
 }
 
-.accordion-body {
-  display: none;
-  padding: 12px;
-  background: white;
-  border-radius: 6px;
-  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+.modal-tabs button {
+  border: none;
+  border-radius: 20px;
+  padding: 6px 16px;
+  background: #dfeef1;
+  color: #00758c;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.modal-tabs button.active {
+  background: linear-gradient(135deg, #0097a7, #00bcd4);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(0, 188, 212, 0.4);
 }
 
-.accordion-body.open {
-  display: block;
+/* Body */
+.modal-body {
+  padding: 20px;
+  max-height: 70vh;
+  overflow-y: auto;
 }
 
-/* Expand/Collapse Buttons */
 .accordion-controls {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 8px;
+  margin: 10px 0 15px 0;
 }
 
-.expand-all, .collapse-all {
-  background: linear-gradient(90deg, #00758c, #00a6c0);
-  color: white;
+.expand-all,
+.collapse-all {
+  background: linear-gradient(135deg, #0097a7, #00bcd4);
+  color: #fff;
   border: none;
-  padding: 8px 12px;
-  border-radius: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 14px;
-  font-weight: normal;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  transition: all 0.25s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
-.expand-all:hover, .collapse-all:hover {
-  background: linear-gradient(90deg, #00687a, #0093a8);
+.expand-all:hover,
+.collapse-all:hover {
+  background: linear-gradient(135deg, #007a8c, #00acc1);
+  transform: translateY(-1px);
 }
 
-/* Table Header (Gradient) */
-.table-header {
+/* Accordion Panels */
+.accordion {
+  background: #fdfefe;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  margin-bottom: 14px;
+  transition: box-shadow 0.3s ease;
+}
+.accordion:hover {
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+}
+
+/* Header */
+.accordion-header {
+  background: linear-gradient(90deg, #008b9f, #00bcd4);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 10px 10px 0 0;
+  cursor: pointer;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: linear-gradient(90deg, #00758c, #00a6c0);
-  color: white;
-  padding: 12px 15px;
-  font-size: 16px;
-  font-weight: bold;
-  border-radius: 8px 8px 0 0;
-  position: relative;
+  font-size: 15px;
+  font-weight: 600;
+  user-select: none;
+}
+.accordion-header p {
+  margin: 0;
+}
+.accordion-icon {
+  font-size: 13px;
+  opacity: 0.8;
 }
 
-/* Table Structure */
+/* Smooth Expand Animation */
+.accordion-body {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: max-height 0.4s cubic-bezier(0.25, 0.1, 0.25, 1),
+    opacity 0.35s ease, transform 0.35s ease;
+}
+
+.accordion-body.open {
+  max-height: 1000px;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.accordion.opening {
+  animation: cardPop 0.3s ease;
+}
+@keyframes cardPop {
+  0% {
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  }
+  50% {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+  100% {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  }
+}
+
+/* 🔹 Table */
 .data-table {
   width: 100%;
   border-collapse: collapse;
-}
-
-/* Table Head with Gradient */
-.data-table thead {
-  background: linear-gradient(90deg, #00758c, #00a6c0);
-  color: white;
-  font-weight: bold;
-}
-
-/* **✅ Adjusted Row Spacing to Restore Clean Look** */
-.data-table th,
-.data-table td {
-  padding: 8px; /* Reduced padding for compact, clean look */
-  text-align: left;
-  border-bottom: 1px solid #ddd;
-}
-
-/* Remove rounding between Metric and Value headers */
-.data-table thead tr:first-child th {
-  border-radius: 0;
-}
-
-/* Table Body Styling */
-.data-table tbody tr:nth-child(odd) {
-  background: #f8fcfd;
-}
-
-.data-table tbody tr:nth-child(even) {
-  background: #eef7f9;
-}
-
-/* Export Button Inside Table Header */
-.export-table {
   background: white;
-  color: #00758c;
-  border: 2px solid #00758c;
-  padding: 6px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.2s ease-in-out;
-  position: absolute;
-  right: 15px;
-  top: 8px;
+  border-radius: 0 0 10px 10px;
+  overflow: hidden;
 }
 
-.export-table:hover {
-  background: #00758c;
+.data-table th {
+  background: #00a6b8;
   color: white;
+  text-align: center;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
 }
 
-/* Loading Spinner */
-.loading-indicator {
+.data-table td {
+  text-align: center;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: #333;
+  border-bottom: 1px solid #e6f4f5;
+}
+
+.data-table tbody tr:nth-child(odd) {
+  background-color: #f9fdfd;
+}
+.data-table tbody tr:nth-child(even) {
+  background-color: #f2fafb;
+}
+
+.data-table tbody tr:hover {
+  background-color: #e5f7f8;
+  transition: background-color 0.2s ease;
+}
+
+/* Πρώτη στήλη πιο έντονη */
+.data-table td:first-child {
+  font-weight: 600;
+  color: #007c8a;
+  text-align: left;
+  padding-left: 16px;
+}
+
+/* Box plots */
+.boxplots-section {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: 20px 0;
-  font-size: 16px;
+  gap: 1.2rem;
+}
+
+.mini-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.mini-tabs button {
+  border: 1px solid #b5e2e8;
+  background: #e8f9fb;
+  border-radius: 14px;
+  padding: 6px 12px;
   color: #00758c;
+  cursor: pointer;
+}
+.mini-tabs button.active {
+  background: linear-gradient(135deg, #00bcd4, #0097a7);
+  color: #fff;
+  border: none;
+}
+.chart-container {
+  width: 90%;
+  max-width: 700px;
+  min-height: 380px;
 }
 
-.spinner {
-  border: 4px solid rgba(0, 0, 0, 0.1);
-  border-left-color: #00758c;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-top: 10px;
+/* Footer */
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px 20px;
+  background: #f5f8f9;
+  border-top: 1px solid #e0e0e0;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+.btn-close {
+  background: linear-gradient(135deg, #678b8f, #96b9be);
+  border: none;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin: 5px;
+}
+
+.btn-download {
+  background: linear-gradient(135deg, #0097a7, #00bbd4ad);
+  border: none;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin: 5px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.hidden-charts-for-export {
+  position: fixed;
+  top: -9999px;
+  left: -9999px;
+  width: 900px;
+  height: auto;
+  opacity: 1;
+  pointer-events: none;
+  background: #fff;
+}
+
+.hidden-charts-for-export app-chart-renderer {
+  width: 800px;
+  height: 500px;
+  display: block;
+}
+
+body.pdf-exporting,
+.modal-container.pdf-exporting {
+  cursor: wait !important;
+  pointer-events: none;
+  user-select: none;
+}
+
+.pdf-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  font-size: 1.2rem;
+  color: #333;
+  font-weight: 500;
+}
+
+.btn-download[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
 }

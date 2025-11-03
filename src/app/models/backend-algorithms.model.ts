@@ -30,6 +30,7 @@ export interface RawParameter {
   label: string;
   desc: string;
   types: string[];
+  stattypes?: number;
   notblank?: boolean | string;
   multiple?: boolean | string;
   default_value?: string | number;

@@ -63,7 +63,6 @@ export function buildMeanPlotChart(result: any): EChartsOption[] {
       axisLine: { lineStyle: { color: '#555' } },
       axisTick: { show: false },
       splitLine: { show: false },
-      // 👇 Προσθέτουμε αυτό
       axisLabel: {
         formatter: (val: string) => val,
       }
@@ -73,11 +72,11 @@ export function buildMeanPlotChart(result: any): EChartsOption[] {
       name: yLabel,
       nameLocation: 'middle',
       nameGap: 60,
-      min: Math.floor(minY - margin),   // ✅ fix για να μην κάνει overflow
+      min: Math.floor(minY - margin),
       max: Math.ceil(maxY + margin),
       axisPointer: { show: false },
       axisLabel: {
-        formatter: (value: number) => (value < minY ? '' : value.toFixed(0)) // ✅ εξαφανίζει μόνο το outlier tick
+        formatter: (value: number) => (value < minY ? '' : value.toFixed(0))
       }
     },
     series: [
@@ -120,7 +119,6 @@ export function buildMeanPlotChart(result: any): EChartsOption[] {
           };
         },
         encode: { x: 0, y: [1, 2] },
-        // 👇 εδώ φεύγουν τα strings και περνάμε index
         data: data.map((d, i) => [i, d.low, d.high]),
       }
 

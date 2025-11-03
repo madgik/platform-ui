@@ -1,6 +1,6 @@
 .distribution-graph {
   display: block; /* Ensure it behaves like a block-level container */
-  width: 100%; /* Take the full available width */
+  width: 94%; /* Take the full available width */
   height: auto; /* Adjust height based on content */
   min-height: 500px;
   padding: 10px; /* Add padding for spacing */
@@ -30,29 +30,4 @@
   box-sizing: border-box;
 }
 
-.floating-button {
-  position: absolute; /* Absolute positioning relative to the parent container */
-  bottom: 10px; /* Pin to the bottom of the grandparent container */
-  right: 10px; /* Pin to the right of the grandparent container */
-  background: linear-gradient(90deg, #00758c, #00a6c0);
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 35px;
-  height: 35px;
-  font-size: 1.3em;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  box-shadow: 1px 3px 6px rgba(0, 0, 0, 0.3);
-  cursor: pointer;
-  z-index: 10; /* Ensure it stays above other elements */
-}
-
-.floating-button:hover {
-  background: #f3f6f7;
-  color: #00758c;
-  transform: scale(1.1);
-  transition: background 0.3s ease, transform 0.2s ease;
-}
 

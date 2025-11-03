@@ -36,12 +36,37 @@ export class AutoRendererComponent {
     }
   }
 
+  // helper
+  formatValue(value: any): string {
+    if (value === null || value === undefined) return '';
+
+    // turn string to number if string is number
+    const num = typeof value === 'string' && !isNaN(Number(value))
+      ? Number(value)
+      : value;
+
+    if (typeof num !== 'number' || isNaN(num)) {
+      return String(value);
+    }
+
+    // Scientific format for too small or too large numbers
+    if ((Math.abs(num) < 0.001 && num !== 0) || Math.abs(num) >= 1_000_000) {
+      return num.toExponential(3);
+    }
+
+    // Show up to 3 decimals
+    let formatted = Number(num.toFixed(3)).toString();
+
+    // if -0 show 0
+    if (formatted === '-0') formatted = '0';
+
+    return formatted;
+  }
+
+
   getOverrideTables(): TableSpec[] | null {
     if (!this.algorithm) return null;
     const builder = AlgorithmTableRegistry[this.algorithm];
-
-    // console.log('[AutoRenderer] Lookup for', this.algorithm);
-    // console.log('[AutoRenderer] Builder function =', builder);
 
     if (!builder) return null;
 

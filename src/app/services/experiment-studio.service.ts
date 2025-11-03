@@ -1,4 +1,4 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, filter, interval, map, of, switchMap, take, takeWhile, tap } from 'rxjs';
 import { SessionStorageService } from './session-storage.service';
@@ -46,24 +46,80 @@ export class ExperimentStudioService {
   private descriptiveStatsCache: Record<string, any> = {}; // Cache histograms by variable code
   variableEnumerations: Record<string, string[]> = {}; // Enum info per variable
 
-  public selectedDataModel: DataModel | null = null;
   lastUsedAlgorithm = signal<string | null>(null);
 
+  selectedDatasets = computed(() => this.selectedDatasetsSignal());
+  bubbleData = signal<any>(null);
+  private selectedDatasetsSignal = signal<string[]>([]);
   backendAlgorithms = signal<Record<string, AlgorithmConfig>>({});
+
+  selectedDataModel = signal<DataModel | null>(null);
+
+  setSelectedDataModel(model: DataModel | null): void {
+    this.selectedDataModel.set(model);
+    console.log('📘 Selected data model updated:', model?.code || '(none)');
+  }
+
+  getActiveDataModelCode(): string {
+    const model = this.selectedDataModel();
+    if (!model?.code || !model?.version) {
+      console.warn('No active data model found.');
+      return 'unknown';
+    }
+    return `${model.code}:${model.version}`;
+  }
 
   constructor() {
     this.loadBackendAlgorithms().subscribe();
+
+    effect(() => {
+      const selected = this.selectedDatasetsSignal();
+      if (!selected) return;
+
+      if (selected.length === 0) {
+        console.warn('No datasets selected — resetting state');
+        this.setVariables([]);
+        this.setCovariates([]);
+        this.setFilters([]);
+        this.histogramCache = {};
+        this.descriptiveStatsCache = {};
+      } else {
+        console.log('📊 Datasets changed:', selected);
+        this.refreshDataModel();
+      }
+    }, { allowSignalWrites: true });
   }
 
+  refreshDataModel() {
+    const selected = this.selectedDatasetsSignal();
+    if (!selected || selected.length === 0) return;
+
+    console.log('🔄 Reloading data models for:', selected);
+
+    this.loadAllDataModels().subscribe(models => {
+      const active = models.filter(m => selected.includes(m.code));
+      if (active.length > 0) {
+        this.selectedDataModel = active[0];
+        const converted = this.convertToD3Hierarchy(active[0]);
+        this.bubbleData.set(converted); // Update chart
+        console.log('Updated hierarchy for', active[0].label, converted);
+      }
+    });
+  }
+
+  setSelectedDatasets(datasets: string[]) {
+    this.selectedDatasetsSignal.set(datasets);
+  }
+
+
   algorithmEnabled(variableType: string): string[] {
-    // φτιάχνουμε array γιατί raw.type μπορεί να είναι string ή string[]
+    // create array because raw.type could be string or string[]
     const varTypes = Array.isArray(variableType) ? variableType : [variableType];
 
     // const covarTypes = Array.isArray(covariateType) ? covariateType : [covariateType];
     const allAlgos = Object.values(this.backendAlgorithms());
 
-    // φιλτράρουμε όσους έχουν inputdata.y και περιλαμβάνουν τουλάχιστον έναν
-    // από τους varTypes στη λίστα types
+    // filter inputdata.y and add at least one of the varTypes in types list
     return allAlgos
       .filter(algo => {
         const yReq = algo.inputdata?.y;
@@ -127,7 +183,7 @@ export class ExperimentStudioService {
     this.selectedVariablesSignal.set([...currentVars, enrichedNode]);
 
     // make sure enums are there
-    this.fetchAndCacheDescriptiveStats(node.code).subscribe();
+    this.loadVariableSummary(node.code).subscribe();
   }
 
   setVariables(vars: any[]): void {
@@ -158,10 +214,6 @@ export class ExperimentStudioService {
   }
 
   setVariableEnumerations(code: string, values: string[]) {
-    // this.variableEnumerations = {
-    //   ...this.variableEnumerations,
-    //   [code]: values,
-    // };
     this.variableEnumerations = { [code]: values };
   }
 
@@ -173,6 +225,7 @@ export class ExperimentStudioService {
     this.sessionStorage.getItem<AlgorithmConfig>('selectedAlgorithm') ?? null
   );
 
+  // todo: pass appropriate return types
   algorithmConfigurations = signal<{ [key: string]: Record<string, any> }>(
     this.sessionStorage.getItem('algorithmConfigurations') || {}
   );
@@ -194,7 +247,7 @@ export class ExperimentStudioService {
 
     const selectedY = selectedVariables[0];
     if (!this.variableEnumerations[selectedY.code]) {
-      await this.fetchAndCacheDescriptiveStats(selectedY.code).toPromise();
+      await this.loadVariableSummary(selectedY.code).toPromise();
     }
 
     let enums = this.variableEnumerations[selectedY.code] || [];
@@ -222,7 +275,6 @@ export class ExperimentStudioService {
         });
 
         this.backendAlgorithms.set(mapped);
-        // console.log("✅ Mapped Algorithms with configSchema:", JSON.stringify(mapped));
         return mapped;
       }),
       catchError((error) => {
@@ -257,13 +309,11 @@ export class ExperimentStudioService {
       x: this.selectedCovariates(),
       filters: this.selectedFilters()
     };
-    // console.log("selections", selections);
 
     for (const [role, req] of Object.entries(algo.inputdata)) {
       if (role !== 'y' && role !== 'x') continue;
 
       const sel = selections[role] || [];
-      // console.log("HOOLA", { name, role, req, sel});
       // check notblank
       if (req.notblank && sel.length === 0) {
         // console.log("Algo name", algo.name);
@@ -275,7 +325,6 @@ export class ExperimentStudioService {
 
       // check if multiple
       if (!req.multiple && sel.length > 1) {
-        // console.log("req.multiple", req.multiple);
         return false;
       }
 
@@ -289,10 +338,8 @@ export class ExperimentStudioService {
         }
       }
     }
-    // console.log("Passed all the checks!");
     return true;
   }
-
 
   buildRequestBody(algorithmName: string | null = null, yVariables: string[] | null = null, xVariables: string[] | null = null): any {
     // let selectedAlgo = this.selectedAlgorithm() ?? (algorithmName ? this.backendAlgorithms()[algorithmName] : undefined);
@@ -307,58 +354,58 @@ export class ExperimentStudioService {
       throw new Error("No algorithm config found for " + algorithmName);
     }
 
-    // const variables = yVariables ?? this.selectedVariables().map((v) => v.code);
-    const variables = yVariables && yVariables.length ? yVariables : this.selectedVariables().map((v) => v.code);
+    let requestBody = {};
 
+    const variables = yVariables && yVariables.length ? yVariables : this.selectedVariables().map((v) => v.code);
     const covariates = xVariables ?? this.selectedCovariates().map((c) => c.code);
     const filters = this.selectedFilters();
     const config = this.algorithmConfigurations()[algoConfig.name ?? ''] || {};
 
 
-
-    // return {
-    //   name: `experiment_${algoConfig.name.replace(/\s+/g, '_')}`,
-    //   algorithm: {
-    //     name: algoConfig.name,
-    //     inputdata: {
-    //       y: variables.length > 0 ? variables : null,
-    //       x: covariates.length > 0 ? covariates : null,
-    //       data_model: "dementia:0.1",
-    //       datasets: ["edsd", "ppmi", "desd-synthdata"],
-    //       filters: filters.length ? filters : null,
-    //     },
-    //     parameters: config,
-    //     preprocessing: null,
-    //     type: "exareme2",
-    //   },
-    // };
-
-    const requestBody = {
-      name: `experiment_${algoConfig.name.replace(/\s+/g, '_')}`,
-      algorithm: {
-        name: algoConfig.name,
-        inputdata: {
-          data_model: "dementia:0.1",
-          y: variables.length > 0 ? variables : null,
-          x: covariates.length > 0 ? covariates : null,
-          // data_model: this.selectedDataModel?.code ?? 'unknown',
-          datasets: ["edsd", "ppmi", "desd-synthdata"],
-          filters: filters.length ? filters : null,
+    // special case for multiple_histograms. Transient call
+    if (algorithmName === 'multiple_histograms') {
+      requestBody = {
+        name: `experiment_${algorithmName}`,
+        algorithm: {
+          name: algorithmName,
+          inputdata: {
+            data_model: this.getActiveDataModelCode(),
+            // data_model: "dementia:0.1",
+            y: yVariables ?? null, // only what comes through functions parameters
+            datasets: this.selectedDatasetsSignal(),
+            filters: null,
+          },
+          parameters: {},
+          preprocessing: null,
+          type: 'exareme2',
         },
-        parameters: config,
-        preprocessing: null,
-        type: "exareme2",
-      }
-    };
-
+      };
+    } else {
+      requestBody = {
+        name: `experiment_${algoConfig.name.replace(/\s+/g, '_')}`,
+        algorithm: {
+          name: algoConfig.name,
+          inputdata: {
+            data_model: this.getActiveDataModelCode(),
+            // data_model: "dementia:0.1",
+            y: variables.length > 0 ? variables : null,
+            x: covariates.length > 0 ? covariates : null,
+            datasets: this.selectedDatasetsSignal(),
+            filters: filters.length ? filters : null,
+          },
+          parameters: config,
+          preprocessing: null,
+          type: "exareme2",
+        }
+      };
+    }
     console.log("🧪 Final Request Body", JSON.stringify({
       y: variables,
-      datasets: ["edsd", "ppmi", "desd-synthdata"],
+      data_model: this.getActiveDataModelCode(),
+      datasets: this.selectedDatasetsSignal(),
       full: requestBody
     }, null, 2));
-
     return requestBody;
-
   }
 
   getHistogramData() {
@@ -391,7 +438,7 @@ export class ExperimentStudioService {
 
   convertToD3Hierarchy(data: any): { hierarchy: any; allVariables: any[]; allDatasets: any[] } {
     const convertVariables = (vars: any[]) =>
-      vars.map((v) => ({ name: v.label, code: v.code, value: 1, type: v.type }));
+      vars.map((v) => ({ name: v.label, code: v.code, value: 1, type: v.type, description: v.description }));
 
     const convertGroups = (groups: any) =>
       groups.map((g: any) => ({
@@ -399,18 +446,15 @@ export class ExperimentStudioService {
         code: g.code,
         children: [...convertVariables(g.variables || []), ...convertGroups(g.groups || [])]
       }));
-
     const extractFlat = (node: any, list: any[] = []): any[] => {
       if (node.children) node.children.forEach((child: any) => extractFlat(child, list));
       else if (node.name) list.push(node);
       return list;
     };
-
     const hierarchy = {
       name: data.label,
       children: [...convertVariables(data.variables || []), ...convertGroups(data.groups || [])]
     };
-
     return {
       hierarchy,
       allVariables: extractFlat(hierarchy),
@@ -419,8 +463,6 @@ export class ExperimentStudioService {
   }
 
   submitRequest(requestBody: any, cacheHandler?: (response: any) => void): Observable<any> {
-    // console.log("REQUEST BODY", JSON.stringify(requestBody, null, 2));
-
     return this.http.post<any>(this.experimentUrl, requestBody).pipe(
       switchMap((res) => {
         const uuid = res?.uuid;
@@ -432,65 +474,73 @@ export class ExperimentStudioService {
           cacheHandler(response.result);
         }
       }),
-      catchError((err) => {
-        console.error(`Error running algorithm ${requestBody.algorithm?.name}:`, err);
+      catchError(async (error) => {
+        console.groupCollapsed('Detailed backend error');
+        console.log('Full HttpErrorResponse:', error);
+
+        try {
+          const text = await error.error?.text?.() ?? error.error;
+          console.log('Raw backend response text:', text);
+        } catch {
+          console.log('Raw backend response (non-text):', error.error);
+        }
+
+        console.groupEnd();
+        throw error;
+      })
+
+    );
+  }
+
+  private transientUrl = '/services/experiments/transient';
+
+  private isTransientAlgorithm(name: string): boolean {
+    return ['multiple_histograms', 'descriptive_stats'].includes(name);
+  }
+
+  private normalizeResponse(algoName: string, resp: any): any {
+    if (this.isTransientAlgorithm(algoName) && resp && !resp.result) {
+      return { result: resp };
+    }
+    return resp;
+  }
+
+  private submitTransientRequest(requestBody: any, cacheHandler?: (result: any) => void): Observable<any> {
+    return this.http.post<any>(this.transientUrl, requestBody).pipe(
+      tap((resp) => {
+        if (cacheHandler && resp) cacheHandler(resp);
+      }),
+      catchError((error) => {
+        console.groupCollapsed('Transient backend error');
+        console.log('Full HttpErrorResponse:', error);
+        console.log('Backend message:', error?.error || error?.message);
+        console.groupEnd();
         return of(null);
       })
     );
   }
 
-  // getAlgorithmResults(algorithmName: string, nodeCode: any | null = null): Observable<any> {
-  //   const requestBody = this.buildRequestBody(algorithmName, nodeCode);
-  //     console.log("🚀 API CALL to /algorithm_results with:", {
-  //       algorithmName,
-  //       inputdata: nodeCode
-  //     });
-  //   const cacheHandler = (result: any) => {
-  //     if (algorithmName === "multiple_histograms") {
-  //       const list = result?.histogram || [];
-  //       list.forEach((hist: any) => {
-  //         this.cacheHistogram(hist.var, hist);
-  //       });
-  //     }
-  //   };
-  //   return this.submitRequest(requestBody, cacheHandler);
-  // }
+
+  //Runs transient or standard algorithm calls.
+  //Used for fetching quick results like histograms or descriptive stats.
 
   getAlgorithmResults(algorithmName: string, nodeCodes: string[] | null = null): Observable<any> {
-    let requestBody;
+    let requestBody: any;
 
-  // 🧩 Ειδική περίπτωση για descriptive_stats
-    if (algorithmName === "descriptive_stats") {
-      requestBody = {
-        name: `experiment_descriptive_stats`,
-        algorithm: {
-          name: "descriptive_stats",
-          inputdata: {
-            data_model: "dementia:0.1",
-            y: nodeCodes ?? [],   // μπορεί να είναι πολλές
-            x: null,              // ✅ explicit null
-            datasets: ["edsd", "ppmi", "desd-synthdata"],
-            filters: null
-          },
-          parameters: {},
-          preprocessing: null,
-          type: "exareme2"
-        }
-      };
-    } else {
-      // 🔁 Όλοι οι άλλοι αλγόριθμοι πάνε κανονικά
+    if (algorithmName === 'multiple_histograms') {
       requestBody = this.buildRequestBody(algorithmName, nodeCodes);
+
+      return this.submitTransientRequest(requestBody, (result) => {
+        const list = result?.histogram || [];
+        list.forEach((hist: any) => this.cacheHistogram(hist.var, hist));
+      }).pipe(
+        map(resp => this.normalizeResponse(algorithmName, resp))
+      );
     }
 
-    const cacheHandler = (result: any) => {
-      if (algorithmName === "multiple_histograms") {
-        const list = result?.histogram || [];
-        list.forEach((hist: any) => {
-          this.cacheHistogram(hist.var, hist);
-        });
-      }
-    };
-    return this.submitRequest(requestBody, cacheHandler);
+    // non-transient requests
+    requestBody = this.buildRequestBody(algorithmName, nodeCodes);
+    return this.submitRequest(requestBody);
   }
 
   extractAndSetEnumsFromDescriptiveStats(variableCode: string, result: any) {
@@ -522,118 +572,70 @@ export class ExperimentStudioService {
     }
   }
 
-  // fetchAndCacheDescriptiveStats(variableCode: string): Observable<any> {
-  //   if (this.descriptiveStatsCache[variableCode]) {
-  //     this.extractAndSetEnumsFromDescriptiveStats(variableCode, this.descriptiveStatsCache[variableCode]);
-  //     return of(this.descriptiveStatsCache[variableCode]);
-  //   }
-
-  //   const requestBody = this.buildRequestBody("descriptive_stats");
-
-  //   const cacheHandler = (result: any) => {
-  //     this.descriptiveStatsCache[variableCode] = result;
-
-  //     const labelCountMap: Record<string, number> = {};
-
-  //     for (let countsOfEnum of result.variable_based) {
-  //       let counts = countsOfEnum.data.counts;
-  //       if (!counts) continue;
-
-  //       for (const label in counts) {
-  //         const count = counts[label];
-  //         if (!labelCountMap[label]) {
-  //           labelCountMap[label] = 0;
-  //         }
-  //         labelCountMap[label] += count;
-  //       }
-  //     }
-
-  //     const labels = Object.entries(labelCountMap)
-  //       .filter(([_, count]) => count > 0)
-  //       .map(([label]) => label);
-
-  //     if (labels.length > 0) {
-  //       this.setVariableEnumerations(variableCode, labels);
-  //     }
-  //   };
-  //   return this.submitRequest(requestBody, cacheHandler);
-  // }
-fetchAndCacheDescriptiveStats(variableCode: string): Observable<any> {
-  // ✅ Αν υπάρχει ήδη cache, εξάγουμε enums και επιστρέφουμε
-  if (this.descriptiveStatsCache[variableCode]) {
-    this.extractAndSetEnumsFromDescriptiveStats(
-      variableCode,
-      this.descriptiveStatsCache[variableCode]
-    );
-    return of(this.descriptiveStatsCache[variableCode]);
-  }
-
-  // ✅ Βρίσκουμε τη μεταβλητή που ζητάμε (ώστε να μη στείλουμε λάθος request)
-  const selectedVar = this.selectedVariables().find(v => v.code === variableCode);
-  if (!selectedVar) {
-    console.warn(`[DescriptiveStats] No variable found for code: ${variableCode}`);
-    return of(null);
-  }
-
-  // ✅ Κατασκευάζουμε custom request για descriptive_stats
-  const requestBody = {
-    name: `experiment_descriptive_stats_${variableCode}`,
-    algorithm: {
-      name: "descriptive_stats",
-      inputdata: {
-        data_model: "dementia:0.1",
-        y: [variableCode], // 👉 πάντα array
-        x: null,
-        datasets: ["edsd", "ppmi", "desd-synthdata"],
-        filters: null,
+  private buildDescriptiveRequestBody(variableCodes: string[]): any {
+    return {
+      name: `experiment_descriptive_stats_${variableCodes.join('_')}`,
+      algorithm: {
+        name: "descriptive_stats",
+        inputdata: {
+          // data_model: "dementia:0.1",
+          data_model: this.getActiveDataModelCode(),
+          y: variableCodes,
+          x: null,
+          datasets: this.selectedDatasetsSignal(),
+          filters: null,
+        },
+        parameters: {},
+        preprocessing: null,
+        type: "exareme2",
       },
-      parameters: {},
-      preprocessing: null,
-      type: "exareme2",
-    },
-  };
+    };
+  }
 
-  const cacheHandler = (result: any) => {
-    if (!result) return;
-
-    // ✅ Αποθηκεύουμε στο cache
-    this.descriptiveStatsCache[variableCode] = result;
-
-    // ✅ Ασφαλής εξαγωγή enums (χωρίς να κρασάρει αν λείπουν data)
-    const labelCountMap: Record<string, number> = {};
-
-    if (Array.isArray(result.variable_based)) {
-      for (const countsOfEnum of result.variable_based) {
-        const counts = countsOfEnum?.data?.counts;
-        if (!counts || typeof counts !== "object") continue;
-
-        for (const label in counts) {
-          const count = counts[label];
-          if (!labelCountMap[label]) labelCountMap[label] = 0;
-          labelCountMap[label] += count;
-        }
-      }
+  loadVariableSummary(variableCode: string): Observable<any> {
+    // Return cache if exists
+    if (this.descriptiveStatsCache[variableCode]) {
+      this.extractAndSetEnumsFromDescriptiveStats(
+        variableCode,
+        this.descriptiveStatsCache[variableCode]
+      );
+      return of(this.descriptiveStatsCache[variableCode]);
     }
 
-    const labels = Object.entries(labelCountMap)
-      .filter(([_, count]) => count > 0)
-      .map(([label]) => label);
+    // If it doesn't exist, create variable request body
+    const requestBody = this.buildDescriptiveRequestBody([variableCode]);
 
-    // if (labels.length > 0) {
-    //   this.setVariableEnumerations(variableCode, labels);
-    // }
-    if (labels.length > 0) {
-      this.setVariableEnumerations(variableCode, labels);
-      console.log(`✅ ENUMS set for ${variableCode}:`, labels);
-    } else {
-      console.warn(`⚠️ No enums extracted for ${variableCode}`, result);
-    }
+    const cacheHandler = (result: any) => {
+      if (!result) return;
+      this.descriptiveStatsCache[variableCode] = result;
+      this.extractAndSetEnumsFromDescriptiveStats(variableCode, result);
+    };
 
-  };
+    // Polling for enrichment (stateful)
+    return this.submitRequest(requestBody, cacheHandler);
+  }
 
-  return this.submitRequest(requestBody, cacheHandler);
-}
+  loadDescriptiveOverview(variableCodes: string[]): Observable<any> {
+    const requestBody = this.buildDescriptiveRequestBody(variableCodes);
 
+    return this.submitTransientRequest(requestBody, (result) => {
+      this.setDescriptiveStatsData(result?.variable_based || []);
+      console.log("✅ Descriptive overview loaded:", result);
+    }).pipe(
+      tap((response) => {
+        console.log("📊 Raw descriptive overview response:", response);
+      }),
+      map(resp => this.normalizeResponse("descriptive_stats", resp)),
+      catchError((error) => {
+        console.error("❌ Error fetching descriptive overview:", error);
+        return of(null);
+      })
+    );
+  }
+
+
+  // Executes the currently selected algorithm as a full experiment.
+  // Used by the "Run Experiment" button.
 
   runSelectedAlgorithm(): Observable<any> | null {
     const selectedAlgo = this.selectedAlgorithm();
@@ -653,8 +655,9 @@ fetchAndCacheDescriptiveStats(variableCode: string): Observable<any> {
         name: selectedAlgo.name,
         // need to update this with buildRequestBody
         inputdata: {
-          data_model: "dementia:0.1",
-          datasets: ["edsd", "ppmi", "desd-synthdata"],
+          // data_model: "dementia:0.1",
+          data_model: this.getActiveDataModelCode(),
+          datasets: this.selectedDatasetsSignal(),
           y: variables.length ? variables : null,
           x: covariates.length ? covariates : null,
           filters: filters.length ? filters : null,
@@ -664,8 +667,6 @@ fetchAndCacheDescriptiveStats(variableCode: string): Observable<any> {
         type: selectedAlgo.type || "exareme2"
       }
     };
-
-    // console.log("RUN REQUEST", requestBody);
     return this.submitRequest(requestBody);
   }
 
@@ -702,9 +703,19 @@ fetchAndCacheDescriptiveStats(variableCode: string): Observable<any> {
             // Continue polling if status is "pending"
             return null;
           }),
-          catchError((error) => {
-            console.error('Error during polling:', error);
-            throw error; // Propagate the error
+          catchError(async (error) => {
+            console.groupCollapsed('❌ Detailed backend error');
+            console.log('🔹 Full HttpErrorResponse:', error);
+
+            try {
+              const text = await error.error?.text?.() ?? error.error;
+              console.log('🧠 Raw backend response text:', text);
+            } catch {
+              console.log('🧠 Raw backend response (non-text):', error.error);
+            }
+
+            console.groupEnd();
+            throw error;
           })
         );
       }),
@@ -751,5 +762,3 @@ fetchAndCacheDescriptiveStats(variableCode: string): Observable<any> {
     return this.descriptiveStatsData;
   }
 }
-
-

@@ -32,34 +32,109 @@ function guessVariableType(ioField?: { types?: string[] }): string {
   return "Any";
 }
 
+// function buildConfigSchema(parameters: Record<string, RawParameter>): Array<any> {
+//   const schema = [];
+
+//   for (const [key, param] of Object.entries(parameters)) {
+//     if (param.enums) {
+//       schema.push({
+//         key,
+//         type: 'select',
+//         label: param.label,
+//         options: Array.isArray(param.enums.source) ? param.enums.source : [],
+//       });
+//     } else if (param.types.includes('int') || param.types.includes('real')) {
+//       schema.push({
+//         key,
+//         type: 'number',
+//         label: param.label,
+//         ...(param.min !== undefined ? { min: +param.min } : {}),
+//         ...(param.max !== undefined ? { max: +param.max } : {}),
+//         ...(param.default !== undefined ? { default: +param.default } : {}),
+//       });
+//     } else if (param.types.includes('text')) {
+//       schema.push({
+//         key,
+//         type: 'text',
+//         label: param.label,
+//       });
+//     }
+//   }
+//   return schema;
+// }
+
+// export function mapRawAlgorithmToAlgorithmConfig(raw: RawAlgorithmDefinition): AlgorithmConfig {
+//   return {
+//     name: raw.name,
+//     label: raw.label,
+//     description: raw.desc,
+//     inputdata: raw.inputdata ?? {},
+//     requiredVariable: raw.inputdata?.y?.types || [],
+//     covariate: raw.inputdata?.x?.types || [],
+//     category: CATEGORY_MAPPING[raw.name],
+//     configSchema: buildConfigSchema(raw.parameters),
+//     type: raw.type || "exareme2",
+//     isDisabled: false,
+//     ...(getOutputSchema(raw.name) ? { outputSchema: getOutputSchema(raw.name) } : {})
+//   };
+// }
+
 function buildConfigSchema(parameters: Record<string, RawParameter>): Array<any> {
   const schema = [];
 
   for (const [key, param] of Object.entries(parameters)) {
+    const baseField: any = {
+      key,
+      label: param.label ?? key,
+      desc: param.desc ?? '',
+      notblank: param.notblank ?? false,
+      multiple: param.multiple ?? false,
+      types: param.types ?? [],
+      stattypes: param.stattypes ?? [],
+      ...(param.min !== undefined ? { min: +param.min } : {}),
+      ...(param.max !== undefined ? { max: +param.max } : {}),
+      ...(param.default !== undefined ? { default: param.default } : {}),
+    };
+
+    // --- Select fields ---
     if (param.enums) {
       schema.push({
-        key,
+        ...baseField,
         type: 'select',
-        label: param.label,
-        options: Array.isArray(param.enums.source) ? param.enums.source : [],
+        options: Array.isArray(param.enums?.source)
+          ? param.enums.source
+          : Array.isArray(param.enums)
+          ? param.enums
+          : [],
       });
-    } else if (param.types.includes('int') || param.types.includes('real')) {
-      schema.push({
-        key,
-        type: 'number',
-        label: param.label,
-        ...(param.min !== undefined ? { min: +param.min } : {}),
-        ...(param.max !== undefined ? { max: +param.max } : {}),
-        ...(param.default !== undefined ? { default: +param.default } : {}),
-      });
-    } else if (param.types.includes('text')) {
-      schema.push({
-        key,
-        type: 'text',
-        label: param.label,
-      });
+      continue;
     }
+
+    // --- Numeric fields ---
+    if (param.types?.includes('int') || param.types?.includes('real')) {
+      schema.push({
+        ...baseField,
+        type: 'number',
+      });
+      continue;
+    }
+
+    // --- Text fields ---
+    if (param.types?.includes('text')) {
+      schema.push({
+        ...baseField,
+        type: 'text',
+      });
+      continue;
+    }
+
+    // --- Fallback: keep unknown types as text ---
+    schema.push({
+      ...baseField,
+      type: 'text',
+    });
   }
+
   return schema;
 }
 
@@ -67,15 +142,15 @@ export function mapRawAlgorithmToAlgorithmConfig(raw: RawAlgorithmDefinition): A
   return {
     name: raw.name,
     label: raw.label,
-    description: raw.desc,
+    description: raw.desc ??  '',
     inputdata: raw.inputdata ?? {},
     requiredVariable: raw.inputdata?.y?.types || [],
     covariate: raw.inputdata?.x?.types || [],
-    category: CATEGORY_MAPPING[raw.name],
-    configSchema: buildConfigSchema(raw.parameters),
-    type: raw.type || "exareme2",
+    category: CATEGORY_MAPPING[raw.name] ?? 'Uncategorized',
+    configSchema: buildConfigSchema(raw.parameters ?? {}),
+    type: raw.type || 'exareme2',
     isDisabled: false,
-    ...(getOutputSchema(raw.name) ? { outputSchema: getOutputSchema(raw.name) } : {})
+    ...(getOutputSchema(raw.name) ? { outputSchema: getOutputSchema(raw.name) } : {}),
   };
 }
 

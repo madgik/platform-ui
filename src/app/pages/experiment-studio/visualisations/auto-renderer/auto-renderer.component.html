@@ -1,178 +1,33 @@
 @if (tableSpec()) {
-  @for (table of tableSpec(); track table) {
-    <div class="ar-group">
-      @if (table.title) {
-        <div class="ar-group-title">{{ table.title }}</div>
-      }
-      <div class="ar-value ar-scroll">
-        <table class="ar-table">
-          <thead>
-            <tr>
-              @for (col of table.columns; track col) {
-                <th class="ar-th">{{ col }}</th>
-              }
-            </tr>
-          </thead>
-          <tbody>
-            @for (row of table.rows; track row) {
-              <tr>
-                @for (cell of row; track cell) {
-                  <td class="ar-td">{{ cell }}</td>
-                }
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    </div>
-  }
-}
+  <div class="ar-container">
+    @for (table of tableSpec(); track table) {
+      <div class="ar-card">
+        @if (table.title) {
+          <div class="ar-title">{{ table.title }}</div>
+        }
 
-<!--
-
-<div class="ar-container">
-  @if (isPrimitive(value)) {
-    <div class="ar-entry">
-      <div class="ar-key">Value</div>
-      <div class="ar-value ar-primitive">{{ value }}</div>
-    </div>
-  } @else if (isArray(value) && isMatrix(value)) {
-    <div class="ar-group">
-      <div class="ar-group-title">Matrix</div>
-      <div class="ar-value ar-scroll">
-        <table class="ar-table">
-          <tbody>
-            @for (row of value; track row) {
+        <div class="ar-table-wrapper">
+          <table class="ar-table">
+            <thead>
               <tr>
-                @for (cell of row; track cell) {
-                  <td class="ar-td">{{ cell }}</td>
+                @for (col of table.columns; track col) {
+                  <th>{{ col }}</th>
                 }
               </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    </div>
-  } @else if (isArray(value) && value.length > 0 && isObject(value[0])) {
-    <div class="ar-group">
-      <div class="ar-group-title">Table</div>
-      <div class="ar-value ar-scroll">
-        <table class="ar-table">
-          <thead>
-            <tr>
-              @for (key of getKeys(value[0]); track key) {
-                <th class="ar-th">{{ key }}</th>
+            </thead>
+            <tbody>
+              @for (row of table.rows; track row) {
+                <tr>
+                  @for (cell of row; track cell) {
+                    <td>{{ formatValue(cell) }}</td>
+                  }
+                </tr>
               }
-            </tr>
-          </thead>
-          <tbody>
-            @for (item of value; track item) {
-              <tr>
-                @for (key of getKeys(item); track key) {
-                  <td class="ar-td">{{ item[key] }}</td>
-                }
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    </div>
-  } @else if (isTabularObject(value)) {
-    <div class="ar-group">
-      <div class="ar-group-title">Tabular</div>
-      <div class="ar-value ar-scroll">
-        <table class="ar-table">
-          <thead>
-            <tr>
-              @for (key of getKeys(value); track key) {
-                <th class="ar-th">{{ key }}</th>
-              }
-            </tr>
-          </thead>
-          <tbody>
-            @for (row of getTabularRows(value); track row) {
-              <tr>
-                @for (key of getKeys(row); track key) {
-                  <td class="ar-td">{{ row[key] }}</td>
-                }
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    </div>
-  } @else if (isObject(value) && shouldFlatten(value)) {
-    <div class="ar-group">
-      <div class="ar-group-title">Flattened Object</div>
-      <div class="ar-value ar-scroll">
-        <table class="ar-table">
-          <thead>
-            <tr>
-              <th class="ar-th">Key</th>
-              <th class="ar-th">Value</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (key of getKeys(flattenObject(value)); track key) {
-              <tr>
-                <td class="ar-td">{{ key }}</td>
-                <td class="ar-td">{{ flattenObject(value)[key] }}</td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    </div>
-  } @else if (isFlatObject(value)) {
-    <div class="ar-group">
-      <div class="ar-group-title">Object</div>
-      <div class="ar-value ar-scroll">
-        <table class="ar-table">
-          <thead>
-            <tr>
-              <th class="ar-th">Key</th>
-              <th class="ar-th">Value</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (key of getKeys(value); track key) {
-              <tr>
-                <td class="ar-td">{{ key }}</td>
-                <td class="ar-td">{{ value[key] }}</td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    </div>
-  } @else if (isArray(value)) {
-    <div class="ar-group">
-      <div class="ar-group-title">List</div>
-      <div class="ar-value">
-        <ul class="ar-list">
-          @for (item of value; track item) {
-            <li>
-              <app-auto-renderer [value]="item" [algorithm]="algorithm"/>
-            </li>
-          }
-        </ul>
-      </div>
-    </div>
-  } @else if (isObject(value)) {
-    @for (key of getKeys(value); track key) {
-      <div class="ar-group">
-        <div class="ar-group-title">{{ key }}</div>
-        <div class="ar-value">
-          <app-auto-renderer [value]="value[key]" [algorithm]="algorithm"/>
+            </tbody>
+          </table>
         </div>
       </div>
-    } -->
-  <!-- } @else {
-    <div class="ar-entry">
-      <div class="ar-key">Unsupported</div>
-      <div class="ar-value">
-        <pre class="ar-unsupported">Unsupported format</pre>
-      </div>
-    </div>
-  }
-</div> -->
+    }
+  </div>
+}
+

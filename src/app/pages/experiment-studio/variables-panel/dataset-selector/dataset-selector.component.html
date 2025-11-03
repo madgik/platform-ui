@@ -1,7 +1,12 @@
-<div class="dropdown">
-  <button class="dropdown-toggle" (click)="toggleDropdown()">
+<div class="button-container">
+  <button class="variable-btn" (click)="toggleDropdown()">
     Select Datasets
   </button>
+
+  <!-- Counter badge -->
+  <span class="counter">{{ selectedDatasets.size }}</span>
+
+  <!-- Dropdown menu -->
   @if (isDropdownOpen) {
     <ul class="dropdown-menu">
       @for (dataset of datasets; track dataset) {
@@ -19,4 +24,3 @@
     </ul>
   }
 </div>
-

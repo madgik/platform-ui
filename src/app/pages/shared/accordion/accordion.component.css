@@ -11,7 +11,12 @@
 .accordion-header {
   padding: 15px;
   cursor: pointer;
-  background: linear-gradient(90deg, #00758c, #00a6c0);
+  background: linear-gradient( 90deg, #026d6d, #7ce8d9);
+  /* background: linear-gradient( 90deg, #026d6d, #61f7e2); */
+  /* background: linear-gradient( 90deg, #0085c6, #61f7e2); */
+  /* background: linear-gradient( 90deg, #007f8c, #11e8ca); */
+  /* background: linear-gradient( 90deg, #00858c, #00c0a5); */
+  /* background: linear-gradient(90deg, #00758c, #00a6c0); */
   /* background: linear-gradient(90deg, #00838c, #00b3c0); */
   /* background: linear-gradient(90deg, #048079, #59dfdf); */
   border-radius: 4px;

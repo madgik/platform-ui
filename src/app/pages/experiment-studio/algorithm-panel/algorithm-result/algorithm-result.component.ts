@@ -85,38 +85,47 @@ export class AlgorithmResultComponent {
   }
 
   exportToPDF() {
-    const doc = new jsPDF();
-    let y = 10;
+    const doc = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
+    let y = 40;
+
+    doc.setFontSize(16);
+    doc.text(`Algorithm: ${this.algorithm}`, 40, y);
+    y += 10;
+
+    doc.setFontSize(10);
+    doc.text(`Generated: ${new Date().toLocaleString()}`, 40, y);
+    y += 20;
 
     for (const field of this.schema) {
       const key = field.key;
-      const type = field.type;
       const data = this.result?.[key];
+      if (!data) continue;
 
       doc.setFontSize(12);
-      doc.text(key, 10, y);
+      doc.text(field.label || key, 40, y);
       y += 6;
 
-      if (type === 'table' && Array.isArray(data) && data.length > 0) {
+      if (Array.isArray(data) && data.length > 0 && typeof data[0] === 'object') {
         const headers = Object.keys(data[0]);
-        const rows = data.map((row: any) => headers.map(h => row[h]));
-        const table = autoTable(doc, {
+        const rows = data.map((r: any) => headers.map(h => r[h]));
+        autoTable(doc, {
           startY: y,
           head: [headers],
           body: rows,
+          margin: { left: 40, right: 40 },
+          styles: { fontSize: 8 },
         });
-        y = (table as any)?.finalY + 10;
+        y = (doc as any).lastAutoTable.finalY + 15;
       } else {
-        const content =
-          typeof data === 'object' ? JSON.stringify(data, null, 2) : String(data);
-        const lines = doc.splitTextToSize(content, 180);
-        doc.setFontSize(10);
-        doc.text(lines, 10, y);
-        y += lines.length * 4 + 10;
+        const text = typeof data === 'object' ? JSON.stringify(data, null, 2) : String(data);
+        const lines = doc.splitTextToSize(text, 500);
+        doc.text(lines, 40, y);
+        y += lines.length * 10 + 10;
       }
     }
 
-    doc.save('algorithm-results.pdf');
+    doc.save(`${this.algorithm}_results.pdf`);
   }
+
 
 }

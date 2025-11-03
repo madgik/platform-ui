@@ -1,24 +1,35 @@
-// chart-renderer.component.ts
-import { Component, Input } from '@angular/core';
+import { Component, Input, AfterViewInit, QueryList, ViewChildren, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { EChartsOption } from 'echarts';
-import { NgxEchartsModule } from 'ngx-echarts';
-import { NgxEchartsDirective } from 'ngx-echarts';
-import { TooltipComponent, GridComponent, LegendComponent } from "echarts/components";
+import { ECharts, EChartsOption } from 'echarts';
+import { NgxEchartsModule, NgxEchartsDirective } from 'ngx-echarts';
 
 @Component({
   selector: 'app-chart-renderer',
   standalone: true,
-  imports: [CommonModule, NgxEchartsModule, NgxEchartsDirective],
+  imports: [CommonModule, NgxEchartsModule],
   templateUrl: './charts-renderer.component.html',
-  styleUrl: './charts-renderer.component.css'
+  styleUrls: ['./charts-renderer.component.css']
 })
-
-export class ChartRendererComponent {
+export class ChartRendererComponent implements AfterViewInit {
   @Input() charts: EChartsOption[] = [];
-  @Input() echartsExtentions = [];
+  @ViewChildren(NgxEchartsDirective) echartsDirectives!: QueryList<NgxEchartsDirective>;
 
-  constructor() {
-    // this.echartsExtentions = [TooltipComponent, GridComponent, LegendComponent];
+  private instances: ECharts[] = [];
+
+  constructor(private zone: NgZone) { }
+
+  ngAfterViewInit(): void {
+    this.zone.runOutsideAngular(() => {
+      setTimeout(() => {
+        this.instances = this.echartsDirectives
+          .map(d => (d as any).getInstance?.())
+          .filter((i): i is ECharts => !!i);
+        console.log('✅ ChartRenderer ready:', this.instances.length);
+      }, 1000);
+    });
+  }
+
+  getInstances(): ECharts[] {
+    return this.instances;
   }
 }

@@ -1,4 +1,5 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, HostListener, ElementRef } from '@angular/core';
+import { ExperimentStudioService } from '../../../../services/experiment-studio.service';
 
 @Component({
   selector: 'app-dataset-selector',
@@ -11,16 +12,31 @@ export class DatasetSelectorComponent implements OnChanges {
   @Output() selectedDatasetsChange = new EventEmitter<string[]>();
   isDropdownOpen = false;
 
-  constructor(private elementRef: ElementRef) {}
+
+  constructor(private elementRef: ElementRef, private expStudioService: ExperimentStudioService) { }
+
 
   selectedDatasets = new Set<string>(); // Store selected datasets
 
   ngOnChanges(changes: SimpleChanges): void {
-    // Preselect all datasets when input datasets change
-    if (changes['datasets'] && this.datasets.length > 0) {
-      this.preselectAllDatasets();
+    if (changes['datasets'] && this.datasets?.length > 0) {
+      const prevSelection = new Set(this.selectedDatasets);
+      const currentCodes = this.datasets.map(d => d.code);
+
+      // keep only valid selections that still exist
+      this.selectedDatasets = new Set(
+        [...prevSelection].filter(code => currentCodes.includes(code))
+      );
+
+      // if none left, preselect all (initial mount case)
+      if (this.selectedDatasets.size === 0) {
+        this.preselectAllDatasets();
+      } else {
+        this.emitSelectedDatasets();
+      }
     }
   }
+
   onDatasetSelectionChange(event: Event): void {
     const selectedOptions = (event.target as HTMLSelectElement).selectedOptions;
     this.selectedDatasets = new Set(
@@ -43,7 +59,11 @@ export class DatasetSelectorComponent implements OnChanges {
   }
 
   emitSelectedDatasets(): void {
-    this.selectedDatasetsChange.emit(Array.from(this.selectedDatasets));
+    const selected = Array.from(this.selectedDatasets);
+    this.selectedDatasetsChange.emit(selected);
+
+    // Notify the global service
+    this.expStudioService.setSelectedDatasets(selected);
   }
 
   private preselectAllDatasets(): void {

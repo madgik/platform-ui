@@ -6,30 +6,12 @@ import { ExperimentStudioService } from '../../../services/experiment-studio.ser
 @Component({
   selector: 'app-distribution-graph',
   standalone: true,
-  imports: [StatisticAnalysisPanelComponent, HistogramComponent],
+  imports: [HistogramComponent],
   templateUrl: './distribution-graph.component.html',
   styleUrl: './distribution-graph.component.css'
 })
 export class DistributionGraphComponent {
   @Input() data: { bins: string[]; counts: number[]; variableName: string } | null = null;
-  isStatisticalAnalysisOpen = signal(false);
-  processedData: any[] = [];
 
-  constructor(
-    private expStudioService: ExperimentStudioService,
-  ) {}
-
-  isButtonDisabled = computed(() =>
-    this.expStudioService.selectedVariables().length === 0 &&
-    this.expStudioService.selectedCovariates().length === 0 &&
-    this.expStudioService.selectedFilters().length === 0
-  );
-
-  openStatisticalAnalysis(): void {
-    this.isStatisticalAnalysisOpen.set(true);
-  }
-
-  closeStatisticalAnalysis(): void {
-    this.isStatisticalAnalysisOpen.set(false);
-  }
+  constructor() {}
 }

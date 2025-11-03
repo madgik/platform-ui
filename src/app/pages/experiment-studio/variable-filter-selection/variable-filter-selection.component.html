@@ -10,7 +10,12 @@
     <div class="section-container">
       <div class="panel-controls">
         <div class="button-container">
-          <button class="variable-btn" (click)="addVariable()">
+          <button
+            class="variable-btn"
+            [disabled]="!hasSelectedDatasets"
+            [title]="!hasSelectedDatasets ? 'Select a dataset first' : ''"
+            (click)="addVariable()"
+          >
             + Add Variable
           </button>
           <span class="counter">{{ variables.length }}</span>
@@ -33,14 +38,23 @@
             (cdkDropListDropped)="drop($event, 'variables')"
           >
             @for (variable of variables; track variable) {
-            <li class="horizontal-item" cdkDrag>
+            <li
+              class="horizontal-item"
+              [ngClass]="{
+                'highlighted-variable': selectedNode?.code === variable.code
+              }"
+              cdkDrag
+              (click)="onVariableClick(variable)"
+            >
               <div class="variable-info">
                 <span class="variable-name">{{ variable.name }}</span>
                 <span class="variable-type">type: {{ variable.type }}</span>
               </div>
               <button
                 class="remove-btn"
-                (click)="removeItem(variable, 'variables')"
+                (click)="
+                  removeItem(variable, 'variables'); $event.stopPropagation()
+                "
               >
                 ✖
               </button>
@@ -56,7 +70,12 @@
     <div class="section-container">
       <div class="panel-controls">
         <div class="button-container">
-          <button class="covariate-btn" (click)="addCovariate()">
+          <button
+            class="covariate-btn"
+            [disabled]="!hasSelectedDatasets"
+            [title]="!hasSelectedDatasets ? 'Select a dataset first' : ''"
+            (click)="addCovariate()"
+          >
             + Add Covariate
           </button>
           <span class="counter">{{ covariates.length }}</span>
@@ -79,14 +98,23 @@
             (cdkDropListDropped)="drop($event, 'covariates')"
           >
             @for (covariate of covariates; track covariate) {
-            <li class="horizontal-item" cdkDrag>
+            <li
+              class="horizontal-item"
+              [ngClass]="{
+                'highlighted-variable highlighted-covariate': selectedNode?.code === covariate.code
+              }"
+              cdkDrag
+              (click)="onVariableClick(covariate)"
+            >
               <div class="variable-info">
                 <span class="variable-name">{{ covariate.name }}</span>
                 <span class="variable-type">type: {{ covariate.type }}</span>
               </div>
               <button
                 class="remove-btn"
-                (click)="removeItem(covariate, 'covariates')"
+                (click)="
+                  removeItem(covariate, 'covariates'); $event.stopPropagation()
+                "
               >
                 ✖
               </button>
@@ -101,7 +129,12 @@
     <div class="section-container">
       <div class="panel-controls">
         <div class="button-container">
-          <button class="covariate-btn" (click)="addFilter()">
+          <button
+            class="filter-btn"
+            [disabled]="!hasSelectedDatasets"
+            [title]="!hasSelectedDatasets ? 'Select a dataset first' : ''"
+            (click)="addFilter()"
+          >
             + Add Filter
           </button>
           <span class="counter">{{ filters.length }}</span>
@@ -124,14 +157,23 @@
             (cdkDropListDropped)="drop($event, 'filters')"
           >
             @for (filter of filters; track filter) {
-            <li class="horizontal-item" cdkDrag>
+            <li
+              class="horizontal-item"
+              [ngClass]="{
+                'highlighted-variable highlighted-filter': selectedNode?.code === filter.code
+              }"
+              cdkDrag
+              (click)="onVariableClick(filter)"
+            >
               <div class="variable-info">
                 <span class="variable-name">{{ filter.name }}</span>
                 <span class="variable-type">type: {{ filter.type }}</span>
               </div>
               <button
                 class="remove-btn"
-                (click)="removeItem(filter, 'filters')"
+                (click)="
+                  removeItem(filter, 'filters'); $event.stopPropagation()
+                "
               >
                 ✖
               </button>

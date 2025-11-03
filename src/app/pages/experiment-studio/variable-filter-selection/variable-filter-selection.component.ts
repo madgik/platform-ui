@@ -15,8 +15,10 @@ import { CdkDragDrop, DragDropModule, transferArrayItem } from '@angular/cdk/dra
 export class VariableFilterSelectionComponent implements OnInit {
   @Input() selectedNode: any; // Selected node from the bubble chart
   @Input() groupVariables: any[] = [];
-  @Output() filtersChange = new EventEmitter<any[]>();
   @Input() availableVariables: any[] = [];
+  @Output() filtersChange = new EventEmitter<any[]>();
+  @Output() variableClicked = new EventEmitter<any>();
+
   variables: any[] = [];
   covariates: any[] = [];
   filters: any[] = [];
@@ -45,6 +47,11 @@ export class VariableFilterSelectionComponent implements OnInit {
 
   }
 
+  onVariableClick(variable: any): void {
+    this.variableClicked.emit(variable);
+  }
+
+
   private getLeafNodes(node: any): any[] {
     const leaves: any[] = [];
 
@@ -60,10 +67,19 @@ export class VariableFilterSelectionComponent implements OnInit {
     return leaves;
   }
 
+  get hasSelectedDatasets(): boolean {
+    return (this.expStudioService.selectedDatasets() || []).length > 0;
+  }
+
   addItem(listName: 'variables' | 'covariates' | 'filters'): void {
+    const datasets = this.expStudioService.selectedDatasets();
+    if (!datasets || datasets.length === 0) {
+      alert('Please select at least one dataset before adding variables.');
+      return;
+    }
     if (!this.selectedNode) return;
 
-    // 🔁 Πάρε όλα τα leafs από το selectedNode (είτε είναι group είτε variable)
+    // Select all leaves from selected node
     const itemsToAdd = this.selectedNode.children ? this.getLeafNodes(this.selectedNode) : [this.selectedNode];
 
     const list = this[listName];

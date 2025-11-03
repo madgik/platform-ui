@@ -1,31 +1,51 @@
-.dropdown-container {
-  display: inline-block;
-  margin-right: 20px; /* Adjust spacing */
+/* === Dataset Selector (ενιαίο με τα panels) === */
+
+.button-container {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  margin-right: 20px;
 }
 
+/* Κουμπί: ίδιο gradient και style με τα panels */
+.variable-btn {
+  background: white;
+   border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.variable-btn:hover {
+  border-color: #00758c;
+  /* transform: scale(1.05); */
+}
+
+/* Counter badge (πάνω δεξιά στο κουμπί) */
+.counter {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  background-color: #005f73;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.8rem;
+  font-weight: bold;
+  line-height: 1;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Dropdown menu styling */
 .dropdown {
   position: relative;
-  display: inline-block;
-}
-
-.arrow {
-  display: inline-block;
-  transform: rotate(90deg); /* Rotate to make it point down */
-  font-size: 14px;
-  line-height: 1;
-}
-
-.dropdown-toggle {
-  background-color: #f8f9fa;
-  border: 1px solid #ccc;
-  padding: 8px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.dropdown-toggle .arrow::after {
-  content: ">";
   display: inline-block;
 }
 
@@ -39,25 +59,26 @@
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   z-index: 1000;
   list-style: none;
-  padding: 0;
+  padding: 4px 0;
   margin: 0;
   max-height: 200px;
   overflow-y: auto;
+  border-radius: 4px;
+  animation: fadeIn 0.15s ease-in-out;
 }
 
-.dropdow-menu:hover {
-  background: linear-gradient(90deg, #f9f9f9, #eef2f3);
-  border-color: #00758c; /* Highlight border */
-}
-
-.dropdown-menu:focus {
-  outline: none;
-  border-color: #005f73;
-  box-shadow: 0 0 6px rgba(0, 90, 102, 0.5);
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .dropdown-menu li {
-  padding: 8px;
+  padding: 6px 10px;
+  font-size: 14px;
+}
+
+.dropdown-menu li + li {
+  border-top: 1px solid #f2f2f2;
 }
 
 .dropdown-menu label {
@@ -65,9 +86,15 @@
   align-items: center;
   cursor: pointer;
   font-size: 14px;
+  color: #333;
+  transition: background-color 0.2s ease;
+}
+
+.dropdown-menu label:hover {
+  background-color: #eef8fa;
 }
 
 .dropdown-menu input[type="checkbox"] {
   margin-right: 8px;
+  accent-color: #00758c; /* consistent blue checkboxes */
 }
-

@@ -90,7 +90,7 @@ export class AlgorithmPanelComponent {
       const group: { [key: string]: FormControl } = {};
 
       schema.forEach((field) => {
-        let backendDefault = field.default ?? null;
+        let backendDefault = field.default !== undefined ? field.default : null;
         const storedValue = stored?.[field.key];
 
         if (!backendDefault && field.key === 'alpha') {
@@ -106,10 +106,18 @@ export class AlgorithmPanelComponent {
         group[field.key] = buildFormControl(field, value);
 
         const fallback =
-          backendDefault ??
-          storedValue ??
-          (field.type === 'number' && field.min !== undefined ? field.min : '') ??
-          (field.type === 'checkbox' ? false : '');
+          storedValue !== undefined
+            ? storedValue
+            : field.default !== undefined && field.default !== null
+              ? field.default
+              : backendDefault !== undefined && backendDefault !== null
+                ? backendDefault
+                : this.uiDefaults[field.key] !== undefined
+                  ? this.uiDefaults[field.key]
+                  : field.type === 'checkbox'
+                    ? false
+                    : '';
+
 
         // If lable is null from backend -> prettify
         const label =
@@ -117,11 +125,22 @@ export class AlgorithmPanelComponent {
             ? field.label
             : this.prettifyLabel(field.key);
 
-        const prettyField = { ...field, label };
+        // Preserve label, inject desc if present
+        const prettyField = {
+          ...field,
+          label,
+          desc: field.desc ?? field.description ?? '',
+        };
         group[field.key] = buildFormControl(prettyField, fallback);
+
       });
 
-      this.configForm = new FormGroup(group);
+      this.configForm = new FormGroup(group, { updateOn: 'change' });
+
+      Object.values(this.configForm.controls).forEach(control => {
+        // If default is in place, turn it green
+        if (control.valid) control.markAsTouched({ onlySelf: true });
+      });
       this.formKey++;
 
       // console.log('[Reactive Config] algorithm:', algorithm.name);
@@ -136,7 +155,7 @@ export class AlgorithmPanelComponent {
 
       const missing = schema.filter(field => !(field.key in res));
       if (missing.length > 0) {
-        console.warn('[🟡 Validation] Missing fields from result:', missing.map(f => f.key));
+        console.warn('[Validation] Missing fields from result:', missing.map(f => f.key));
       } else {
         // console.log('[Validation] All schema fields present in result');
       }
@@ -156,24 +175,8 @@ export class AlgorithmPanelComponent {
     const algorithm = this.selectedAlgorithm();
     if (!algorithm) return [];
 
-    // Δούλευε πάντα πάνω σε shallow copy
+    // Always work on shallow copy
     let schema = (algorithm.configSchema || []).map(f => ({ ...f }));
-
-    // ✅ Inject "alt_hypothesis" για όλα τα t-test αν λείπει
-    if (algorithm.name.startsWith('ttest_') && !schema.some(f => f.key === 'alt_hypothesis')) {
-      schema = [
-        {
-          key: 'alt_hypothesis',
-          type: 'select',
-          label: 'Alternative Hypothesis',
-          options: ['two-sided', 'less', 'greater'],
-          default: 'two-sided',
-          description:
-            'The alternative hypothesis to the null (two-sided, less, greater).',
-        },
-        ...schema
-      ];
-    }
 
     // select with placeholder options y or x, use enums from variable
     const enumsByCode = this.experimentService.getVariableEnumerations();
@@ -185,27 +188,46 @@ export class AlgorithmPanelComponent {
     const xOne = selectedX.length === 1 ? selectedX[0] : null;
 
     schema = schema.map(field => {
-      if (field.type !== 'select') return field;
+      // working copy
+      let updatedField = { ...field };
 
-      // 1) Ρητό placeholder από backend (['y'] ή ['x'])
+      // select with placeholder (['y'] ή ['x'])
       if (Array.isArray(field.options) && field.options.length === 1) {
         const tag = field.options[0];
         if (tag === 'y' && yOne) {
-          return { ...field, options: [...(enumsByCode[yOne.code] ?? [])] };
-        }
-        if (tag === 'x' && xOne) {
-          return { ...field, options: [...(enumsByCode[xOne.code] ?? [])] };
-        }
-      }
-
-      // 2) Άδειο options: για select fields πάμε default -> από Y (όπως positive_class)
-      if (!field.options || field.options.length === 0) {
-        if (yOne) {
-          return { ...field, options: [...(enumsByCode[yOne.code] ?? [])] };
+          updatedField = {
+            ...field,
+            options: [...(enumsByCode[yOne.code] ?? [])],
+          };
+        } else if (tag === 'x' && xOne) {
+          updatedField = {
+            ...field,
+            options: [...(enumsByCode[xOne.code] ?? [])],
+          };
         }
       }
 
-      return field;
+      // If no options, create fallback from y variable
+      if (
+        (!updatedField.options || updatedField.options.length === 0) &&
+        yOne &&
+        field.type === 'select'
+      ) {
+        updatedField = {
+          ...updatedField,
+          options: [...(enumsByCode[yOne.code] ?? [])],
+        };
+      }
+
+      // keep all attributes
+      return {
+        ...updatedField,
+        label:
+          updatedField.label && updatedField.label.trim() !== ''
+            ? updatedField.label
+            : this.prettifyLabel(updatedField.key),
+        desc: updatedField.desc ?? updatedField.description ?? '',
+      };
     });
 
     return schema;
@@ -219,7 +241,7 @@ export class AlgorithmPanelComponent {
     const algo = this.experimentService.selectedAlgorithm();
     return {
       experimentName: `Experiment for ${algo?.label ?? algo?.name ?? 'N/A'}`,
-      datasets: ["CHUV", "EDSD", "PPMI"], // κάν' το dynamic όταν θελήσεις
+      datasets: this.experimentService.selectedDatasets(),
       variables: this.experimentService.selectedVariables(),
       covariates: this.experimentService.selectedCovariates(),
       filters: this.experimentService.selectedFilters(),
@@ -311,8 +333,6 @@ export class AlgorithmPanelComponent {
   }
 
   isAlgorithmAvailable(algorithm: string): boolean {
-    console.log("I called this!");
-
     return this.experimentService.isAlgorithmAvailable(algorithm);
   }
 
@@ -321,9 +341,17 @@ export class AlgorithmPanelComponent {
   }
 
   showTooltip(algorithm: any, event: MouseEvent) {
+    event.stopPropagation();
     this.tooltipVisible = true;
     this.tooltipData = algorithm;
     this.tooltipPosition = { x: event.clientX + 15, y: event.clientY + 15 };
+
+    if (algorithm.isDisabled) {
+      this.tooltipData = {
+        ...algorithm,
+        description: `${algorithm.description || 'No description available.'}<br><span class='unavailable-warning'> This algorithm is currently unavailable for the selected variables.</span><br>`,
+      };
+    }
   }
 
   hideTooltip() {
@@ -343,7 +371,6 @@ export class AlgorithmPanelComponent {
   }
 
   // Helper functions
-
   getOptionsForField(fieldKey: string): { value: string; label: string }[] {
     const algorithm = this.selectedAlgorithm();
     if (!algorithm) return [];
@@ -385,7 +412,7 @@ export class AlgorithmPanelComponent {
     if (selectedVars.length === 1) {
       const onlyVar = selectedVars[0];
       const enumValues = this.experimentService.variableEnumerations[onlyVar.code] || [];
-      console.log('🎯 getOptionsForField', {
+      console.log('getOptionsForField', {
         fieldKey,
         onlyVarCode: onlyVar.code,
         enums: this.experimentService.variableEnumerations

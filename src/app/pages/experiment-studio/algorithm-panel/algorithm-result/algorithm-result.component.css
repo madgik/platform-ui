@@ -17,7 +17,11 @@
   background: white;
 }
 
-/* algorithm-result.component.css */
+.gen-charts h3 {
+  font-size: 16px;
+  color: #026d6d;
+  margin-bottom: 8px;
+}
 
 /* Optional padding override */
 :host {

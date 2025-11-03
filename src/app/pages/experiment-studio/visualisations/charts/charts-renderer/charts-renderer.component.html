@@ -1,8 +1,13 @@
-<div *ngIf="charts?.length; else noCharts">
-  <div *ngFor="let chart of charts" class="chart-container">
-    <div echarts [options]="chart" class="chart"></div>
+@if(charts.length) {
+  <div>
+    @for(chart of charts; track chart) {
+      <div class="chart-container">
+        <div echarts [options]="chart" class="chart"></div>
+      </div>
+    }
   </div>
-</div>
-<ng-template #noCharts>
-  <p>No charts to display.</p>
-</ng-template>
+} @else {
+  <ng-template #noCharts>
+    <p>No charts to display.</p>
+  </ng-template>
+}

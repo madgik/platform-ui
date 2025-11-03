@@ -1,7 +1,7 @@
 <app-accordion [accordionTitle]="accordionTitle">
   <div class="experiment-container">
     <aside class="algorithm-panel">
-      <h6>Available Algorithms</h6>
+      <h5>Available Algorithms</h5>
 
       <div class="category">
         @for (category of availableAlgorithmCategories(); track category.name) {
@@ -37,8 +37,8 @@
         [style.top.px]="tooltipPosition.y"
         [style.left.px]="tooltipPosition.x"
       >
-        <h5>{{ tooltipData?.name }}</h5>
-        <p>{{ tooltipData?.description }}</p>
+        <h5>{{ tooltipData?.label }}</h5>
+        <p [innerHTML]="tooltipData?.description"></p>
         @if (tooltipData?.requiredVariable) {
         <p><strong>Variable:</strong> {{ tooltipData?.requiredVariable }}</p>
         } @if (tooltipData?.covariate !== "") {
@@ -50,30 +50,11 @@
 
     <main class="experiment-panel">
       @if (isRunning()) {
-        <div class="overlay-loader">
-          <!-- <div class="loader-content" role="status" aria-live="polite">
-            <div class="loader-spinner"></div>
-            <p>Running analysis...</p>
-          </div> -->
-          <app-spinner text="Running analysis..." color="#007d7d" size="72px" />
-          <!-- <app-spinner [text]="'Running analysis...'" [color]="'#006666'" [size]="'72px'"></app-spinner> -->
-
-        </div>
+      <div class="overlay-loader">
+        <app-spinner text="Running analysis..." color="#007d7d" size="72px" />
+      </div>
       }
       <header>
-        <!-- <button
-          class="run-button top-right"
-          [disabled]="
-            !selectedAlgorithm() ||
-            isRunning() ||
-            selectedAlgorithm()?.name === 'multiple_histograms' ||
-            selectedAlgorithm()?.name === 'descriptive_statistics'
-          "
-          [class.loading]="isRunning()"
-          (click)="onClickRunExp()"
-        > Run Experiment
-
-        </button> -->
         <button
           class="run-button top-right"
           [disabled]="
@@ -91,21 +72,7 @@
           <button class="floating-info-button" (click)="toggleInfoPanel()">
             i
           </button>
-          <!-- <aside
-            id="info-panel"
-            class="side-panel"
-            [class.open]="infoPanelOpen"
-          >
-            <h3>Experiment Info</h3>
-            <p><strong>Experiment Name:</strong> Experiment 1</p>
-            <p><strong>Datasets:</strong> CHUV, EDSD, PPMI</p>
-            <p><strong>Variables:</strong> Right cerebellum exterior</p>
-            <p><strong>Covariates:</strong> None</p>
-            <p><strong>Filters:</strong> None</p>
-            <p>
-              <strong>Algorithm Configs:</strong> Alpha = 0.05, Pop. Mean = 0
-            </p>
-          </aside> -->
+
           <aside
             id="info-panel"
             class="side-panel"
@@ -114,19 +81,19 @@
             <h3>Experiment Info</h3>
 
             <p>
-              <strong>Experiment Name:</strong>
+              <span class="info-panel-titles">Experiment Name:</span>
               {{ experimentInfo().experimentName }}
             </p>
 
             <p>
-              <strong>Datasets:</strong>
+              <span class="info-panel-titles">Datasets:</span>
               @if (experimentInfo().datasets.length) { @for (d of
               experimentInfo().datasets; track d) {
               {{ d }}@if (!$last) {, } } } @else { None }
             </p>
 
             <p>
-              <strong>Variables:</strong>
+              <span class="info-panel-titles">Variables:</span>
               @if (experimentInfo().variables.length) { @for (v of
               experimentInfo().variables; track v.code) {
               {{ v.label || v.name || v.code }}@if (!$last) {, } } } @else {
@@ -134,7 +101,7 @@
             </p>
 
             <p>
-              <strong>Covariates:</strong>
+              <span class="info-panel-titles">Covariates:</span>
               @if (experimentInfo().covariates.length) { @for (c of
               experimentInfo().covariates; track c.code) {
               {{ c.label || c.name || c.code }}@if (!$last) {, } } } @else {
@@ -142,7 +109,7 @@
             </p>
 
             <p>
-              <strong>Filters:</strong>
+              <span class="info-panel-titles">Filters:</span>
               @if (experimentInfo().filters.length) { @for (f of
               experimentInfo().filters; track f.code) {
               {{ f.label || f.name || f.code }}@if (!$last) {, } } } @else {
@@ -150,7 +117,7 @@
             </p>
 
             <p>
-              <strong>Algorithm Configs:</strong>
+              <span class="info-panel-titles">Algorithm Configs:</span>
               @if (objectKeys(experimentInfo().algorithmConfigs).length) { @for
               (k of objectKeys(experimentInfo().algorithmConfigs); track k) {
               {{ prettifyKey(k) }} = {{ experimentInfo().algorithmConfigs[k] }}
@@ -161,53 +128,6 @@
       </header>
 
       @if (selectedAlgorithm() && !isRunning()) {
-
-      <!-- <section class="experiment-settings">
-        <h5>{{ selectedAlgorithm()?.label }} Configuration</h5>
-        <p>{{ selectedAlgorithm()?.description }}</p>
-
-        @if (enrichedConfigSchema()) {
-        <form [formGroup]="configForm" class="flex flex-col gap-4">
-          @for (field of enrichedConfigSchema(); track field.key) {
-          <div class="flex flex-col">
-            <label class="font-semibold mb-1">{{ field.label }}</label>
-
-            @if (field.type === 'number') {
-            <input type="number" [formControlName]="field.key" class="input" />
-            } @if (field.type === 'checkbox') {
-            <label class="flex items-center gap-2">
-              <input type="checkbox" [formControlName]="field.key" />
-              <span>Check</span>
-            </label>
-            } @if (field.type === 'select') {
-            <select [formControlName]="field.key" class="select">
-              <option disabled selected value="">-- Select --</option>
-              @for (opt of getOptionsForField(field.key); track
-              getOptionValue(opt)) {
-              <option [value]="getOptionValue(opt)">
-                {{ getOptionLabel(opt) }}
-              </option>
-              }
-            </select>
-            } @if (configForm.get(field.key)?.invalid &&
-            configForm.get(field.key)?.touched) {
-            <div class="text-red-600 text-sm mt-1">
-              @if (configForm.get(field.key)?.hasError('required')) {
-              <small>This field is required.</small>
-              } @if (configForm.get(field.key)?.hasError('min')) {
-              <small>Value too small.</small>
-              } @if (configForm.get(field.key)?.hasError('max')) {
-              <small>Value too large.</small>
-              } @if (configForm.get(field.key)?.hasError('pattern')) {
-              <small>Invalid value.</small>
-              }
-            </div>
-            }
-          </div>
-          }
-        </form>
-        }
-      </section> -->
       <section class="experiment-settings">
         <h5 class="config-title">
           {{ selectedAlgorithm()?.label }} Configuration
@@ -218,8 +138,13 @@
         <form [formGroup]="configForm" class="config-form flex flex-col gap-4">
           @for (field of enrichedConfigSchema(); track field.key) {
           <div class="config-field">
-            <label class="font-semibold mb-1 text-[#028080]">
+            <label
+              class="font-semibold mb-1 text-[#028080] flex items-center gap-2"
+            >
               {{ prettyFieldLabel(field) }}
+              @if (field.notblank) {
+              <span class="required-tag">Required</span>
+              }
             </label>
 
             @if (field.type === 'number') {
@@ -227,16 +152,23 @@
               type="number"
               [formControlName]="field.key"
               class="config-input"
-              placeholder="Enter value..."
+              [step]="field.key === 'alpha' || 'tol' || 'mu' ? 0.01 : 1"
+              [placeholder]="
+                field.default !== undefined ? field.default : 'Enter value...'
+              "
             />
-            } @if (field.type === 'checkbox') {
-            <label class="checkbox-wrapper">
-              <input type="checkbox" [formControlName]="field.key" />
-              <span>Enable</span>
-            </label>
-            } @if (field.type === 'select') {
+
+            } @else if (field.type === 'select') {
             <select [formControlName]="field.key" class="config-select">
-              <option disabled selected value="">-- Select --</option>
+              <option
+                [ngValue]="null"
+                [selected]="!configForm.get(field.key)?.value"
+                disabled
+                selected
+                value=""
+              >
+                -- Select --
+              </option>
               @for (opt of getOptionsForField(field.key); track
               getOptionValue(opt)) {
               <option [value]="getOptionValue(opt)">
@@ -244,7 +176,34 @@
               </option>
               }
             </select>
-            } @if (configForm.get(field.key)?.invalid &&
+            } @else if (field.type === 'checkbox') {
+            <label class="checkbox-wrapper">
+              <input type="checkbox" [formControlName]="field.key" />
+              <span>Enable</span>
+            </label>
+            } @else {
+            <input
+              type="text"
+              [formControlName]="field.key"
+              class="config-input"
+              placeholder="Enter value..."
+            />
+            }
+
+            <!-- Extra info section under each field -->
+            <div class="field-meta">
+              @if (field.desc) {
+              <div class="desc-text">{{ field.desc }}</div>
+              } @if ( field.min !== null && field.min !== undefined && field.max !== null && field.max !== undefined) {
+              <div class="range-hint">
+                Range: {{ field.min }} to {{ field.max }}
+              </div>
+              } @if (field.default !== null && field.default !== undefined) {
+              <div class="default-hint">Default: {{ field.default }}</div>
+              }
+            </div>
+
+            @if (configForm.get(field.key)?.invalid &&
             configForm.get(field.key)?.touched) {
             <div class="validation-message config-error">
               @if (configForm.get(field.key)?.hasError('required')) {
@@ -273,10 +232,6 @@
         />
       </section>
       }
-
-      <!-- save config on submit saveConfig() {
-  this.experimentService.setAlgorithmConfig(this.selectedAlgorithm.name, this.configValues);
-} -->
     </main>
   </div>
 </app-accordion>

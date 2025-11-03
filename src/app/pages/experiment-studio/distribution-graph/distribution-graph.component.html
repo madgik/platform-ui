@@ -7,22 +7,8 @@
       [config]="{ color: '#00a6c0' }"
     ></app-histogram>
     }
-
-    <!-- Floating Button -->
-    <button
-      class="floating-button"
-      aria-label="Open Statistical Analysis"
-      (click)="openStatisticalAnalysis()"
-    >
-      <i class="fa fa-chart-line"></i>
-    </button>
   </div>
 </div>
 
-<!-- Load Statistical Analysis Panel Component -->
-@if (isStatisticalAnalysisOpen()) {
-  <app-statistic-analysis-panel
-  [processedData]="processedData"
-  (close)="closeStatisticalAnalysis()">
-</app-statistic-analysis-panel>
-}
+
+

@@ -1,30 +1,36 @@
 import { FormControl, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 
+// Custom validator for select fields (ensures selected value exists in options)
 function inOptionsValidator(options: string[]) {
   return (control: AbstractControl): ValidationErrors | null => {
-    return options.includes(control.value) ? null : { invalidOption: true };
+    return !options || options.length === 0 || options.includes(control.value)
+      ? null
+      : { invalidOption: true };
   };
 }
 
-export function buildFormControl(field: any, value: any = ''): FormControl {
+export function buildFormControl(field: any, initialValue: any = ''): FormControl {
   const validators = [];
 
-  if (field.required) {
-    validators.push(Validators.required);
-  }
+  // Base field validation
+  if (field.notblank) validators.push(Validators.required);
+  if (field.min !== undefined && field.min !== null) validators.push(Validators.min(field.min));
+  if (field.max !== undefined && field.max !== null) validators.push(Validators.max(field.max));
+  if (field.pattern) validators.push(Validators.pattern(field.pattern));
 
-  if (field.type === 'number') {
-    if (field.min !== undefined) {
-      validators.push(Validators.min(field.min));
-    }
-    if (field.max !== undefined) {
-      validators.push(Validators.max(field.max));
-    }
-  }
-
+  // Custom validation for select
   if (field.type === 'select' && Array.isArray(field.options)) {
     validators.push(inOptionsValidator(field.options));
   }
 
-  return new FormControl(value, validators);
+  // Initialize value
+  const startValue =
+    field.type === 'select' && (initialValue === undefined || initialValue === '')
+      ? null
+      : initialValue ?? '';
+
+  return new FormControl(startValue, {
+    validators,
+    updateOn: field.type === 'select' ? 'change' : 'blur'
+  });
 }

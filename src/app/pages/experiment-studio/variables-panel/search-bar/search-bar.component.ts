@@ -10,7 +10,6 @@ import {
   OnChanges
 } from '@angular/core';
 import { FormsModule } from "@angular/forms";
-import { NgForOf, NgIf } from "@angular/common";
 
 @Component({
   selector: 'app-search-bar',
@@ -18,8 +17,6 @@ import { NgForOf, NgIf } from "@angular/common";
   standalone: true,
   imports: [
     FormsModule,
-    NgIf,
-    NgForOf
   ],
   styleUrls: ['./search-bar.component.css']
 })
@@ -43,7 +40,7 @@ export class SearchBarComponent implements OnInit, OnChanges {
     if (this.dataModelHierarchy) {
       this.extractVariablesAndGroups(this.dataModelHierarchy);
     } else {
-      console.warn("⚠️ No data model hierarchy provided!");
+      console.warn("No data model hierarchy provided!");
     }
   }
 
@@ -74,48 +71,19 @@ export class SearchBarComponent implements OnInit, OnChanges {
     this.searchSuggestionsVisible = false;
   }
 
+  highlight(name: string): string {
+    if (!this.searchQuery) return name;
+    const re = new RegExp(`(${this.searchQuery})`, 'gi');
+    return name.replace(re, '<mark>$1</mark>');
+  }
+
+
   @HostListener('document:click', ['$event'])
   onOutsideClick(event: Event): void {
     if (!this.eRef.nativeElement.contains(event.target)) {
       this.closeSearch();
     }
   }
-
-  /**
-   * Extracts variables and groups from the data model hierarchy.
-   */
-  // extractVariablesAndGroups(hierarchy: any): void {
-  //   console.log("📌 Extracting Variables and Groups...");
-
-  //   const traverse = (node: any, path: string) => {
-  //     if (!node) return;
-
-  //     const currentPath = path ? `${path} > ${node.name}` : node.name;
-
-  //     if (node.hasOwnProperty('variableCount')) {
-  //       console.log(`📂 Found Group: ${node.name}`);
-  //       this.groups.push({ name: node.name, path: currentPath });
-
-  //       if (node.children) {
-  //         node.children.forEach((child: any) => traverse(child, currentPath));
-  //       }
-  //     } else if (node.hasOwnProperty('type')) {
-  //       console.log(`🔢 Found Variable: ${node.name} (Type: ${node.type})`);
-  //       this.variables.push({ name: node.name, type: node.type, path: currentPath });
-
-  //       if (!this.variableTypes.includes(node.type)) {
-  //         this.variableTypes.push(node.type);
-  //       }
-  //     } else {
-  //       console.warn(`⚠️ Unknown Node Type:`, node);
-  //     }
-  //   };
-
-  //   traverse(hierarchy, '');
-
-  //   console.log("✅ Extracted Variables:", this.variables);
-  //   console.log("✅ Extracted Groups:", this.groups);
-  // }
 
   extractVariablesAndGroups(hierarchy: any): void {
     this.variables = [];
@@ -148,20 +116,16 @@ export class SearchBarComponent implements OnInit, OnChanges {
   }
 
 
-  /**
-   * Handles the search query input.
-   */
+  //  Handles the search query input.
   handleSearch(query: string): void {
     this.searchQuery = query.toLowerCase();
-    // this.applyFilter(this.filterType);
+    this.applyFilter(this.filterType);
     // console.log("🔎 Searching for:", this.searchQuery);
     // console.log("🔍 Filtered Items:", this.filteredItems);
     this.searchSuggestionsVisible = this.filteredItems.length > 0;
   }
 
-  /**
-   * Applies the filter for either variables or groups.
-   */
+  // Applies the filter for either variables or groups.
   applyFilter(type: string): void {
     if (type === 'variables') {
       this.filteredItems = this.variables.filter(
@@ -174,22 +138,16 @@ export class SearchBarComponent implements OnInit, OnChanges {
         g.name.toLowerCase().includes(this.searchQuery)
       );
     }
-
-    // console.log("✅ Filtered Items After Applying Filter:", this.filteredItems);
   }
 
-  /**
-   * Applies the variable type filter.
-   */
+  // Applies the variable type filter.
   applyVariableTypeFilter(type: string): void {
     console.log(`📌 Applying Variable Type Filter: ${type}`);
     this.variableTypeFilter = type;
     this.applyFilter(this.filterType);
   }
 
-  /**
-   * Handles clicking on a search suggestion.
-   */
+  // Handles clicking on a search suggestion.
   onItemClick(item: any): void {
     // console.log("✅ Selected Item:", item);
     this.searchQuery = item.name || item;
@@ -197,19 +155,13 @@ export class SearchBarComponent implements OnInit, OnChanges {
     this.searchResultSelected.emit(this.searchQuery);
   }
 
-  /**
-   * Generates tooltip text for search results.
-   */
+  //  Generates tooltip text for search results.
   generateTooltip(item: any): string {
-    if ('type' in item) {
-      return `Path: ${item.path}\nType: ${item.type}`;
-    }
-    return `Path: ${item.path}`;
+    const parent = item.path.split(' > ').slice(-2, -1)[0] || 'Root';
+    return `Group: ${parent}\nPath: ${item.path}\nType: ${item.type}`;
   }
 
-  /**
-   * Handles focus event on the search bar.
-   */
+  // Handles focus event on the search bar.
   onSearchFocus(): void {
     this.searchSuggestionsVisible = true;
     this.handleSearch(this.searchQuery);
