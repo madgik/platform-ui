@@ -15,10 +15,15 @@ export const appRoutes: Routes = [
   //   loadChildren: () =>
   //     import('./pages/federations-page/federations-page.module').then(m => m.FederationsPageModule),
   // },
-  {
-    path: 'experiments-dashboard',
-    component: ExperimentsDashboardComponent,
-    canActivate: [AuthGuard],
+  // {
+  //   path: 'experiments-dashboard',
+  //   component: ExperimentsDashboardComponent,
+  //   canActivate: [AuthGuard],
+  // },
+    {
+    path: '',
+    redirectTo: 'experiment-studio',
+    pathMatch: 'full'
   },
   {
     path: 'account',
@@ -30,6 +35,7 @@ export const appRoutes: Routes = [
     component: ExperimentStudioComponent,
     canActivate: [AuthGuard],
   },
+  { path: '**', redirectTo: 'experiment-studio' }
   // {
   //   path: 'data-models',
   //   component: DataModelsPageComponent,
@@ -38,8 +44,8 @@ export const appRoutes: Routes = [
   //     import('./pages/data-models-page/data-models-page.module').then(m => m.DataModelsPageModule),
   // },
 
-  { path: '', redirectTo: 'home', pathMatch: 'full' },
-  { path: '**', redirectTo: 'home' }
+  // { path: '', redirectTo: 'home', pathMatch: 'full' },
+  // { path: '**', redirectTo: 'home' }
 ];
 
 @NgModule({
