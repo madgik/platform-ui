@@ -1,16 +1,31 @@
+/* Dropdown Container */
+.dropdown-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+}
 
-/* Common dropdown styling for all select elements */
+/* Dropdown Label */
+.dropdown-label {
+  font-size: 16px;
+  font-weight: lighter;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+/* Styled Dropdown */
 .dropdown {
-  padding: 8px;
+  padding: 9px 12px; /* Extra padding for a modern look */
+  margin-left: 2%;
   font-size: 15px;
   font-weight: 500;
   color: #333;
   background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  max-width: 220px;
+  border: 1px solid #ccc; /* Lighter border */
+  border-radius: 6px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.3s ease; /* Smooth transitions */
 }
 
 .dropdown:hover {

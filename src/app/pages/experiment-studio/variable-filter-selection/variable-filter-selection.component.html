@@ -47,7 +47,7 @@
               (click)="onVariableClick(variable)"
             >
               <div class="variable-info">
-                <span class="variable-name">{{ variable.name }}</span>
+                <span class="variable-name">{{ variable.label }}</span>
                 <span class="variable-type">type: {{ variable.type }}</span>
               </div>
               <button
@@ -107,7 +107,7 @@
               (click)="onVariableClick(covariate)"
             >
               <div class="variable-info">
-                <span class="variable-name">{{ covariate.name }}</span>
+                <span class="variable-name">{{ covariate.label }}</span>
                 <span class="variable-type">type: {{ covariate.type }}</span>
               </div>
               <button
@@ -166,7 +166,7 @@
               (click)="onVariableClick(filter)"
             >
               <div class="variable-info">
-                <span class="variable-name">{{ filter.name }}</span>
+                <span class="variable-name">{{ filter.label }}</span>
                 <span class="variable-type">type: {{ filter.type }}</span>
               </div>
               <button
@@ -192,10 +192,8 @@
       </div>
       @if (isFilterConfigOpen) {
       <app-filter-config-modal
-        [filters]="filters"
-        [availableVariables]="availableVariables"
-        (filtersChange)="onFiltersChange($event)"
         (closeModal)="onModalClose()"
+        [filterLogic]="filterLogic"
       ></app-filter-config-modal>
 
       }

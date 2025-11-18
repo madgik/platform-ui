@@ -99,7 +99,7 @@ export class VariablesPanelComponent {
   onSearchResult(selectedName: string) {
     // console.log('Search selected:', selectedName);
     console.log('d3data:', this.d3Data);
-    const found = this.filteredVariables().find(v => v.name === selectedName);
+    const found = this.filteredVariables().find(v => v.label === selectedName);
     if (found) {
       // this.experimentStudioService.addVariableAndEnrich(found);
       this.highlightNode = found;
@@ -145,7 +145,7 @@ export class VariablesPanelComponent {
 
   // Recursively find a node by name
   findNodeByName(node: any, name: string): any {
-    if (node.name === name) return node;
+    if (node.label === name) return node;
     for (const child of node.children || []) {
       const found = this.findNodeByName(child, name);
       if (found) return found;
@@ -207,21 +207,22 @@ export class VariablesPanelComponent {
   }
 
   loadVisualizationData(): void {
-    if (this.selectedDataModel()) {
-      const { hierarchy, allVariables, allDatasets } = this.experimentStudioService.convertToD3Hierarchy(this.selectedDataModel());
-      this.d3Data = hierarchy;
-      console.log("this.d3Data: ", this.d3Data);
-      this.filteredVariables.set(allVariables); // Flat list of variables
-      this.filteredGroups.set(
-        this.d3Data.children.filter((item: any) => item.children) // Groups
-      );
-      this.availableDatasets = allDatasets.map((dataset: any) => ({
-        code: dataset.code,
-        label: dataset.label,
-      })); // Set datasets for selector
-    }
+    const model = this.selectedDataModel();
+    if (!model) return; // exit early
+
+    const { hierarchy, allVariables, allDatasets } =
+      this.experimentStudioService.convertToD3Hierarchy(model);
+
+    this.d3Data = hierarchy;
+    this.filteredVariables.set(allVariables);
+    this.filteredGroups.set(this.d3Data.children.filter((item: any) => item.children));
+    this.availableDatasets = allDatasets.map((dataset: any) => ({
+      code: dataset.code,
+      label: dataset.label,
+    }));
   }
 
+  //todo: decide what should be done
   fetchFederationHistogram(): void {
     const federation = this.selectedDataModel();
     if (!federation) {
@@ -252,12 +253,8 @@ export class VariablesPanelComponent {
   }
 
   // end of services functions
-
   onSelectedDataModelChange(selectedDataModel: DataModel | null): void {
     if (!selectedDataModel) return;
-
-    console.log('🧠 Selected data model changed to:', selectedDataModel.code, selectedDataModel.version);
-
     // update service signal
     this.experimentStudioService.selectedDataModel.set(selectedDataModel);
 
@@ -283,7 +280,7 @@ export class VariablesPanelComponent {
 
   filterData(): void {
     const filterNodes = (node: any) => {
-      if (node.name.toLowerCase().includes(this.searchQuery)) {
+      if (node.label.toLowerCase().includes(this.searchQuery)) {
         return { ...node };
       }
       if (node.children) {
@@ -343,7 +340,7 @@ export class VariablesPanelComponent {
         const firstHist = histList[0];
 
         if (firstHist) {
-          const dataWithName = { ...firstHist, variableName: node.name };
+          const dataWithName = { ...firstHist, variableName: node.label };
           this.distributionData.set(dataWithName);
         } else {
           this.errorMessage.set('No histogram data found for this variable.');

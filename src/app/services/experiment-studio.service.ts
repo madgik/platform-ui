@@ -2,24 +2,12 @@ import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, filter, interval, map, of, switchMap, take, takeWhile, tap } from 'rxjs';
 import { SessionStorageService } from './session-storage.service';
-import { DataModel } from '../models/data-model.interface';
+import { D3HierarchyNode, DataModel, EnumValue, Group, Variable } from '../models/data-model.interface';
 import { mapRawAlgorithmToAlgorithmConfig } from '../core/algorithm-mappers';
 import { RawAlgorithmDefinition, RawInputData } from '../models/backend-algorithms.model';
+import { BackendFilter } from '../models/filters.model';
+import { AlgorithmConfig } from '../models/algorithm-definition.model';
 
-
-// move to appropriate model/interface file
-export interface AlgorithmConfig {
-  name: string;
-  label: string;
-  description: string;
-  requiredVariable: string[];
-  covariate: string[];
-  category: string;
-  configSchema: Array<any>;
-  type: string;
-  inputdata?: RawInputData;
-  isDisabled: boolean;
-}
 
 @Injectable({ providedIn: 'root' })
 export class ExperimentStudioService {
@@ -40,24 +28,53 @@ export class ExperimentStudioService {
   readonly selectedVariables = computed(() => this.selectedVariablesSignal());
   readonly selectedCovariates = computed(() => this.selectedCovariatesSignal());
   readonly selectedFilters = computed(() => this.selectedFiltersSignal());
-
-
-  private histogramCache: Record<string, any> = {}; // Cache histograms by variable code
-  private descriptiveStatsCache: Record<string, any> = {}; // Cache histograms by variable code
-  variableEnumerations: Record<string, string[]> = {}; // Enum info per variable
-
+  private selectedDatasetsSignal = signal<string[]>([]);
+  private descriptiveStatsData: any[] = [];
   lastUsedAlgorithm = signal<string | null>(null);
-
   selectedDatasets = computed(() => this.selectedDatasetsSignal());
   bubbleData = signal<any>(null);
-  private selectedDatasetsSignal = signal<string[]>([]);
   backendAlgorithms = signal<Record<string, AlgorithmConfig>>({});
-
   selectedDataModel = signal<DataModel | null>(null);
+
+
+  constructor() {
+    this.loadBackendAlgorithms().subscribe();
+
+    // Reset filters when no filter variables OR no rules
+    effect(() => {
+      const vars = this.selectedFiltersSignal();
+      const logic = this._filterLogic();
+
+      const noVars = !vars || vars.length === 0;
+      const noRules = !logic || !Array.isArray(logic.rules) || logic.rules.length === 0;
+
+      if (noVars || noRules) {
+        if (this._filterLogic()) {
+          console.log('🧹 Auto-clearing filter logic (no filters or no rules)');
+          this._filterLogic.set(null);
+        }
+      }
+    }, { allowSignalWrites: true });
+
+    effect(() => {
+      const selected = this.selectedDatasetsSignal();
+      if (!selected) return;
+
+      if (selected.length === 0) {
+        console.warn('No datasets selected — resetting state');
+        this.setVariables([]);
+        this.setCovariates([]);
+        this.setFilters([]);
+      } else {
+        console.log('Datasets changed:', selected);
+        this.refreshDataModel();
+      }
+    }, { allowSignalWrites: true });
+  }
 
   setSelectedDataModel(model: DataModel | null): void {
     this.selectedDataModel.set(model);
-    console.log('📘 Selected data model updated:', model?.code || '(none)');
+    console.log('Selected data model updated:', model?.code || '(none)');
   }
 
   getActiveDataModelCode(): string {
@@ -69,48 +86,41 @@ export class ExperimentStudioService {
     return `${model.code}:${model.version}`;
   }
 
-  constructor() {
-    this.loadBackendAlgorithms().subscribe();
-
-    effect(() => {
-      const selected = this.selectedDatasetsSignal();
-      if (!selected) return;
-
-      if (selected.length === 0) {
-        console.warn('No datasets selected — resetting state');
-        this.setVariables([]);
-        this.setCovariates([]);
-        this.setFilters([]);
-        this.histogramCache = {};
-        this.descriptiveStatsCache = {};
-      } else {
-        console.log('📊 Datasets changed:', selected);
-        this.refreshDataModel();
-      }
-    }, { allowSignalWrites: true });
-  }
-
   refreshDataModel() {
     const selected = this.selectedDatasetsSignal();
     if (!selected || selected.length === 0) return;
 
-    console.log('🔄 Reloading data models for:', selected);
+    console.log('Reloading data models for:', selected);
 
     this.loadAllDataModels().subscribe(models => {
       const active = models.filter(m => selected.includes(m.code));
-      if (active.length > 0) {
-        this.selectedDataModel = active[0];
-        const converted = this.convertToD3Hierarchy(active[0]);
-        this.bubbleData.set(converted); // Update chart
-        console.log('Updated hierarchy for', active[0].label, converted);
-      }
+      if (!active.length) return;
+
+      const model = active[0];
+      this.selectedDataModel.set(model);
+
+      const converted = this.convertToD3Hierarchy(model);
+
+      // enrich variables
+      const enrichedVariables = converted.allVariables.map(v => ({
+        ...v,
+        supportedAlgos: this.algorithmEnabled(v.type ?? 'unknown')
+      }));
+
+      // update signals
+      this.bubbleData.set({
+        hierarchy: converted.hierarchy,
+        allVariables: enrichedVariables,
+        allDatasets: model.datasets ?? [],
+      });
+      console.log('Data model refreshed:', model.label);
     });
   }
+
 
   setSelectedDatasets(datasets: string[]) {
     this.selectedDatasetsSignal.set(datasets);
   }
-
 
   algorithmEnabled(variableType: string): string[] {
     // create array because raw.type could be string or string[]
@@ -120,7 +130,7 @@ export class ExperimentStudioService {
     const allAlgos = Object.values(this.backendAlgorithms());
 
     // filter inputdata.y and add at least one of the varTypes in types list
-    return allAlgos
+    const result = allAlgos
       .filter(algo => {
         const yReq = algo.inputdata?.y;
         const xReq = algo.inputdata?.x;
@@ -158,67 +168,50 @@ export class ExperimentStudioService {
         return true;
       })
       .map(algo => algo.name);
+    console.log("📦 algorithmEnabled result:", result);
+    return result;
+
   }
 
   // adds variables and adds enumerations for the algorithm panel
   addVariableAndEnrich(node: any): void {
-    // console.log('[addVariableAndEnrich] node.type:', node.type);
+    console.log("addVariableAndEnrich called with:", node);
     const currentVars = this.selectedVariables();
     // const currentCovars = this.selectedCovariates();
     if (currentVars.some(v => v.code === node.code)) {
+      console.log("Variable already exists:", node.code);
+
       return;
     }
 
     const enabledAlgos = this.algorithmEnabled(node.type);
+    console.log("algorithmEnabled returned for", node.type, "->", enabledAlgos);
 
     const enrichedNode = {
       ...node,
       code: node.code,
       label: node.label,
       name: node.name,
+      enumerations: node.enumerations,
       supportedAlgos: enabledAlgos,
     };
 
     // update signal
     this.selectedVariablesSignal.set([...currentVars, enrichedNode]);
-
-    // make sure enums are there
-    this.loadVariableSummary(node.code).subscribe();
+    console.log("selectedVariablesSignal now:", this.selectedVariablesSignal());
   }
 
-  setVariables(vars: any[]): void {
+  setVariables(vars: D3HierarchyNode[]) {
     this.selectedVariablesSignal.set(vars);
   }
 
-  setCovariates(covs: any[]): void {
+
+  setCovariates(covs: D3HierarchyNode[]): void {
     this.selectedCovariatesSignal.set(covs);
   }
 
-  setFilters(filters: any[]): void {
+  setFilters(filters: D3HierarchyNode[]): void {
     this.selectedFiltersSignal.set(filters);
-  }
-
-  cacheHistogram(variableCode: string, data: any) {
-    this.histogramCache[variableCode] = data;
-
-    if (data?.bins && Array.isArray(data.bins)) {
-      const labels = data.bins.map((bin: any) => bin.label).filter((l: any) => !!l);
-      if (labels.length > 0) {
-        this.setVariableEnumerations(variableCode, labels);
-      }
-    }
-  }
-
-  getHistogram(variableCode: string): any {
-    return this.histogramCache[variableCode];
-  }
-
-  setVariableEnumerations(code: string, values: string[]) {
-    this.variableEnumerations = { [code]: values };
-  }
-
-  getVariableEnumerations(): Record<string, string[]> {
-    return this.variableEnumerations;
   }
 
   selectedAlgorithm = signal<AlgorithmConfig | null>(
@@ -246,11 +239,7 @@ export class ExperimentStudioService {
     }
 
     const selectedY = selectedVariables[0];
-    if (!this.variableEnumerations[selectedY.code]) {
-      await this.loadVariableSummary(selectedY.code).toPromise();
-    }
-
-    let enums = this.variableEnumerations[selectedY.code] || [];
+    let enums = selectedY.enumerations ?? [];
 
     const enrichedConfig = algo.configSchema.map((field) => {
       if (field.type === 'select' && (!field.options || field.options.length === 0)) {
@@ -287,6 +276,12 @@ export class ExperimentStudioService {
   availableGroupedAlgorithms = computed(() => {
     const selectedY = this.selectedVariables();
     const selectedX = this.selectedCovariates();
+    const allAlgos = this.backendAlgorithms();
+
+    console.log("📊 availableGroupedAlgorithms recompute()");
+    console.log("  selectedY:", selectedY.map(v => v.code));
+    console.log("  selectedX:", selectedX.map(v => v.code));
+    console.log("  total algos:", Object.keys(allAlgos).length);
 
     return Object.values(this.backendAlgorithms()).reduce((acc, algo) => {
       const cat = algo.category || 'Other';
@@ -316,13 +311,8 @@ export class ExperimentStudioService {
       const sel = selections[role] || [];
       // check notblank
       if (req.notblank && sel.length === 0) {
-        // console.log("Algo name", algo.name);
-        // console.log("req.notblank", req.notblank);
-        // console.log("sel.length", sel.length);
-
         return false;
       }
-
       // check if multiple
       if (!req.multiple && sel.length > 1) {
         return false;
@@ -342,8 +332,8 @@ export class ExperimentStudioService {
   }
 
   buildRequestBody(algorithmName: string | null = null, yVariables: string[] | null = null, xVariables: string[] | null = null): any {
-    // let selectedAlgo = this.selectedAlgorithm() ?? (algorithmName ? this.backendAlgorithms()[algorithmName] : undefined);
     let algoConfig: AlgorithmConfig | undefined;
+
     if (algorithmName) {
       algoConfig = this.backendAlgorithms()[algorithmName];
     } else {
@@ -354,62 +344,55 @@ export class ExperimentStudioService {
       throw new Error("No algorithm config found for " + algorithmName);
     }
 
-    let requestBody = {};
-
-    const variables = yVariables && yVariables.length ? yVariables : this.selectedVariables().map((v) => v.code);
-    const covariates = xVariables ?? this.selectedCovariates().map((c) => c.code);
-    const filters = this.selectedFilters();
+    // unified signals
+    const variables = yVariables?.length ? yVariables : this.selectedVariables().map(v => v.code);
+    const covariates = xVariables ?? this.selectedCovariates().map(c => c.code);
     const config = this.algorithmConfigurations()[algoConfig.name ?? ''] || {};
 
+    // filters logic
+    const filterLogic = this._filterLogic();
+    const hasFilters = !!(filterLogic && Array.isArray(filterLogic.rules) && filterLogic.rules.length > 0);
 
-    // special case for multiple_histograms. Transient call
+    // special case for multiple_histograms (no filters)
     if (algorithmName === 'multiple_histograms') {
-      requestBody = {
+      return {
         name: `experiment_${algorithmName}`,
         algorithm: {
           name: algorithmName,
           inputdata: {
             data_model: this.getActiveDataModelCode(),
-            // data_model: "dementia:0.1",
-            y: yVariables ?? null, // only what comes through functions parameters
+            y: yVariables ?? null,
             datasets: this.selectedDatasetsSignal(),
-            filters: null,
+            filters: null, // always null for histograms
           },
           parameters: {},
           preprocessing: null,
           type: 'exareme2',
         },
       };
-    } else {
-      requestBody = {
-        name: `experiment_${algoConfig.name.replace(/\s+/g, '_')}`,
-        algorithm: {
-          name: algoConfig.name,
-          inputdata: {
-            data_model: this.getActiveDataModelCode(),
-            // data_model: "dementia:0.1",
-            y: variables.length > 0 ? variables : null,
-            x: covariates.length > 0 ? covariates : null,
-            datasets: this.selectedDatasetsSignal(),
-            filters: filters.length ? filters : null,
-          },
-          parameters: config,
-          preprocessing: null,
-          type: "exareme2",
-        }
-      };
     }
-    console.log("🧪 Final Request Body", JSON.stringify({
-      y: variables,
-      data_model: this.getActiveDataModelCode(),
-      datasets: this.selectedDatasetsSignal(),
-      full: requestBody
-    }, null, 2));
-    return requestBody;
-  }
 
-  getHistogramData() {
-    return this.histogramDataSignal();
+    // generic build
+    const body = {
+      name: `experiment_${algoConfig.name.replace(/\s+/g, '_')}`,
+      algorithm: {
+        name: algoConfig.name,
+        inputdata: {
+          data_model: this.getActiveDataModelCode(),
+          y: variables.length > 0 ? variables : null,
+          x: covariates.length > 0 ? covariates : null,
+          datasets: this.selectedDatasetsSignal(),
+          // filters: null,
+          filters: hasFilters ? filterLogic : null,
+        },
+        parameters: config,
+        preprocessing: null,
+        type: "exareme2",
+      }
+    };
+
+    console.log("🧪 Final Request Body:", JSON.stringify(body, null, 2));
+    return body;
   }
 
   setHistogramData(data: any) {
@@ -420,6 +403,7 @@ export class ExperimentStudioService {
     if (!this.dataModelsLoaded) {
       return this.http.get<any[]>(this.apiUrl).pipe(
         tap((models) => {
+          console.log("📦 RAW DATA MODELS RESPONSE (/services/data-models):", models);
           this.dataModels = models;
           this.dataModelsLoaded = true;
         }),
@@ -436,35 +420,58 @@ export class ExperimentStudioService {
     return this.loadAllDataModels();
   }
 
-  convertToD3Hierarchy(data: any): { hierarchy: any; allVariables: any[]; allDatasets: any[] } {
-    const convertVariables = (vars: any[]) =>
-      vars.map((v) => ({ name: v.label, code: v.code, value: 1, type: v.type, description: v.description }));
-
-    const convertGroups = (groups: any) =>
-      groups.map((g: any) => ({
-        name: g.label,
-        code: g.code,
-        children: [...convertVariables(g.variables || []), ...convertGroups(g.groups || [])]
+  convertToD3Hierarchy(data: DataModel): {
+    hierarchy: D3HierarchyNode;
+    allVariables: D3HierarchyNode[];
+    allDatasets: string[];
+  } {
+    const convertVariables = (vars: Variable[] = []): D3HierarchyNode[] =>
+      vars.map((v) => ({
+        label: v.label,
+        code: v.code ?? '',
+        value: 1,
+        type: v.type ?? 'unknown',
+        description: v.description ?? '',
+        enumerations: v.enumerations ?? []
       }));
-    const extractFlat = (node: any, list: any[] = []): any[] => {
+
+    const convertGroups = (groups: Group[] = []): D3HierarchyNode[] =>
+      groups.map((g) => ({
+        label: g.label,
+        code: g.code ?? '',
+        children: [
+          ...convertVariables(g.variables ?? []),
+          ...convertGroups(g.groups ?? []),
+        ],
+      }));
+
+    const extractFlat = (node: any, list: D3HierarchyNode[] = []): D3HierarchyNode[] => {
       if (node.children) node.children.forEach((child: any) => extractFlat(child, list));
-      else if (node.name) list.push(node);
+      else if (node.label) list.push(node);
       return list;
     };
-    const hierarchy = {
-      name: data.label,
-      children: [...convertVariables(data.variables || []), ...convertGroups(data.groups || [])]
+
+    const hierarchy: D3HierarchyNode = {
+      label: data.label,
+      code: data.code ?? '',
+      children: [
+        ...convertVariables(data.variables ?? []),
+        ...convertGroups(data.groups ?? []),
+      ],
     };
+
+    const allVariables = extractFlat(hierarchy);
     return {
       hierarchy,
-      allVariables: extractFlat(hierarchy),
-      allDatasets: data.datasets || []
+      allVariables,
+      allDatasets: data.datasets ?? [],
     };
   }
 
   submitRequest(requestBody: any, cacheHandler?: (response: any) => void): Observable<any> {
     return this.http.post<any>(this.experimentUrl, requestBody).pipe(
       switchMap((res) => {
+        console.log("🚀 Backend initial response:", res);
         const uuid = res?.uuid;
         if (!uuid) throw new Error('UUID not found in response');
         return this.pollForResults(`${this.experimentUrl}/${uuid}`);
@@ -488,7 +495,6 @@ export class ExperimentStudioService {
         console.groupEnd();
         throw error;
       })
-
     );
   }
 
@@ -523,7 +529,6 @@ export class ExperimentStudioService {
 
   //Runs transient or standard algorithm calls.
   //Used for fetching quick results like histograms or descriptive stats.
-
   getAlgorithmResults(algorithmName: string, nodeCodes: string[] | null = null): Observable<any> {
     let requestBody: any;
 
@@ -532,7 +537,7 @@ export class ExperimentStudioService {
 
       return this.submitTransientRequest(requestBody, (result) => {
         const list = result?.histogram || [];
-        list.forEach((hist: any) => this.cacheHistogram(hist.var, hist));
+        // list.forEach((hist: any) => this.cacheHistogram(hist.var, hist));
       }).pipe(
         map(resp => this.normalizeResponse(algorithmName, resp))
       );
@@ -540,50 +545,24 @@ export class ExperimentStudioService {
 
     // non-transient requests
     requestBody = this.buildRequestBody(algorithmName, nodeCodes);
+    console.log("Final algorithm request body:", JSON.stringify(requestBody, null, 2));
     return this.submitRequest(requestBody);
   }
 
-  extractAndSetEnumsFromDescriptiveStats(variableCode: string, result: any) {
-    const labelCountMap: Record<string, number> = {};
-
-    for (let countsOfEnum of result.variable_based) {
-
-      if (!countsOfEnum.data || typeof countsOfEnum.data.counts !== 'object') {
-        console.warn('Skipping enum counts for', countsOfEnum);
-        continue;
-      }
-
-      let counts = countsOfEnum.data.counts;
-      if (!counts) continue;
-
-      for (const label in counts) {
-        const count = counts[label];
-        if (!labelCountMap[label]) labelCountMap[label] = 0;
-        labelCountMap[label] += count;
-      }
-    }
-
-    const labels = Object.entries(labelCountMap)
-      .filter(([_, count]) => count > 0)
-      .map(([label]) => label);
-
-    if (labels.length > 0) {
-      this.setVariableEnumerations(variableCode, labels);
-    }
-  }
-
   private buildDescriptiveRequestBody(variableCodes: string[]): any {
+    const filters = this.filterLogic();
+    const hasFilters = (filters?.rules?.length ?? 0) > 0;
+
     return {
       name: `experiment_descriptive_stats_${variableCodes.join('_')}`,
       algorithm: {
         name: "descriptive_stats",
         inputdata: {
-          // data_model: "dementia:0.1",
           data_model: this.getActiveDataModelCode(),
           y: variableCodes,
           x: null,
           datasets: this.selectedDatasetsSignal(),
-          filters: null,
+          filters: hasFilters ? filters : null,
         },
         parameters: {},
         preprocessing: null,
@@ -592,51 +571,27 @@ export class ExperimentStudioService {
     };
   }
 
-  loadVariableSummary(variableCode: string): Observable<any> {
-    // Return cache if exists
-    if (this.descriptiveStatsCache[variableCode]) {
-      this.extractAndSetEnumsFromDescriptiveStats(
-        variableCode,
-        this.descriptiveStatsCache[variableCode]
-      );
-      return of(this.descriptiveStatsCache[variableCode]);
-    }
-
-    // If it doesn't exist, create variable request body
-    const requestBody = this.buildDescriptiveRequestBody([variableCode]);
-
-    const cacheHandler = (result: any) => {
-      if (!result) return;
-      this.descriptiveStatsCache[variableCode] = result;
-      this.extractAndSetEnumsFromDescriptiveStats(variableCode, result);
-    };
-
-    // Polling for enrichment (stateful)
-    return this.submitRequest(requestBody, cacheHandler);
-  }
-
   loadDescriptiveOverview(variableCodes: string[]): Observable<any> {
     const requestBody = this.buildDescriptiveRequestBody(variableCodes);
+    console.log("Final descriptive request body:", JSON.stringify(requestBody, null, 2));
 
     return this.submitTransientRequest(requestBody, (result) => {
       this.setDescriptiveStatsData(result?.variable_based || []);
-      console.log("✅ Descriptive overview loaded:", result);
+      console.log("Descriptive overview loaded:", result);
     }).pipe(
       tap((response) => {
-        console.log("📊 Raw descriptive overview response:", response);
+        console.log("Raw descriptive overview response:", response);
       }),
       map(resp => this.normalizeResponse("descriptive_stats", resp)),
       catchError((error) => {
-        console.error("❌ Error fetching descriptive overview:", error);
+        console.error("Error fetching descriptive overview:", error);
         return of(null);
       })
     );
   }
 
-
   // Executes the currently selected algorithm as a full experiment.
   // Used by the "Run Experiment" button.
-
   runSelectedAlgorithm(): Observable<any> | null {
     const selectedAlgo = this.selectedAlgorithm();
     if (!selectedAlgo) {
@@ -646,7 +601,8 @@ export class ExperimentStudioService {
 
     const variables = this.selectedVariables().map((v) => v.code);
     const covariates = this.selectedCovariates().map((v) => v.code);
-    const filters = this.selectedFilters();
+    const filters = this.filterLogic();
+    const hasFilters = (filters?.rules?.length ?? 0) > 0;
     const config = this.algorithmConfigurations()[selectedAlgo.name] || {};
 
     const requestBody = {
@@ -655,18 +611,18 @@ export class ExperimentStudioService {
         name: selectedAlgo.name,
         // need to update this with buildRequestBody
         inputdata: {
-          // data_model: "dementia:0.1",
           data_model: this.getActiveDataModelCode(),
           datasets: this.selectedDatasetsSignal(),
           y: variables.length ? variables : null,
           x: covariates.length ? covariates : null,
-          filters: filters.length ? filters : null,
+          filters: hasFilters ? filters : null,
         },
         parameters: config,
         preprocessing: null,
         type: selectedAlgo.type || "exareme2"
       }
     };
+    console.log("requestBody run algo: ", requestBody);
     return this.submitRequest(requestBody);
   }
 
@@ -681,51 +637,84 @@ export class ExperimentStudioService {
     }
   }
 
-  pollForResults(url: string): Observable<any> {
-    const pollingInterval = 5000; // Poll every 2 seconds
-    const maxRetries = 10; // Maximum number of retries
+  // pollForResults(url: string): Observable<any> {
+  //   const pollingInterval = 5000; // Poll every 2 seconds
+  //   const maxRetries = 10; // Maximum number of retries
 
+  //   let attempts = 0;
+
+  //   return interval(pollingInterval).pipe(
+  //     switchMap(() => {
+  //       return this.http.get<any>(url).pipe(
+  //         map((response) => {
+  //           // Check the status field
+  //           if (response.status === 'success') {
+  //             return response; // Emit the final result
+  //           }
+  //           // if (response.status === 'error') {
+  //           //   throw new Error('The server returned an error status.');
+  //           // }
+  //           if (response.status === 'error') {
+  //             console.warn("Backend returned status:error — passing it downstream");
+  //             return response; // <-- επιτρέπει στο component να το χειριστεί
+  //           }
+
+  //           // Continue polling if status is "pending"
+  //           return null;
+  //         }),
+  //         catchError(async (error) => {
+  //           console.groupCollapsed('❌ Detailed backend error');
+  //           console.log('Full HttpErrorResponse:', error);
+
+  //           try {
+  //             const text = await error.error?.text?.() ?? error.error;
+  //             console.log('Raw backend response text:', text);
+  //           } catch {
+  //             console.log('Raw backend response (non-text):', error.error);
+  //           }
+
+  //           console.groupEnd();
+  //           throw error;
+  //         })
+  //       );
+  //     }),
+  //     takeWhile(() => attempts++ < maxRetries, true), // Stop polling after maxRetries
+  //     filter((result) => result !== null), // Filter out "pending" results
+  //     take(1), // Complete after receiving the first non-pending result
+  //     catchError((error) => {
+  //       console.error('Polling failed:', error);
+  //       throw error; // Propagate the error
+  //     })
+  //   );
+  // }
+
+
+  pollForResults(url: string): Observable<any> {
+    const pollingInterval = 5000;
+    const maxRetries = 10;
     let attempts = 0;
 
     return interval(pollingInterval).pipe(
-      switchMap(() => {
-        // console.log(`Polling backend for results: ${url}`);
-        return this.http.get<any>(url).pipe(
+      switchMap(() =>
+        this.http.get<any>(url).pipe(
           map((response) => {
-            // console.log("Polling Response:", response);
-            // Check the status field
-            if (response.status === 'success') {
-              return response; // Emit the final result
+            console.log("📡 Poll response:", response);
+            if (response.status === 'success' || response.status === 'error') {
+              return response;
             }
-            if (response.status === 'error') {
-              throw new Error('The server returned an error status.');
-            }
-            // Continue polling if status is "pending"
-            return null;
+            return null; // pending
           }),
-          catchError(async (error) => {
-            console.groupCollapsed('❌ Detailed backend error');
-            console.log('🔹 Full HttpErrorResponse:', error);
-
-            try {
-              const text = await error.error?.text?.() ?? error.error;
-              console.log('🧠 Raw backend response text:', text);
-            } catch {
-              console.log('🧠 Raw backend response (non-text):', error.error);
-            }
-
+          catchError((error) => {
+            console.groupCollapsed('Detailed backend error');
+            console.log('Full HttpErrorResponse:', error);
             console.groupEnd();
-            throw error;
+            return of({ status: 'error', result: { data: 'Network or 5xx error' } }); // fallback, no exception
           })
-        );
-      }),
-      takeWhile(() => attempts++ < maxRetries, true), // Stop polling after maxRetries
-      filter((result) => result !== null), // Filter out "pending" results
-      take(1), // Complete after receiving the first non-pending result
-      catchError((error) => {
-        console.error('Polling failed:', error);
-        throw error; // Propagate the error
-      })
+        )
+      ),
+      takeWhile(() => attempts++ < maxRetries, true),
+      filter((result) => result !== null),
+      take(1)
     );
   }
 
@@ -739,21 +728,6 @@ export class ExperimentStudioService {
     };
   }
 
-  // todo: need this?
-  enrichVariableNode(node: any): any {
-    const hist = this.getHistogram(node.code);
-    if (!hist) return node;
-
-    const enriched = {
-      ...node,
-      histogram: hist,
-      binLabels: hist.bins?.map((b: any) => b.label).filter(Boolean) || []
-    };
-    return enriched;
-  }
-
-  private descriptiveStatsData: any[] = [];
-
   setDescriptiveStatsData(data: any[]): void {
     this.descriptiveStatsData = data;
   }
@@ -761,4 +735,16 @@ export class ExperimentStudioService {
   getDescriptiveStatsData(): any[] {
     return this.descriptiveStatsData;
   }
+
+  // Filters and rules
+  private _filterLogic = signal<BackendFilter | null>(null);
+
+  get filterLogic() {
+    return this._filterLogic.asReadonly();
+  }
+
+  setFilterLogic(logic: BackendFilter | null) {
+    this._filterLogic.set(logic);
+  }
+
 }

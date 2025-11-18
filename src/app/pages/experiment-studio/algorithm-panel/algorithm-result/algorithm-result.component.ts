@@ -126,6 +126,4 @@ export class AlgorithmResultComponent {
 
     doc.save(`${this.algorithm}_results.pdf`);
   }
-
-
 }

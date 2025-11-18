@@ -134,7 +134,13 @@
         </h5>
         <p class="config-description">{{ selectedAlgorithm()?.description }}</p>
 
-        @if (enrichedConfigSchema()) {
+        @if (errorMsg()) {
+        <div class="backend-error-banner">
+          <strong>Backend error: </strong>
+          <span>{{ errorMsg() }}</span>
+        </div>
+
+        } @if (enrichedConfigSchema()) {
         <form [formGroup]="configForm" class="config-form flex flex-col gap-4">
           @for (field of enrichedConfigSchema(); track field.key) {
           <div class="config-field">
@@ -159,7 +165,7 @@
             />
 
             } @else if (field.type === 'select') {
-            <select [formControlName]="field.key" class="config-select">
+            <!-- <select [formControlName]="field.key" class="config-select">
               <option
                 [ngValue]="null"
                 [selected]="!configForm.get(field.key)?.value"
@@ -173,6 +179,22 @@
               getOptionValue(opt)) {
               <option [value]="getOptionValue(opt)">
                 {{ getOptionLabel(opt) }}
+              </option>
+              }
+            </select> -->
+            <select [formControlName]="field.key" class="config-select">
+              <option
+                [ngValue]="null"
+                [selected]="!configForm.get(field.key)?.value"
+                disabled
+                value=""
+              >
+                -- Select --
+              </option>
+
+              @for (opt of field.options; track opt) {
+              <option [ngValue]="opt.code ?? opt">
+                {{ opt.label ?? opt.name ?? opt }}
               </option>
               }
             </select>
@@ -189,12 +211,12 @@
               placeholder="Enter value..."
             />
             }
-
             <!-- Extra info section under each field -->
             <div class="field-meta">
               @if (field.desc) {
               <div class="desc-text">{{ field.desc }}</div>
-              } @if ( field.min !== null && field.min !== undefined && field.max !== null && field.max !== undefined) {
+              } @if ( field.min !== null && field.min !== undefined && field.max
+              !== null && field.max !== undefined) {
               <div class="range-hint">
                 Range: {{ field.min }} to {{ field.max }}
               </div>

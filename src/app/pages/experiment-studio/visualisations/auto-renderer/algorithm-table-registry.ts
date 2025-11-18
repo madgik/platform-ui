@@ -149,6 +149,14 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
     ];
   },
 
+  logistic_regression_cv_fedaverage: (result) => {
+    const metrics = result?.metrics;
+    if (!Array.isArray(metrics)) return [];
+    const columns = Object.keys(metrics[0]);
+    const rows = metrics.map((m: any) => columns.map(col => m[col]));
+    return [{ title: 'Logistic Regression CV with Federated Average Strategy Metrics', columns, rows }];
+  },
+
   logistic_regression_cv: (result) => {
     const metrics = result?.metrics;
     if (!Array.isArray(metrics)) return [];
@@ -253,6 +261,7 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
       }
     ];
   },
+
   ttest_paired: (result) => {
     if (!result || typeof result !== 'object') return [];
     const rows = Object.entries(result);
@@ -264,6 +273,44 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
       }
     ];
   },
+  svm_scikit: (result) => {
+    if (!result) return [];
+
+    const nObs = result?.n_obs ?? null;
+    const coeff = Array.isArray(result?.coeff) ? result.coeff : [];
+    const supportVectors = Array.isArray(result?.support_vectors)
+      ? result.support_vectors.slice(0, 10) // limit για λόγους εμφάνισης
+      : [];
+
+    const tables = [];
+
+    if (nObs !== null) {
+      tables.push({
+        title: 'Model Summary',
+        columns: ['Metric', 'Value'],
+        rows: [['Observations', nObs]],
+      });
+    }
+
+    if (coeff.length) {
+      tables.push({
+        title: 'Coefficients',
+        columns: ['Coefficient'],
+        rows: coeff.map((c: number) => [c.toFixed(4)]),
+      });
+    }
+
+    if (supportVectors.length) {
+      tables.push({
+        title: `Support Vectors (sample of ${supportVectors.length})`,
+        columns: ['Value'],
+        rows: supportVectors.map((v: number) => [v.toFixed(4)]),
+      });
+    }
+
+    return tables;
+  },
+
 
   default: () => [],
 };
