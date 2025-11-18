@@ -25,8 +25,8 @@ export class SearchBarComponent implements OnInit, OnChanges {
   @Output() searchResultSelected = new EventEmitter<string>();
 
   searchQuery: string = '';
-  variables: { name: string; type: string; path: string }[] = [];
-  groups: { name: string; path: string }[] = [];
+  variables: { label: string; type: string; path: string }[] = [];
+  groups: { label: string; path: string }[] = [];
   filteredItems: any[] = [];
   searchSuggestionsVisible = false;
   isSearchExpanded = false;
@@ -92,17 +92,17 @@ export class SearchBarComponent implements OnInit, OnChanges {
 
     const traverse = (node: any, path: string) => {
       if (!node) return;
-      const currentPath = path ? `${path} > ${node.name}` : node.name;
+      const currentPath = path ? `${path} > ${node.label}` : node.label;
 
       // Όλα όσα έχουν children τα θεωρώ ομάδες
       if (Array.isArray(node.children) && node.children.length > 0) {
-        this.groups.push({ name: node.name, path: currentPath });
+        this.groups.push({ label: node.label, path: currentPath });
         node.children.forEach((child: any) => traverse(child, currentPath));
 
         // Αν δεν έχουν children αλλά έχουν type, τα θεωρώ μεταβλητές
       } else if (typeof node.type === 'string' || Array.isArray(node.type)) {
         this.variables.push({
-          name: node.name,
+          label: node.label,
           type: node.type as string,
           path: currentPath
         });
@@ -114,7 +114,6 @@ export class SearchBarComponent implements OnInit, OnChanges {
 
     traverse(hierarchy, '');
   }
-
 
   //  Handles the search query input.
   handleSearch(query: string): void {
@@ -130,12 +129,12 @@ export class SearchBarComponent implements OnInit, OnChanges {
     if (type === 'variables') {
       this.filteredItems = this.variables.filter(
         (v) =>
-          v.name.toLowerCase().includes(this.searchQuery) &&
+          v.label.toLowerCase().includes(this.searchQuery) &&
           (this.variableTypeFilter ? v.type === this.variableTypeFilter : true)
       );
     } else if (type === 'groups') {
       this.filteredItems = this.groups.filter((g) =>
-        g.name.toLowerCase().includes(this.searchQuery)
+        g.label.toLowerCase().includes(this.searchQuery)
       );
     }
   }
@@ -150,7 +149,7 @@ export class SearchBarComponent implements OnInit, OnChanges {
   // Handles clicking on a search suggestion.
   onItemClick(item: any): void {
     // console.log("✅ Selected Item:", item);
-    this.searchQuery = item.name || item;
+    this.searchQuery = item.label || item;
     this.searchSuggestionsVisible = false;
     this.searchResultSelected.emit(this.searchQuery);
   }

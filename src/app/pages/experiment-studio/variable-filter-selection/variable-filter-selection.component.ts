@@ -1,8 +1,10 @@
+import { filter } from 'rxjs/operators';
 import { Component, Input, Output, EventEmitter, OnInit, effect } from '@angular/core';
-import { FilterConfigModalComponent } from '../../shared/filter-config-modal/filter-config-modal.component';
+import { FilterConfigModalComponent } from '../filter-config-modal/filter-config-modal.component';
 import { CommonModule } from '@angular/common';
 import { ExperimentStudioService } from '../../../services/experiment-studio.service';
 import { CdkDragDrop, DragDropModule, transferArrayItem } from '@angular/cdk/drag-drop'
+import { D3HierarchyNode } from '../../../models/data-model.interface';
 
 
 @Component({
@@ -15,10 +17,10 @@ import { CdkDragDrop, DragDropModule, transferArrayItem } from '@angular/cdk/dra
 export class VariableFilterSelectionComponent implements OnInit {
   @Input() selectedNode: any; // Selected node from the bubble chart
   @Input() groupVariables: any[] = [];
-  @Input() availableVariables: any[] = [];
   @Output() filtersChange = new EventEmitter<any[]>();
   @Output() variableClicked = new EventEmitter<any>();
 
+  filterLogic: any;
   variables: any[] = [];
   covariates: any[] = [];
   filters: any[] = [];
@@ -47,8 +49,8 @@ export class VariableFilterSelectionComponent implements OnInit {
 
   }
 
-  onVariableClick(variable: any): void {
-    this.variableClicked.emit(variable);
+  onVariableClick(node: D3HierarchyNode): void {
+    this.variableClicked.emit(node);
   }
 
 
@@ -147,16 +149,16 @@ export class VariableFilterSelectionComponent implements OnInit {
   removeItem(item: any, listName: string): void {
     switch (listName) {
       case 'variables':
-        this.variables = this.variables.filter((v) => v.name !== item.name);
+        this.variables = this.variables.filter((v) => v.label !== item.label);
         this.updateService('variables', [...this.variables]);
         break;
       case 'covariates':
-        this.covariates = this.covariates.filter((c) => c.name !== item.name);
+        this.covariates = this.covariates.filter((c) => c.label !== item.label);
         this.updateService('covariates', [...this.covariates]);
         break;
       case 'filters':
-        this.filters = this.filters.filter((f) => f.name !== item.name);
-        this.availableVariables = [...this.filters]; // αν το χρησιμοποιείς κάπου
+        this.filters = this.filters.filter((f) => f.label !== item.label);
+        // this.availableVariables = [...this.filters];
         this.updateFilters([...this.filters]);
         this.updateService('filters', [...this.filters]);
         break;
@@ -177,7 +179,7 @@ export class VariableFilterSelectionComponent implements OnInit {
         break;
       case 'filters':
         this.filters = [];
-        this.availableVariables = [];
+        // this.availableVariables = [];
         this.updateService('filters', []);
         break;
       default:
@@ -186,6 +188,8 @@ export class VariableFilterSelectionComponent implements OnInit {
   }
 
   openFilterConfig(): void {
+    const saved = this.expStudioService.filterLogic();
+    this.filterLogic = saved ? structuredClone(saved) : { condition: 'AND', rules: [] };
     this.isFilterConfigOpen = true;
   }
 
@@ -197,7 +201,7 @@ export class VariableFilterSelectionComponent implements OnInit {
   // Check for redundant code
   updateFilters(updatedFilters: any[]): void {
     this.filters = updatedFilters;
-    this.availableVariables = updatedFilters;
+    // this.availableVariables = updatedFilters;
     this.updateService('filters', updatedFilters);
   }
 
@@ -205,7 +209,7 @@ export class VariableFilterSelectionComponent implements OnInit {
     console.log("Called on Filters Change");
     if (Array.isArray(updatedFilters)) {
       this.filters = [...updatedFilters];
-      this.availableVariables = [...updatedFilters];
+      // this.availableVariables = [...updatedFilters];
       // console.log('Filters updated from modal:', this.availableVariables);
       this.filtersChange.emit(this.filters); // this emits an event if a filter exists
       this.updateService('filters', this.filters);

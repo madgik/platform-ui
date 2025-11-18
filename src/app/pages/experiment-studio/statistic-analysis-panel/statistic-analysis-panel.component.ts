@@ -83,7 +83,13 @@ export class StatisticAnalysisPanelComponent implements OnInit, OnChanges {
 
   private computeShowBoxPlots(): void {
     const selectedVars = this.expStudioService.selectedVariables();
-    this.nonNominalVariables = selectedVars.filter(
+    const selectedCovars = this.expStudioService.selectedCovariates();
+    const all = [...selectedVars, ...selectedCovars];
+    const dedupMap = new Map(all.map(v => [v.code, v]));
+    const unique = Array.from(dedupMap.values());
+
+    // keeps only non-nominal variables
+    this.nonNominalVariables = unique.filter(
       (v) => v?.type && v.type !== 'nominal' && v.type !== 'text'
     );
     this.showBoxPlots = this.nonNominalVariables.length > 0;
@@ -115,10 +121,18 @@ export class StatisticAnalysisPanelComponent implements OnInit, OnChanges {
     const filterCodes = new Set(filters.map(f => f.code));
     const uniqueVariables = Array.from(new Map(variables.map(v => [v.code, v])).values());
     const uniqueCovariates = Array.from(new Map(covariates.map(c => [c.code, c])).values());
-    const items = [...uniqueVariables.filter(v => !filterCodes.has(v.code)),
-    ...uniqueCovariates.filter(c => !filterCodes.has(c.code)),
-    ...filters];
+    // const items = [...uniqueVariables.filter(v => !filterCodes.has(v.code)),
+    // ...uniqueCovariates.filter(c => !filterCodes.has(c.code)),
+    // ...filters];
 
+    // merged variables + covariates + filters
+    const merged = [
+      ...uniqueVariables.filter(v => !filterCodes.has(v.code)),
+      ...uniqueCovariates.filter(c => !filterCodes.has(c.code)),
+      ...filters
+    ];
+
+    const items = Array.from(new Map(merged.map(v => [v.code, v])).values());
     if (!items.length) { this.isLoading = false; return; }
 
     const variableCodes = items.map(i => i.code);
@@ -137,8 +151,9 @@ export class StatisticAnalysisPanelComponent implements OnInit, OnChanges {
           .filter((d: string) => d && d !== 'all datasets')
           .concat('all datasets');
 
+        const varList = items;
+
         // Variables tab
-        const varList = this.expStudioService.selectedVariables();
         this.processedData = this.pivotByDataset(variable_based, varList, allLast);
 
         // Model tab
@@ -147,7 +162,6 @@ export class StatisticAnalysisPanelComponent implements OnInit, OnChanges {
         // Box Plots
         this.computeShowBoxPlots();
         if (this.showBoxPlots) this.buildBoxPlotCharts(response);
-
         this.isLoading = false;
       },
       error: (err) => { console.error(err); this.isLoading = false; }
@@ -322,11 +336,11 @@ export class StatisticAnalysisPanelComponent implements OnInit, OnChanges {
         });
       };
 
-      // --- Variables + Model
+      // Variables + Model
       addSection('Variables', this.processedData || []);
       addSection('Model', this.modelData || []);
 
-      // --- Boxplots
+      // Boxplots
       if (this.showBoxPlots && this.nonNominalVariables?.length) {
         doc.addPage();
         yOffset = 20;
@@ -349,7 +363,7 @@ export class StatisticAnalysisPanelComponent implements OnInit, OnChanges {
           try {
             const canvas = await html2canvas(chartEl, {
               backgroundColor: '#ffffff',
-              scale:1,
+              scale: 1,
               useCORS: true,
               logging: false,
             });

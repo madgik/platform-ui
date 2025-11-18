@@ -31,7 +31,7 @@ function createLabelGroup(group: d3.Selection<SVGGElement, any, any, any>, d: an
     .style('fill', '#222');
 
   text.selectAll('tspan')
-    .data(splitText(d.data.name || ''))
+    .data(splitText(d.data.label || ''))
     .join('tspan')
     .attr('x', 0)
     .attr('y', (_: any, i: number, nodes: unknown) => {
@@ -53,7 +53,7 @@ function createLabelGroup(group: d3.Selection<SVGGElement, any, any, any>, d: an
   const tempText = tempSvg.append('text')
     .style('font-size', '10px')
     .style('font-weight', '500')
-    .text(d.data.name || '');
+    .text(d.data.label || '');
 
   const bbox = tempText.node()?.getBBox();
   tempSvg.remove();
@@ -77,7 +77,7 @@ function createLabelGroup(group: d3.Selection<SVGGElement, any, any, any>, d: an
 const codeOf = (x: any): string | undefined =>
   x?.code ?? x?.uniqueId ?? x?.id ??
   x?.data?.code ?? x?.data?.uniqueId ?? x?.data?.id ??
-  x?.name;
+  x?.label;
 
 // Turns input arrays into new Set<string> -- copies
 const toCodeSet = (arr: any[] | undefined | null): Set<string> =>
@@ -161,7 +161,7 @@ export function createZoomableCirclePacking(
   }
 
   function showTooltip(event: MouseEvent, d: any) {
-    const label = d.data.name || '(no label)';
+    const label = d.data.label || '(no label)';
     const descriptionRaw = d.data.description || '';
     const description = decodeUnicode(descriptionRaw.trim());
     const type = d.data.type || '';
@@ -263,7 +263,6 @@ export function createZoomableCirclePacking(
   container.appendChild(svg.node()!);
 
   // Functions
-
   function zoomTo(v: [number, number, number]) {
     const k = width / v[2];
     view = v;

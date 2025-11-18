@@ -2,13 +2,14 @@ import { SessionStorageService } from './../../../services/session-storage.servi
 import { Component, Output, EventEmitter, inject, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AccordionComponent } from '../../shared/accordion/accordion.component';
-import { AlgorithmConfig, ExperimentStudioService } from '../../../services/experiment-studio.service';
+import { ExperimentStudioService } from '../../../services/experiment-studio.service';
 import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { buildFormControl } from '../../shared/utils/form-control.factory';
 import { AlgorithmResultComponent } from './algorithm-result/algorithm-result.component';
 import { getOutputSchema } from '../../../core/algorithm-mappers';
 import { EchartsxModule } from 'echarts-for-angular';
 import { SpinnerComponent } from '../../shared/spinner/spinner.component';
+import { AlgorithmConfig } from '../../../models/algorithm-definition.model';
 
 @Component({
   selector: 'app-algorithm-panel',
@@ -35,10 +36,11 @@ export class AlgorithmPanelComponent {
   result = signal<any | null>(null);
   lastUsedAlgorithm = '';
   isRunning = signal(false);
+  errorMsg = signal<string | null>(null);
+
 
   readonly lastUsedSchema = signal<any[]>([]);
   readonly availableAlgorithmCategories = computed(() => {
-    // console.log("I recalculated in algorithm panel");
     const grouped = this.experimentService.availableGroupedAlgorithms();
     return Object.entries(grouped).map(([name, algorithms]) => ({ name, algorithms }));
   });
@@ -75,9 +77,9 @@ export class AlgorithmPanelComponent {
 
   constructor() {
     effect(() => {
-      this.experimentService.availableGroupedAlgorithms();
+      const groups = this.experimentService.availableGroupedAlgorithms();
+      if (!groups) return;
       this.availableAlgorithmCategories();
-      // console.log('✅ Available algorithms:', available);
     });
 
     effect(() => {
@@ -103,7 +105,7 @@ export class AlgorithmPanelComponent {
           this.uiDefaults[field.key] ??    // or sensible default
           (field.type === 'checkbox' ? false : '');
 
-        group[field.key] = buildFormControl(field, value);
+        // group[field.key] = buildFormControl(field, value);
 
         const fallback =
           storedValue !== undefined
@@ -142,10 +144,6 @@ export class AlgorithmPanelComponent {
         if (control.valid) control.markAsTouched({ onlySelf: true });
       });
       this.formKey++;
-
-      // console.log('[Reactive Config] algorithm:', algorithm.name);
-      // console.log('[Reactive Config] enriched schema:', schema);
-      // console.log('[Reactive Config] variables:', this.experimentService.getVariables());
     });
     effect(() => {
       const res = this.result();
@@ -175,62 +173,42 @@ export class AlgorithmPanelComponent {
     const algorithm = this.selectedAlgorithm();
     if (!algorithm) return [];
 
-    // Always work on shallow copy
-    let schema = (algorithm.configSchema || []).map(f => ({ ...f }));
+    // Basic algorithm schema (shallow copy)
+    const schema = (algorithm.configSchema ?? []).map(f => ({ ...f }));
 
-    // select with placeholder options y or x, use enums from variable
-    const enumsByCode = this.experimentService.getVariableEnumerations();
+    const yVar = this.experimentService.selectedVariables()[0];
+    const xVar = this.experimentService.selectedCovariates()[0];
 
-    const selectedY = this.experimentService.selectedVariables();
-    const selectedX = this.experimentService.selectedCovariates();
+    return schema.map(field => {
+      let options = field.options ?? [];
 
-    const yOne = selectedY.length === 1 ? selectedY[0] : null;
-    const xOne = selectedX.length === 1 ? selectedX[0] : null;
+      // Placeholder substitution for enums
+      if (Array.isArray(options) && options.length === 1) {
+        const placeholder = options[0];
 
-    schema = schema.map(field => {
-      // working copy
-      let updatedField = { ...field };
-
-      // select with placeholder (['y'] ή ['x'])
-      if (Array.isArray(field.options) && field.options.length === 1) {
-        const tag = field.options[0];
-        if (tag === 'y' && yOne) {
-          updatedField = {
-            ...field,
-            options: [...(enumsByCode[yOne.code] ?? [])],
-          };
-        } else if (tag === 'x' && xOne) {
-          updatedField = {
-            ...field,
-            options: [...(enumsByCode[xOne.code] ?? [])],
-          };
+        if (placeholder === 'y' && yVar?.enumerations?.length) {
+          options = [...yVar.enumerations];
+        } else if (placeholder === 'x' && xVar?.enumerations?.length) {
+          options = [...xVar.enumerations];
         }
       }
 
-      // If no options, create fallback from y variable
+      // Fallback for empty select fields
       if (
-        (!updatedField.options || updatedField.options.length === 0) &&
-        yOne &&
-        field.type === 'select'
+        field.type === 'select' &&
+        (!options || options.length === 0) &&
+        yVar?.enumerations?.length
       ) {
-        updatedField = {
-          ...updatedField,
-          options: [...(enumsByCode[yOne.code] ?? [])],
-        };
+        options = [...yVar.enumerations];
       }
 
-      // keep all attributes
-      return {
-        ...updatedField,
-        label:
-          updatedField.label && updatedField.label.trim() !== ''
-            ? updatedField.label
-            : this.prettifyLabel(updatedField.key),
-        desc: updatedField.desc ?? updatedField.description ?? '',
-      };
-    });
+      // Normalize label and desc
+      const label = field.label?.trim() || this.prettifyLabel(field.key);
+      const desc = field.desc ?? field.description ?? '';
 
-    return schema;
+      // Return enriched field
+      return { ...field, label, desc, options };
+    });
   });
 
   readonly outputSchema = computed(() =>
@@ -278,9 +256,11 @@ export class AlgorithmPanelComponent {
     this.experimentService.selectedAlgorithm.set(algorithm);
     this.selectedAlgorithm.set(algorithm);
     this.algorithmConfigured.emit(algorithm.name);
+    this.errorMsg.set(null);
   }
 
   onClickRunExp() {
+    this.errorMsg.set(null);
     const algo = this.experimentService.selectedAlgorithm();
 
     if (!algo) {
@@ -290,6 +270,7 @@ export class AlgorithmPanelComponent {
 
     this.experimentService.lastUsedAlgorithm.set(algo.name);
     this.isRunning.set(true);
+    this.errorMsg.set(null);
 
     const configValues = this.configForm.getRawValue();
     this.updateAlgorithmConfiguration(algo.name, '', configValues); // or:
@@ -305,11 +286,23 @@ export class AlgorithmPanelComponent {
     }
 
     result$.subscribe(res => {
+      console.log("🚀 Full backend response:", res);
+      const status = res?.status;
+      const payload = res?.result ?? {};
+      if (status === 'error') {
+        // backend error message
+        const msg =
+          payload?.data ||
+          payload?.message ||
+          'The server returned an error for this run.';
+        this.errorMsg.set(msg);
+        this.isRunning.set(false);
+        return;
+      }
       const schema = getOutputSchema(algo?.name ?? '') ?? [];
       console.log("algo.name: ", algo.name);
       this.result.set({
         ...res?.result ?? { message: "No result returned" },
-        // _algorithm: algo.name
       });
       this.lastUsedAlgorithm = algo.name;
       this.lastUsedSchema.set(schema);
@@ -368,65 +361,5 @@ export class AlgorithmPanelComponent {
     } else {
       this.openCategories.push(category);
     }
-  }
-
-  // Helper functions
-  getOptionsForField(fieldKey: string): { value: string; label: string }[] {
-    const algorithm = this.selectedAlgorithm();
-    if (!algorithm) return [];
-
-    const schemaField = this.enrichedConfigSchema().find((f) => f.key === fieldKey);
-    if (!schemaField || schemaField.type !== 'select') return [];
-
-    const selectedVars = this.experimentService.selectedVariables();
-    const selectedCovars = this.experimentService.selectedCovariates();
-
-    // static choices e.g. two-sided/less/greater
-    if (
-      Array.isArray(schemaField.options) &&
-      schemaField.options.length > 0 &&
-      !(schemaField.options.length === 1 && ['x', 'y'].includes(schemaField.options[0]))
-    ) {
-      return schemaField.options.map((opt: string) => ({ value: opt, label: opt }));
-    }
-
-    // y variable enumerations
-    if (Array.isArray(schemaField.options) && schemaField.options[0] === 'y') {
-      if (selectedVars.length === 1) {
-        const onlyVar = selectedVars[0];
-        const enumValues = this.experimentService.variableEnumerations[onlyVar.code] || [];
-        return enumValues.map((e) => ({ value: e, label: e }));
-      }
-    }
-
-    // x variable enumerations for groupA and groupB (t-test specific)
-    if (['groupA', 'groupB'].includes(fieldKey)) {
-      if (selectedCovars.length === 1) {
-        const onlyCov = selectedCovars[0];
-        const enumValues = this.experimentService.variableEnumerations[onlyCov.code] || [];
-        return enumValues.map((e) => ({ value: e, label: e }));
-      }
-    }
-
-    // Fallback behaviour
-    if (selectedVars.length === 1) {
-      const onlyVar = selectedVars[0];
-      const enumValues = this.experimentService.variableEnumerations[onlyVar.code] || [];
-      console.log('getOptionsForField', {
-        fieldKey,
-        onlyVarCode: onlyVar.code,
-        enums: this.experimentService.variableEnumerations
-      });
-      return enumValues.map((e) => ({ value: e, label: e }));
-    }
-    return [];
-  }
-
-  getOptionValue(opt: any): string {
-    return typeof opt === 'string' ? opt : opt.value;
-  }
-
-  getOptionLabel(opt: any): string {
-    return typeof opt === 'string' ? opt : opt.label ?? opt.value;
   }
 }

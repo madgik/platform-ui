@@ -1,5 +1,5 @@
 import { RawAlgorithmDefinition, RawParameter } from '../models/backend-algorithms.model';
-import { AlgorithmConfig } from '../services/experiment-studio.service';
+import { AlgorithmConfig } from '../models/algorithm-definition.model';
 
 // Lookup για κατηγορίες
 const CATEGORY_MAPPING: Record<string, string> = {
@@ -278,6 +278,34 @@ export function getOutputSchema(algorithmName: string): any[] | undefined {
             { key: 'pvalue', label: 'p-value' },
             { key: 'ci', label: '95% CI' }
           ]
+        }
+      ];
+    case 'logistic_regression_cv_fedaverage':
+      return [
+        {
+          key: 'accuracy',
+          label: 'Accuracy (per fold)',
+          type: 'array',
+        },
+        {
+          key: 'recall',
+          label: 'Recall (per fold)',
+          type: 'array',
+        },
+        {
+          key: 'precision',
+          label: 'Precision (per fold)',
+          type: 'array',
+        },
+        {
+          key: 'fscore',
+          label: 'F1 Score (per fold)',
+          type: 'array',
+        },
+        {
+          key: 'auc',
+          label: 'AUC (per fold)',
+          type: 'array',
         }
       ];
     case 'logistic_regression_cv':

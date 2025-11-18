@@ -1,3 +1,5 @@
+import { RawInputData } from "./backend-algorithms.model";
+
 export interface AlgorithmParameter {
   type: 'number' | 'string' | 'boolean' | 'select';
   label: string;
@@ -17,4 +19,17 @@ export interface AlgorithmDefinition {
   supportsWeights: boolean;
   supportsFilters: boolean;
   configSchema: Record<string, AlgorithmParameter>;
+}
+
+export interface AlgorithmConfig {
+  name: string;
+  label: string;
+  description: string;
+  requiredVariable: string[];
+  covariate: string[];
+  category: string;
+  configSchema: Array<any>;
+  type: string;
+  inputdata?: RawInputData;
+  isDisabled: boolean;
 }

@@ -5,12 +5,17 @@ export interface Variable {
   description?: string;
   sql_type?: string;
   isCategorical?: boolean;
-  enumerations?: any[];
+  enumerations?: EnumValue[];
   type?: string;
   methodology?: string;
   units?: string;
   minValue?: number;
   maxValue?: number;
+}
+
+export interface EnumValue {
+  label: string;  // label που δείχνεις στο UI
+  code: any;    // value που περνάει στο backend
 }
 
 // Interface for a Group in the data model
@@ -31,11 +36,12 @@ export interface DataModel {
   variables?: Variable[];
   groups?: Group[];
   released:boolean;
+  datasets?: string[];
 }
 
 // D3 hierarchy format interface
 export interface D3HierarchyNode {
-  name: string;
+  // name: string;
   label: string;
   value?: number;  // Optional, as this may only be used for leaf nodes
   code?: string;

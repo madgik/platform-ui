@@ -547,3 +547,13 @@
   border-color: #1f8a36 !important;
   box-shadow: 0 0 5px rgba(40, 167, 69, 0.4);
 }
+
+.backend-error-banner {
+  margin: 10px 0 14px;
+  padding: 10px 12px;
+  border: 1px solid #f3b1b1;
+  background: #ffecec;
+  color: #8a1f1f;
+  border-radius: 6px;
+  line-height: 1.4;
+}

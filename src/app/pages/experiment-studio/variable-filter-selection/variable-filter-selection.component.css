@@ -189,9 +189,10 @@
 
 .cog-btn {
   position: absolute;
-  bottom: -5px;
-  right: -7px;
+  bottom: -9px;
+  right: -9px;
   background: linear-gradient(90deg, #00758c, #00a6c0);
+  /* background: linear-gradient( 90deg, #026d6d, #7ce8d9); */
   color: #fff;
   border: none;
   border-radius: 50%;

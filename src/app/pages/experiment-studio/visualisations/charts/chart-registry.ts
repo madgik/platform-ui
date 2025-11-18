@@ -8,6 +8,7 @@ import { buildLogRegConfusionChart } from './renderers/log-reg-confusion-matrix-
 import { buildKMeansChart } from './renderers/k-means-chart';
 import { buildMeanPlotChart } from './renderers/mean-plot-chart';
 import { buildBoxPlotChart } from './renderers/box-plot-chart';
+import { buildSVMChart } from './renderers/svm-chart';
 
 export interface AlgorithmChartConfig {
   build: (input: any) => EChartsOption[];
@@ -21,6 +22,10 @@ function composeCharts(...builders: ((result: any) => EChartsOption[])[]): (resu
 export const AlgorithmChartRegistry: Record<string, AlgorithmChartConfig> = {
   kmeans: {
     build: buildKMeansChart,
+    inputPath: '',
+  },
+  logistic_regression_cv_fedaverage: {
+    build: composeCharts(buildLogRegConfusionChart, buildRocCurveChart),
     inputPath: '',
   },
   logistic_regression_cv: {
@@ -45,6 +50,10 @@ export const AlgorithmChartRegistry: Record<string, AlgorithmChartConfig> = {
   },
   anova_oneway: {
     build: composeCharts(buildBarChart, buildMeanPlotChart),
+    inputPath: '',
+  },
+    svm_scikit: {
+    build: buildSVMChart,
     inputPath: '',
   },
     descriptive_stats: {

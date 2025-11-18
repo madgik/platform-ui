@@ -41,14 +41,14 @@
     @if (filterType === 'variables' && filteredItems.length) {
     <div class="section-header">Variables</div>
     <ul>
-      @for (item of filteredItems; track item.name) {
+      @for (item of filteredItems; track item.label) {
       <li
         class="variable-item"
         (click)="onItemClick(item)"
         [title]="generateTooltip(item)"
       >
         <div class="item-top">
-          <span class="result-name" [innerHTML]="highlight(item.name)"></span>
+          <span class="result-name" [innerHTML]="highlight(item.label)"></span>
           <span class="result-group">
             {{ item.path.split(" > ").slice(-2, -1)[0] }}
           </span>
@@ -68,14 +68,14 @@
     @if (filterType === 'groups' && filteredItems.length) {
     <div class="section-header">Groups</div>
     <ul>
-      @for (item of filteredItems; track item.name) {
+      @for (item of filteredItems; track item.label) {
       <li
         (click)="onItemClick(item)"
         [title]="generateTooltip(item)"
         class="variable-item"
       >
         <div class="item-top">
-          <span class="result-name">{{ item.name }}</span>
+          <span class="result-name">{{ item.label }}</span>
         </div>
         <div class="item-bottom">
           <span class="result-type">Group</span>
