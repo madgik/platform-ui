@@ -91,7 +91,7 @@ export function mapRawAlgorithmToAlgorithmConfig(raw: RawAlgorithmDefinition): A
     inputdata: raw.inputdata ?? {},
     requiredVariable: raw.inputdata?.y?.types || [],
     covariate: raw.inputdata?.x?.types || [],
-    category: CATEGORY_MAPPING[raw.name] ?? 'Uncategorized',
+    category: CATEGORY_MAPPING[raw.name] ?? 'Other',
     configSchema: buildConfigSchema(raw.parameters ?? {}),
     type: raw.type || 'exareme2',
     isDisabled: false,
