@@ -97,8 +97,6 @@ export class VariablesPanelComponent {
   }
 
   onSearchResult(selectedName: string) {
-    // console.log('Search selected:', selectedName);
-    console.log('d3data:', this.d3Data);
     const found = this.filteredVariables().find(v => v.label === selectedName);
     if (found) {
       // this.experimentStudioService.addVariableAndEnrich(found);

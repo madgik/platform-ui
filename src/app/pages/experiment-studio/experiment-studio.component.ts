@@ -40,7 +40,6 @@ export class ExperimentStudioComponent {
 
   onVariableSelected(variable: BubbleData): void {
     const algorithmName = "multiple_histograms";
-    // console.log("variable: ", variable);
     this.expStudioService.getAlgorithmResults(algorithmName, [variable.code]).subscribe(
       (response) => {
         this.selectedVariableData = response?.output?.histogram || null;

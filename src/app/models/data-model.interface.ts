@@ -14,8 +14,8 @@ export interface Variable {
 }
 
 export interface EnumValue {
-  label: string;  // label που δείχνεις στο UI
-  code: any;    // value που περνάει στο backend
+  label: string;  // UI label
+  code: any;    // backend value
 }
 
 // Interface for a Group in the data model

@@ -1,7 +1,7 @@
 import { RawAlgorithmDefinition, RawParameter } from '../models/backend-algorithms.model';
 import { AlgorithmConfig } from '../models/algorithm-definition.model';
 
-// Lookup για κατηγορίες
+// Lookup for categories
 const CATEGORY_MAPPING: Record<string, string> = {
   "kmeans": "Machine Learning",
   "svm_scikit": "Machine Learning",
@@ -23,61 +23,6 @@ const CATEGORY_MAPPING: Record<string, string> = {
   // "multiple_histograms": "Statistical Methods",
   // "descriptive_stats": "Statistical Methods",
 };
-
-function guessVariableType(ioField?: { types?: string[] }): string {
-  if (!ioField) return "None";
-  if (ioField?.types?.includes('int')) return "Numerical";
-  if (ioField?.types?.includes('real')) return "Numerical";
-  if (ioField?.types?.includes('text')) return "Nominal";
-  return "Any";
-}
-
-// function buildConfigSchema(parameters: Record<string, RawParameter>): Array<any> {
-//   const schema = [];
-
-//   for (const [key, param] of Object.entries(parameters)) {
-//     if (param.enums) {
-//       schema.push({
-//         key,
-//         type: 'select',
-//         label: param.label,
-//         options: Array.isArray(param.enums.source) ? param.enums.source : [],
-//       });
-//     } else if (param.types.includes('int') || param.types.includes('real')) {
-//       schema.push({
-//         key,
-//         type: 'number',
-//         label: param.label,
-//         ...(param.min !== undefined ? { min: +param.min } : {}),
-//         ...(param.max !== undefined ? { max: +param.max } : {}),
-//         ...(param.default !== undefined ? { default: +param.default } : {}),
-//       });
-//     } else if (param.types.includes('text')) {
-//       schema.push({
-//         key,
-//         type: 'text',
-//         label: param.label,
-//       });
-//     }
-//   }
-//   return schema;
-// }
-
-// export function mapRawAlgorithmToAlgorithmConfig(raw: RawAlgorithmDefinition): AlgorithmConfig {
-//   return {
-//     name: raw.name,
-//     label: raw.label,
-//     description: raw.desc,
-//     inputdata: raw.inputdata ?? {},
-//     requiredVariable: raw.inputdata?.y?.types || [],
-//     covariate: raw.inputdata?.x?.types || [],
-//     category: CATEGORY_MAPPING[raw.name],
-//     configSchema: buildConfigSchema(raw.parameters),
-//     type: raw.type || "exareme2",
-//     isDisabled: false,
-//     ...(getOutputSchema(raw.name) ? { outputSchema: getOutputSchema(raw.name) } : {})
-//   };
-// }
 
 function buildConfigSchema(parameters: Record<string, RawParameter>): Array<any> {
   const schema = [];
@@ -156,7 +101,6 @@ export function mapRawAlgorithmToAlgorithmConfig(raw: RawAlgorithmDefinition): A
 
 
 export function getOutputSchema(algorithmName: string): any[] | undefined {
-  // console.log("algorithm name in mappers: ", algorithmName);
   switch (algorithmName) {
     case 'anova':
       return [
@@ -449,7 +393,7 @@ export function getOutputSchema(algorithmName: string): any[] | undefined {
         { key: 'df', label: 'Degrees of Freedom', type: 'number' },
         { key: 'mean_diff', label: 'Mean Difference', type: 'number' },
         { key: 'se_difference', label: 'Std. Error of Difference', type: 'number' },
-        { key: 'ci_lower', label: 'CI Lower', type: 'string' },  // ή 'number' αν το χειρίζεσαι αλλιώς
+        { key: 'ci_lower', label: 'CI Lower', type: 'string' },
         { key: 'ci_upper', label: 'CI Upper', type: 'string' },
         { key: 'cohens_d', label: 'Cohen\'s d', type: 'number' }
       ];
@@ -460,7 +404,7 @@ export function getOutputSchema(algorithmName: string): any[] | undefined {
         { key: 'p_value', label: 'p-value', type: 'number', format: 'pval' },
         { key: 'df', label: 'Degrees of Freedom', type: 'number' },
         { key: 'mean_diff', label: 'Mean Difference', type: 'number' },
-        { key: 'se_diff', label: 'Std. Error', type: 'array' }, // αν έχει πάντα ένα στοιχείο μπορούμε να το χειριστούμε
+        { key: 'se_diff', label: 'Std. Error', type: 'array' },
         { key: 'ci_lower', label: 'CI Lower', type: 'string' },
         { key: 'ci_upper', label: 'CI Upper', type: 'string' },
         { key: 'cohens_d', label: 'Cohen\'s d', type: 'number' }

@@ -25,10 +25,6 @@ export class AlgorithmResultComponent {
 
   constructor(private chartBuilder: ChartBuilderService) { }
 
-  ngOnChanges() {
-    // console.log('[AlgorithmResult] input algorithm =', this.algorithm);
-  }
-
   isRenderable = computed(() => {
     return !!this.result && !!this.algorithm;
   });

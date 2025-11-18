@@ -1,4 +1,4 @@
-/* === Dataset Selector (ενιαίο με τα panels) === */
+/* === Dataset Selector === */
 
 .button-container {
   display: inline-flex;
@@ -7,7 +7,6 @@
   margin-right: 20px;
 }
 
-/* Κουμπί: ίδιο gradient και style με τα panels */
 .variable-btn {
   background: white;
    border: 1px solid #ccc;
@@ -24,7 +23,7 @@
   /* transform: scale(1.05); */
 }
 
-/* Counter badge (πάνω δεξιά στο κουμπί) */
+/* Counter badge (top right button) */
 .counter {
   position: absolute;
   top: -6px;

@@ -4,7 +4,6 @@ import { ExperimentStudioService } from '../../../services/experiment-studio.ser
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EnumValue } from '../../../models/data-model.interface';
-import { BackendFilter } from '../../../models/filters.model';
 
 type SupportedType = 'real' | 'integer' | 'nominal';
 
@@ -49,7 +48,7 @@ export class FilterConfigModalComponent implements OnInit, OnChanges {
         this.config.set({ fields: {} });
         this.filterLogicModel.set({ condition: 'AND', rules: [] }); // reset UI state
         this.expStudio.setFilterLogic(null);                         // reset service
-        return; // Τερματίζει το effect εδώ
+        return;
       }
 
       // If variables exist build config
@@ -62,20 +61,12 @@ export class FilterConfigModalComponent implements OnInit, OnChanges {
 
       console.log('Built filter config from backend variables:', builtConfig);
     }, { allowSignalWrites: true });
-
-    // If user deletes rules in the modal make service null
-    // effect(() => {
-    //   const m = this.filterLogicModel();
-    //   const hasRules = Array.isArray(m?.rules) && m.rules.length > 0;
-    //   if (!hasRules) this.expStudio.setFilterLogic(null);
-    // }, { allowSignalWrites: true });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['filterLogic']) {
       const incoming = changes['filterLogic'].currentValue;
       if (incoming && Array.isArray(incoming.rules)) {
-        // Υδροδότηση του QueryBuilder μοντέλου
         this.filterLogicModel.set(structuredClone(incoming));
       } else {
         this.filterLogicModel.set({ condition: 'AND', rules: [] });
@@ -119,54 +110,6 @@ export class FilterConfigModalComponent implements OnInit, OnChanges {
   }
 
   // Turns QueryBuilder output to backend-friendly format
-  // private formatFiltersForBackend(rawLogic: { condition: string; rules: any[] }): any {
-  //   if (!rawLogic || !Array.isArray(rawLogic.rules) || rawLogic.rules.length === 0) {
-  //     return null;
-  //   }
-
-  //   // const fields = this.config().fields || {};
-
-  //   const normalizeRule = (r: any): any => {
-  //     // If there is a condition it's a group
-  //     if (r.condition && r.rules) {
-  //       return {
-  //         condition: r.condition,
-  //         rules: r.rules.map(normalizeRule),
-  //       };
-  //     }
-
-  //     // Leaf rule
-  //     const fieldKey = r.field ?? r.id;
-  //     const detectedType = this.detectType(fieldKey);
-
-  //     // If the operator is in/not_in and the value is string make it an array
-  //     const op = r.operator;
-  //     let val = r.value;
-  //     if ((op === 'in' || op === 'not_in') && !Array.isArray(val)) {
-  //       val = [val];
-  //     }
-
-  //     return {
-  //       id: fieldKey,
-  //       field: fieldKey,
-  //       type: detectedType,
-  //       input: this.detectInput(fieldKey),
-  //       operator: op,
-  //       value: val,
-  //       entity: undefined
-  //     };
-  //   };
-
-  //   // root needs to be a condition node
-  //   const formatted = {
-  //     condition: rawLogic.condition || 'AND',
-  //     rules: rawLogic.rules.map(normalizeRule),
-  //     valid: true,
-  //   };
-
-  //   console.log('Backend filter ready:', formatted);
-  //   return formatted;
-  // }
   private formatFiltersForBackend(rawLogic: { condition: string; rules: any[] }): any {
     if (!rawLogic || !Array.isArray(rawLogic.rules) || rawLogic.rules.length === 0) {
       return null;
@@ -176,7 +119,7 @@ export class FilterConfigModalComponent implements OnInit, OnChanges {
       // Group
       if (r?.condition && Array.isArray(r.rules)) {
         return {
-          condition: String(r.condition).toUpperCase(), // <— ΚΕΦΑΛΑΙΑ
+          condition: String(r.condition).toUpperCase(),
           rules: r.rules.map(normalizeRule),
         };
       }
@@ -192,7 +135,7 @@ export class FilterConfigModalComponent implements OnInit, OnChanges {
         id: fieldKey,
         field: fieldKey,
         type: this.detectType(fieldKey),       // 'string' | 'integer' | 'real'
-        input: this.detectInput(fieldKey),     // 'number' | 'select' | 'text' (OK να υπάρχει)
+        input: this.detectInput(fieldKey),     // 'number' | 'select' | 'text'
         operator: op,
         value: val,
         entity: undefined,
@@ -216,7 +159,6 @@ export class FilterConfigModalComponent implements OnInit, OnChanges {
     if (!f) return 'real';
     if (f.type === 'integer') return 'integer';
     if (f.type === 'real') return 'real';
-    // nominal/text -> backend "string"
     return 'string';
   }
 

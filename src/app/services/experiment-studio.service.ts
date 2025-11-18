@@ -126,7 +126,6 @@ export class ExperimentStudioService {
     // create array because raw.type could be string or string[]
     const varTypes = Array.isArray(variableType) ? variableType : [variableType];
 
-    // const covarTypes = Array.isArray(covariateType) ? covariateType : [covariateType];
     const allAlgos = Object.values(this.backendAlgorithms());
 
     // filter inputdata.y and add at least one of the varTypes in types list
@@ -177,7 +176,6 @@ export class ExperimentStudioService {
   addVariableAndEnrich(node: any): void {
     console.log("addVariableAndEnrich called with:", node);
     const currentVars = this.selectedVariables();
-    // const currentCovars = this.selectedCovariates();
     if (currentVars.some(v => v.code === node.code)) {
       console.log("Variable already exists:", node.code);
 
@@ -391,7 +389,6 @@ export class ExperimentStudioService {
       }
     };
 
-    console.log("🧪 Final Request Body:", JSON.stringify(body, null, 2));
     return body;
   }
 
@@ -637,58 +634,6 @@ export class ExperimentStudioService {
     }
   }
 
-  // pollForResults(url: string): Observable<any> {
-  //   const pollingInterval = 5000; // Poll every 2 seconds
-  //   const maxRetries = 10; // Maximum number of retries
-
-  //   let attempts = 0;
-
-  //   return interval(pollingInterval).pipe(
-  //     switchMap(() => {
-  //       return this.http.get<any>(url).pipe(
-  //         map((response) => {
-  //           // Check the status field
-  //           if (response.status === 'success') {
-  //             return response; // Emit the final result
-  //           }
-  //           // if (response.status === 'error') {
-  //           //   throw new Error('The server returned an error status.');
-  //           // }
-  //           if (response.status === 'error') {
-  //             console.warn("Backend returned status:error — passing it downstream");
-  //             return response; // <-- επιτρέπει στο component να το χειριστεί
-  //           }
-
-  //           // Continue polling if status is "pending"
-  //           return null;
-  //         }),
-  //         catchError(async (error) => {
-  //           console.groupCollapsed('❌ Detailed backend error');
-  //           console.log('Full HttpErrorResponse:', error);
-
-  //           try {
-  //             const text = await error.error?.text?.() ?? error.error;
-  //             console.log('Raw backend response text:', text);
-  //           } catch {
-  //             console.log('Raw backend response (non-text):', error.error);
-  //           }
-
-  //           console.groupEnd();
-  //           throw error;
-  //         })
-  //       );
-  //     }),
-  //     takeWhile(() => attempts++ < maxRetries, true), // Stop polling after maxRetries
-  //     filter((result) => result !== null), // Filter out "pending" results
-  //     take(1), // Complete after receiving the first non-pending result
-  //     catchError((error) => {
-  //       console.error('Polling failed:', error);
-  //       throw error; // Propagate the error
-  //     })
-  //   );
-  // }
-
-
   pollForResults(url: string): Observable<any> {
     const pollingInterval = 5000;
     const maxRetries = 10;
@@ -746,5 +691,4 @@ export class ExperimentStudioService {
   setFilterLogic(logic: BackendFilter | null) {
     this._filterLogic.set(logic);
   }
-
 }

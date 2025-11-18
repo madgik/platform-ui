@@ -1,7 +1,5 @@
 import { Component, signal, OnInit, Input, computed } from '@angular/core';
-import { StatisticAnalysisPanelComponent } from '../statistic-analysis-panel/statistic-analysis-panel.component';
 import { HistogramComponent } from '../visualisations/histogram/histogram.component';
-import { ExperimentStudioService } from '../../../services/experiment-studio.service';
 
 @Component({
   selector: 'app-distribution-graph',

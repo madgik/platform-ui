@@ -26,7 +26,7 @@ type MetricKey =
 
 interface ModelTableBlock {
   variableName: string;
-  datasets: string[]; // π.χ. ["synth_ep_wk2","synth_ep_wk1","all datasets"]
+  datasets: string[];
   rows: Array<{ metric: MetricKey; values: Record<string, number | string | null> }>;
 }
 
@@ -121,9 +121,6 @@ export class StatisticAnalysisPanelComponent implements OnInit, OnChanges {
     const filterCodes = new Set(filters.map(f => f.code));
     const uniqueVariables = Array.from(new Map(variables.map(v => [v.code, v])).values());
     const uniqueCovariates = Array.from(new Map(covariates.map(c => [c.code, c])).values());
-    // const items = [...uniqueVariables.filter(v => !filterCodes.has(v.code)),
-    // ...uniqueCovariates.filter(c => !filterCodes.has(c.code)),
-    // ...filters];
 
     // merged variables + covariates + filters
     const merged = [
@@ -390,13 +387,7 @@ export class StatisticAnalysisPanelComponent implements OnInit, OnChanges {
       }
 
       doc.save('descriptive_statistics.pdf');
-      // } catch (err) {
-      //   console.error('PDF export failed:', err);
-      // } finally {
-      //   // Remove once the WHOLE export is finished
-      //   document.body.classList.remove('pdf-exporting');
-      //   this.isExporting = false;
-      // }
+
     } catch (err) {
       console.error('PDF export failed:', err);
     } finally {

@@ -56,7 +56,7 @@ export class SearchBarComponent implements OnInit, OnChanges {
       this.extractVariablesAndGroups(this.dataModelHierarchy);
 
     } else {
-      console.warn("⚠️ No changes detected in `dataModelHierarchy`");
+      console.warn("No changes detected in `dataModelHierarchy`");
     }
   }
 
@@ -94,12 +94,10 @@ export class SearchBarComponent implements OnInit, OnChanges {
       if (!node) return;
       const currentPath = path ? `${path} > ${node.label}` : node.label;
 
-      // Όλα όσα έχουν children τα θεωρώ ομάδες
       if (Array.isArray(node.children) && node.children.length > 0) {
         this.groups.push({ label: node.label, path: currentPath });
         node.children.forEach((child: any) => traverse(child, currentPath));
 
-        // Αν δεν έχουν children αλλά έχουν type, τα θεωρώ μεταβλητές
       } else if (typeof node.type === 'string' || Array.isArray(node.type)) {
         this.variables.push({
           label: node.label,
@@ -119,8 +117,6 @@ export class SearchBarComponent implements OnInit, OnChanges {
   handleSearch(query: string): void {
     this.searchQuery = query.toLowerCase();
     this.applyFilter(this.filterType);
-    // console.log("🔎 Searching for:", this.searchQuery);
-    // console.log("🔍 Filtered Items:", this.filteredItems);
     this.searchSuggestionsVisible = this.filteredItems.length > 0;
   }
 
@@ -148,7 +144,6 @@ export class SearchBarComponent implements OnInit, OnChanges {
 
   // Handles clicking on a search suggestion.
   onItemClick(item: any): void {
-    // console.log("✅ Selected Item:", item);
     this.searchQuery = item.label || item;
     this.searchSuggestionsVisible = false;
     this.searchResultSelected.emit(this.searchQuery);

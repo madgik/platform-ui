@@ -79,7 +79,6 @@
             [class.open]="infoPanelOpen"
           >
             <h3>Experiment Info</h3>
-
             <p>
               <span class="info-panel-titles">Experiment Name:</span>
               {{ experimentInfo().experimentName }}
@@ -91,7 +90,6 @@
               experimentInfo().datasets; track d) {
               {{ d }}@if (!$last) {, } } } @else { None }
             </p>
-
             <p>
               <span class="info-panel-titles">Variables:</span>
               @if (experimentInfo().variables.length) { @for (v of
@@ -99,7 +97,6 @@
               {{ v.label || v.name || v.code }}@if (!$last) {, } } } @else {
               None }
             </p>
-
             <p>
               <span class="info-panel-titles">Covariates:</span>
               @if (experimentInfo().covariates.length) { @for (c of
@@ -107,7 +104,6 @@
               {{ c.label || c.name || c.code }}@if (!$last) {, } } } @else {
               None }
             </p>
-
             <p>
               <span class="info-panel-titles">Filters:</span>
               @if (experimentInfo().filters.length) { @for (f of
@@ -115,7 +111,6 @@
               {{ f.label || f.name || f.code }}@if (!$last) {, } } } @else {
               None }
             </p>
-
             <p>
               <span class="info-panel-titles">Algorithm Configs:</span>
               @if (objectKeys(experimentInfo().algorithmConfigs).length) { @for
@@ -165,23 +160,6 @@
             />
 
             } @else if (field.type === 'select') {
-            <!-- <select [formControlName]="field.key" class="config-select">
-              <option
-                [ngValue]="null"
-                [selected]="!configForm.get(field.key)?.value"
-                disabled
-                selected
-                value=""
-              >
-                -- Select --
-              </option>
-              @for (opt of getOptionsForField(field.key); track
-              getOptionValue(opt)) {
-              <option [value]="getOptionValue(opt)">
-                {{ getOptionLabel(opt) }}
-              </option>
-              }
-            </select> -->
             <select [formControlName]="field.key" class="config-select">
               <option
                 [ngValue]="null"
