@@ -1,4 +1,4 @@
-import {RouterModule, Routes} from '@angular/router';
+import { RouterModule, Routes } from '@angular/router';
 import { ExperimentsDashboardComponent } from './pages/experiments-dashboard/experiments-dashboard.component';
 import { AccountPageComponent } from './pages/account-page/account-page.component';
 import { ExperimentStudioComponent } from './pages/experiment-studio/experiment-studio.component';
@@ -19,6 +19,11 @@ export const appRoutes: Routes = [
   {
     path: 'experiment-studio',
     component: ExperimentStudioComponent,
+    canActivate: [AuthGuard],
+  },
+  {
+    path: 'account',
+    component: AccountPageComponent,
     canActivate: [AuthGuard],
   },
   { path: '', redirectTo: 'home', pathMatch: 'full' },

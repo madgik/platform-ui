@@ -1,34 +1,35 @@
 <header class="header">
-  <!-- Logo and Branding -->
+  <!-- Logo -->
   <div class="branding">
-    <img src="assets/logo.png" alt="Platform Logo" class="logo">
+    <img src="assets/logo.png" alt="Platform Logo" class="logo" />
     <div class="branding-text">
       <h1>Medical Informatics Platform</h1>
-<!--      <p>Unlocking the power of medical data</p>-->
     </div>
   </div>
-
-  <!-- Navigation Bar in the middle/right -->
+  <!-- Navbar -->
   <div class="navbar-wrapper">
     <app-navbar></app-navbar>
   </div>
-
-  <!-- User icon for login/logout (separate from the navbar, far right) -->
+  <!-- User Icon -->
   <div class="user-icon">
     @if (isLoggedIn()) {
-      <button class="sign-in-btn" [routerLink]="['/account']">
-        <!-- Show the user’s picture when logged in -->
-        <img src="assets/user-icon.png" alt="User Picture" class="account-picture">
-      </button>
+      <!-- LOGGED IN: go to account -->
+      <a class="sign-in-btn" routerLink="/account">
+        <img
+          src="assets/user-icon.png"
+          alt="User Picture"
+          class="account-picture"
+        />
+      </a>
     } @else {
+      <!-- LOGGED OUT: trigger login -->
       <button class="sign-in-btn" (click)="login()">
-        <img src="assets/grey-avatar.png" alt="Sign In" class="account-picture">
+        <img
+          src="assets/grey-avatar.png"
+          alt="Sign In"
+          class="account-picture"
+        />
       </button>
     }
-    <ng-template #notLoggedIn>
-      <button class="sign-in-btn" (click)="login()">
-        <img src="assets/grey-avatar.png" alt="Sign In" class="account-picture">
-      </button>
-    </ng-template>
   </div>
 </header>

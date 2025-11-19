@@ -21,7 +21,7 @@ export class AccountPageComponent implements OnInit, OnDestroy {
 
   constructor(
     public authService: AuthService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.authService.authState$
@@ -32,8 +32,8 @@ export class AccountPageComponent implements OnInit, OnDestroy {
       .subscribe((state) => {
         const user: User | null = state.user ?? null;
         if (user) {
-          this.userName = user.fullname;
-          this.userEmail = user.email;
+          this.userName = user.fullname ?? '';
+          this.userEmail = user.email ?? '';
         }
       });
   }
