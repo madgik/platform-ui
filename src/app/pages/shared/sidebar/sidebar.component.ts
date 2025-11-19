@@ -18,7 +18,7 @@ interface SidebarItem {
 export class SidebarComponent {
   @Input({required: true}) items!: any[];
   @Input({required: true}) title!: string;
-  isCollapsed = false;  // Property to toggle sidebar state
+  isCollapsed = false;  // Property toggle sidebar state
 
   toggleSidebar() {
     this.isCollapsed = !this.isCollapsed;

@@ -37,13 +37,6 @@ export function buildSVMChart(result: any): EChartsOption[] {
 
   // Histogram chart
   const chart: EChartsOption = {
-    // title: {
-    //   text: `SVM Support Vector Distribution`,
-    //   subtext: coeff.length
-    //     ? `Model Coefficient = ${coeffValue.toFixed(3)}`
-    //     : '',
-    //   left: 'center',
-    // },
     tooltip: {
       trigger: 'axis',
       formatter: (params: any) => {

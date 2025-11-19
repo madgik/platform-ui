@@ -101,7 +101,7 @@ function buildKMeans3DChart(centers: [number, number, number][]): EChartsOption[
           return `x: ${x}<br>y: ${y}<br>z: ${z}`;
         },
       },
-      series: series as any, // 🔧 Type assertion to bypass TS type check
+      series: series as any, // Type assertion to bypass TS type check
     },
   ];
 }

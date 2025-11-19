@@ -158,7 +158,6 @@ export class VariableFilterSelectionComponent implements OnInit {
         break;
       case 'filters':
         this.filters = this.filters.filter((f) => f.label !== item.label);
-        // this.availableVariables = [...this.filters];
         this.updateFilters([...this.filters]);
         this.updateService('filters', [...this.filters]);
         break;
@@ -179,7 +178,6 @@ export class VariableFilterSelectionComponent implements OnInit {
         break;
       case 'filters':
         this.filters = [];
-        // this.availableVariables = [];
         this.updateService('filters', []);
         break;
       default:
@@ -201,7 +199,6 @@ export class VariableFilterSelectionComponent implements OnInit {
   // Check for redundant code
   updateFilters(updatedFilters: any[]): void {
     this.filters = updatedFilters;
-    // this.availableVariables = updatedFilters;
     this.updateService('filters', updatedFilters);
   }
 
@@ -209,8 +206,6 @@ export class VariableFilterSelectionComponent implements OnInit {
     console.log("Called on Filters Change");
     if (Array.isArray(updatedFilters)) {
       this.filters = [...updatedFilters];
-      // this.availableVariables = [...updatedFilters];
-      // console.log('Filters updated from modal:', this.availableVariables);
       this.filtersChange.emit(this.filters); // this emits an event if a filter exists
       this.updateService('filters', this.filters);
     } else {

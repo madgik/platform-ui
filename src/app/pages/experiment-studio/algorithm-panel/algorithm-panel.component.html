@@ -165,23 +165,6 @@
             />
 
             } @else if (field.type === 'select') {
-            <!-- <select [formControlName]="field.key" class="config-select">
-              <option
-                [ngValue]="null"
-                [selected]="!configForm.get(field.key)?.value"
-                disabled
-                selected
-                value=""
-              >
-                -- Select --
-              </option>
-              @for (opt of getOptionsForField(field.key); track
-              getOptionValue(opt)) {
-              <option [value]="getOptionValue(opt)">
-                {{ getOptionLabel(opt) }}
-              </option>
-              }
-            </select> -->
             <select [formControlName]="field.key" class="config-select">
               <option
                 [ngValue]="null"

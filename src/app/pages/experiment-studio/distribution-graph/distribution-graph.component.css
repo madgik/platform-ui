@@ -1,32 +1,32 @@
 .distribution-graph {
-  display: block; /* Ensure it behaves like a block-level container */
-  width: 94%; /* Take the full available width */
-  height: auto; /* Adjust height based on content */
+  display: block;
+  width: 94%;
+  height: auto;
   min-height: 500px;
-  padding: 10px; /* Add padding for spacing */
-  background-color: #fff; /* Match the panel's background */
-  border: 1px solid #ccc; /* Optional: Add a border */
-  border-radius: 8px; /* Keep rounded corners consistent */
-  box-sizing: border-box; /* Include padding in dimensions */
-  margin-bottom: 20px; /* Add spacing below */
+  padding: 10px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-sizing: border-box;
+  margin-bottom: 20px;
 }
 
 .distribution-graph-expanded {
-  position: relative; /* Establishes a positioning context for the floating button */
+  position: relative;
   flex-grow: 1;
-  height: auto; /* Allow height to adjust dynamically */
+  height: auto;
   overflow: visible;
 }
 
 .distribution-graph-full {
-  display: flex; /* Ensure it follows flex rules */
-  flex-direction: column; /* If stacking children vertically */
-  justify-content: center; /* Optional: align content */
-  align-items: stretch; /* Allow children to stretch */
-  width: 100%; /* Ensure it takes up the full available width */
-  height: auto; /* Allow dynamic adjustment */
-  min-width: 400px; /* Optional: set a minimum width */
-  padding: 10px; /* Optional: spacing */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+  width: 100%;
+  height: auto;
+  min-width: 400px;
+  padding: 10px;
   box-sizing: border-box;
 }
 

@@ -47,6 +47,6 @@ export function buildFormControl(field: any, initialValue: any = ''): FormContro
 
   return new FormControl(startValue, {
     validators,
-    updateOn: 'change', // άμεσο feedback στα selects
+    updateOn: 'change',
   });
 }

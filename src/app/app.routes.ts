@@ -6,15 +6,6 @@ import { AuthGuard } from './guards/auth.guard';
 import { NgModule } from "@angular/core";
 
 export const appRoutes: Routes = [
-  // { path: 'home', component: LandingPageComponent },
-
-  // {
-  //   path: 'federations',
-  //   component: FederationsPageComponent,
-  //   canActivate: [AuthGuard],
-  //   loadChildren: () =>
-  //     import('./pages/federations-page/federations-page.module').then(m => m.FederationsPageModule),
-  // },
   {
     path: 'experiments-dashboard',
     component: ExperimentsDashboardComponent,
@@ -30,14 +21,6 @@ export const appRoutes: Routes = [
     component: ExperimentStudioComponent,
     canActivate: [AuthGuard],
   },
-  // {
-  //   path: 'data-models',
-  //   component: DataModelsPageComponent,
-  //   canActivate: [AuthGuard],
-  //   loadChildren: () =>
-  //     import('./pages/data-models-page/data-models-page.module').then(m => m.DataModelsPageModule),
-  // },
-
   { path: '', redirectTo: 'home', pathMatch: 'full' },
   { path: '**', redirectTo: 'home' }
 ];

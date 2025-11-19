@@ -1,12 +1,11 @@
 import { ExperimentsDashboardService } from './../../services/experiments-dashboard.service';
 import { Experiment } from '../../models/experiments-dashboard.model';
-import { Component, input, OnInit, output, signal } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ExperimentDetailsComponent } from './experiment-detail/experiment-detail.component';
 import { NewExperimentComponent } from './new-experiment/new-experiment.component';
 import { ExperimentsListComponent } from './experiment-list/experiment-list.component';
-import { v4 as uuidv4 } from 'uuid';
 
 @Component({
   selector: 'app-experiments-dashboard',

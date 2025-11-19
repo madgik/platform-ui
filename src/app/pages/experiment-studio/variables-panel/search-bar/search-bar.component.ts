@@ -56,7 +56,7 @@ export class SearchBarComponent implements OnInit, OnChanges {
       this.extractVariablesAndGroups(this.dataModelHierarchy);
 
     } else {
-      console.warn("⚠️ No changes detected in `dataModelHierarchy`");
+      console.warn("No changes detected in `dataModelHierarchy`");
     }
   }
 

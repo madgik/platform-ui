@@ -1,5 +1,5 @@
 import { BubbleData } from './../../models/experiment-studio.model';
-import { Component, output } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { VariablesPanelComponent } from './variables-panel/variables-panel.component';
 import { ActivatedRoute } from '@angular/router';
@@ -40,7 +40,6 @@ export class ExperimentStudioComponent {
 
   onVariableSelected(variable: BubbleData): void {
     const algorithmName = "multiple_histograms";
-    // console.log("variable: ", variable);
     this.expStudioService.getAlgorithmResults(algorithmName, [variable.code]).subscribe(
       (response) => {
         this.selectedVariableData = response?.output?.histogram || null;

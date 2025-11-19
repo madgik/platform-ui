@@ -32,7 +32,7 @@
   <ul class="static-menu">
     @for (item of experimentMenuItems; track item) {
       <li>
-        <a (click)="onMenuItemClick(item)"> <!-- </a>[routerLink]="item.route"> -->
+        <a (click)="onMenuItemClick(item)">
           <i [class]="item.icon"></i> <span>{{ item.label }}</span>
         </a>
       </li>

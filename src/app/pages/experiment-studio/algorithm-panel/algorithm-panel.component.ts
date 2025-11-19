@@ -105,8 +105,6 @@ export class AlgorithmPanelComponent {
           this.uiDefaults[field.key] ??    // or sensible default
           (field.type === 'checkbox' ? false : '');
 
-        // group[field.key] = buildFormControl(field, value);
-
         const fallback =
           storedValue !== undefined
             ? storedValue
@@ -286,7 +284,6 @@ export class AlgorithmPanelComponent {
     }
 
     result$.subscribe(res => {
-      console.log("🚀 Full backend response:", res);
       const status = res?.status;
       const payload = res?.result ?? {};
       if (status === 'error') {
