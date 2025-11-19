@@ -140,7 +140,7 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
     if (!summary) return [];
 
     const metrics = ['accuracy', 'precision', 'recall', 'fscore'];
-    const classes = Object.keys(summary.accuracy);
+    const classes = Object.keys(summary.accuracy); // e.g. F, M
     const folds = Object.keys(summary.accuracy[classes[0]]).filter(k => k !== 'average' && k !== 'stdev');
 
     const rows = [...folds, 'average', 'stdev'].map(fold => {
