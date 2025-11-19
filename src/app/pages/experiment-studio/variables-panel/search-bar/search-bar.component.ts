@@ -94,12 +94,10 @@ export class SearchBarComponent implements OnInit, OnChanges {
       if (!node) return;
       const currentPath = path ? `${path} > ${node.label}` : node.label;
 
-      // Όλα όσα έχουν children τα θεωρώ ομάδες
       if (Array.isArray(node.children) && node.children.length > 0) {
         this.groups.push({ label: node.label, path: currentPath });
         node.children.forEach((child: any) => traverse(child, currentPath));
 
-        // Αν δεν έχουν children αλλά έχουν type, τα θεωρώ μεταβλητές
       } else if (typeof node.type === 'string' || Array.isArray(node.type)) {
         this.variables.push({
           label: node.label,

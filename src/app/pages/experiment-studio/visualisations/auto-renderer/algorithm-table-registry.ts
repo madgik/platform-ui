@@ -100,7 +100,7 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
     if (!summary) return [];
 
     const metrics = ['accuracy', 'precision', 'recall', 'fscore'];
-    const classes = Object.keys(summary.accuracy); // π.χ. F, M
+    const classes = Object.keys(summary.accuracy); // e.g. F, M
     const folds = Object.keys(summary.accuracy[classes[0]]).filter(k => k !== 'average' && k !== 'stdev');
 
     const rows = [...folds, 'average', 'stdev'].map(fold => {
@@ -279,8 +279,7 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
     const nObs = result?.n_obs ?? null;
     const coeff = Array.isArray(result?.coeff) ? result.coeff : [];
     const supportVectors = Array.isArray(result?.support_vectors)
-      ? result.support_vectors.slice(0, 10) // limit για λόγους εμφάνισης
-      : [];
+      ? result.support_vectors.slice(0, 10) : [];
 
     const tables = [];
 

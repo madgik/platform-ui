@@ -5,7 +5,7 @@ export interface AlgorithmParameter {
   label: string;
   default?: number | string | boolean;
   required?: boolean;
-  options?: string[]; // μόνο για select
+  options?: string[];
   min?: number;
   max?: number;
 }

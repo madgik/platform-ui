@@ -209,7 +209,7 @@
   transition: background-color 0.2s ease;
 }
 
-/* Πρώτη στήλη πιο έντονη */
+/* First column is darker */
 .data-table td:first-child {
   font-weight: 600;
   color: #007c8a;

@@ -11,12 +11,12 @@ export class AuthGuard implements CanActivate {
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> {
     // wait for intitialisationt to finish
     return this.authService.authState$.pipe(
-      filter((authState) => authState.status !== 'checking'), // περιμένουμε να σταματήσει το "checking"
+      filter((authState) => authState.status !== 'checking'),
       take(1),
       tap((authState) => {
         console.log('AuthGuard state:', authState.status);
         if (authState.status !== 'authenticated') {
-          this.authService.login(state.url); // redirect στον keycloak
+          this.authService.login(state.url); // redirect to keycloak
         }
       }),
       map((authState) => authState.status === 'authenticated')

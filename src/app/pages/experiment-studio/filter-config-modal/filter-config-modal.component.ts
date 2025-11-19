@@ -23,6 +23,23 @@ export class FilterConfigModalComponent implements OnInit, OnChanges {
 
   // query builder
   filterLogicModel = signal<{ condition: string; rules: any[] }>({ condition: 'AND', rules: [] });
+  activeRulesCount = computed(() => this.countRules(this.filterLogicModel()));
+
+  private countRules(node: any): number {
+    if (!node || !Array.isArray(node.rules)) return 0;
+
+    let count = 0;
+    for (const r of node.rules) {
+      if (r?.condition && Array.isArray(r.rules)) {
+        // group
+        count += this.countRules(r);
+      } else {
+        // leaf rule
+        count += 1;
+      }
+    }
+    return count;
+  }
 
   // Config for QueryBuilder object
   config = signal<QueryBuilderConfig>({ fields: {} });
@@ -117,7 +134,7 @@ export class FilterConfigModalComponent implements OnInit, OnChanges {
       // Group
       if (r?.condition && Array.isArray(r.rules)) {
         return {
-          condition: String(r.condition).toUpperCase(), // <— ΚΕΦΑΛΑΙΑ
+          condition: String(r.condition).toUpperCase(), // Upper case
           rules: r.rules.map(normalizeRule),
         };
       }

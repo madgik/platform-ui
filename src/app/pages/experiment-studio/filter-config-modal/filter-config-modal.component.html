@@ -3,24 +3,49 @@
 
   <div class="filter-modal">
     <div class="filter-modal-header">
-      <h3>Filters and Formula</h3>
+      <h3>
+        <i class="fas fa-filter"></i>
+        Filters
+      </h3>
       <button class="close-btn" (click)="close()">✖</button>
+    </div>
+
+    <div class="filter-helper">
+      <p>
+        Define filter rules to include only the records you want before running
+        an experiment
+      </p>
     </div>
 
     <div class="filter-modal-body">
       @if(config().fields && Object.keys(config().fields).length) {
-        <ngx-query-builder
-          [config]="config()"
-          [ngModel]="filterLogicModel()"
-          (ngModelChange)="filterLogicModel.set($event)"
-          [attr.key]="configKey()"
-        ></ngx-query-builder>
+      <ngx-query-builder
+        [config]="config()"
+        [ngModel]="filterLogicModel()"
+        (ngModelChange)="filterLogicModel.set($event)"
+        [attr.key]="configKey()"
+      ></ngx-query-builder>
       }
     </div>
 
+    <!-- Filter Info -->
     <div class="filter-modal-footer">
-      <button class="save-btn" (click)="saveFilters()">Save</button>
-      <button class="cancel-btn" (click)="close()">Cancel</button>
+      <div class="filter-summary">
+        @if (activeRulesCount() > 0) {
+        <span class="summary-pill">
+          {{ activeRulesCount() }} active rule{{
+            activeRulesCount() === 1 ? "" : "s"
+          }}
+        </span>
+        } @else {
+        <span class="summary-pill muted">No active rules</span>
+        }
+      </div>
+
+      <div class="filter-actions">
+        <button class="save-btn" (click)="saveFilters()">Save</button>
+        <button class="cancel-btn" (click)="close()">Cancel</button>
+      </div>
     </div>
   </div>
 </div>

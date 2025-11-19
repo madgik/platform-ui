@@ -1,6 +1,6 @@
 /* Layout wrapper */
 .account-page {
-  min-height: calc(100vh - 80px); /* αφήνει χώρο για navbar αν έχεις */
+  min-height: calc(100vh - 80px);
   display: flex;
   justify-content: center;
   align-items: flex-start;

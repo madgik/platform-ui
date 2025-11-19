@@ -1,6 +1,6 @@
 import { FormControl, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 
-// Normalise options to the primitive value που μπαίνει στο <option [value]="...">
+// Normalise options to the primitive value for <option [value]="...">
 function toAllowedValues(options: any[]): any[] {
   if (!Array.isArray(options)) return [];
   return options.map(opt => {
