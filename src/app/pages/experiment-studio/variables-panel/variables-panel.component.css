@@ -97,7 +97,6 @@
   margin: 5px;
 }
 
-
 .histogram-placeholder {
   width: 100%;
   height: 250px;
@@ -129,7 +128,7 @@
   position: absolute; /* Absolute positioning relative to the parent container */
   top: 115%;
   right: 1%; /* Pin to the right of the grandparent container */
-  background: linear-gradient(90deg, #00758c, #00a6c0);
+  background: linear-gradient(90deg, #026d6d, #7ce8d9);
   color: white;
   border: none;
   border-radius: 50%;
@@ -193,7 +192,12 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-

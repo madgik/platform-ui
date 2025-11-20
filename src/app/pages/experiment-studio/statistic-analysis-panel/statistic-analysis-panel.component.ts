@@ -199,7 +199,6 @@ export class StatisticAnalysisPanelComponent implements OnInit, OnChanges {
       return acc;
     }, {});
 
-    // sort: datasets -> “all datasets” last
     Object.values(grouped).forEach((g: any) => {
       g.data.sort((a: any, b: any) => {
         const A = a.dataset === 'all datasets' ? 'zzzz' : a.dataset.toLowerCase();
@@ -387,7 +386,6 @@ export class StatisticAnalysisPanelComponent implements OnInit, OnChanges {
       }
 
       doc.save('descriptive_statistics.pdf');
-
     } catch (err) {
       console.error('PDF export failed:', err);
     } finally {

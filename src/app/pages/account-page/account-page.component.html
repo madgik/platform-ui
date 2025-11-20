@@ -1,80 +1,54 @@
-<!-- account-page.component.html -->
 <div class="account-page">
-<!--  &lt;!&ndash; Sidebar Navigation &ndash;&gt;-->
-<!--  <div class="sidebar" [class.collapsed]="isCollapsed">-->
-<!--    <div class="sidebar-toggle" (click)="toggleSidebar()">-->
-<!--      <i class="fas fa-bars"></i>-->
-<!--    </div>-->
-<!--    <ul class="sidebar-nav">-->
-<!--      <li>-->
-<!--        <a routerLink="/account" routerLinkActive="active">-->
-<!--          <i class="fas fa-user"></i>-->
-<!--          <span *ngIf="!isCollapsed">Personal Info</span>-->
-<!--        </a>-->
-<!--      </li>-->
-<!--      <li>-->
-<!--        <a routerLink="/federation-management" routerLinkActive="active">-->
-<!--          <i class="fas fa-users"></i>-->
-<!--          <span *ngIf="!isCollapsed">Federation Management</span>-->
-<!--        </a>-->
-<!--      </li>-->
-<!--      <li>-->
-<!--        <a routerLink="/faq" routerLinkActive="active">-->
-<!--          <i class="fas fa-question-circle"></i>-->
-<!--          <span *ngIf="!isCollapsed">Support</span>-->
-<!--        </a>-->
-<!--      </li>-->
-<!--      <li>-->
-<!--        <a routerLink="/security-settings" routerLinkActive="active">-->
-<!--          <i class="fas fa-shield-alt"></i>-->
-<!--          <span *ngIf="!isCollapsed">Security Settings</span>-->
-<!--        </a>-->
-<!--      </li>-->
-<!--    </ul>-->
-<!--  </div>-->
-  <!-- Main Content Area -->
-  <div class="content">
+  <div class="account-card">
     <header class="account-header">
-      <h1>Account Details</h1>
-      <button class="sign-out-btn" (click)="signOut()">Sign Out</button>
+      <div class="title-group">
+        <h1>My Account</h1>
+        <p class="subtitle">Manage your profile and account details</p>
+      </div>
+      <button class="sign-out-btn" (click)="signOut()">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Sign Out</span>
+      </button>
     </header>
-    <section class="account-details">
-      <div class="profile-picture">
-        <img src="assets/user-icon.png" alt="User Profile">
+
+    <section class="account-main">
+      <div class="profile-section">
+        <div class="profile-picture">
+          <img src="assets/user-icon.png" alt="User Profile" />
+        </div>
+        <div class="user-info">
+          <h2>{{ userName || 'User' }}</h2>
+          <p class="user-email">{{ userEmail }}</p>
+        </div>
       </div>
-      <div class="user-info">
-        <h2>{{ userName }}</h2>
-        <p>{{ userEmail }}</p>
-      </div>
+
+      <div class="divider"></div>
+
+      <section class="info-section">
+        <h3>Profile Information</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="label">Full name</span>
+            <span class="value">{{ userName || '—' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Email</span>
+            <span class="value">{{ userEmail || '—' }}</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Future fields example
+      <section class="info-section">
+        <h3>Preferences</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="label">Language</span>
+            <span class="value">English</span>
+          </div>
+        </div>
+      </section>
+      -->
     </section>
   </div>
-
-<!--    <section class="personal-info">-->
-<!--      <h2>Personal Information</h2>-->
-<!--      <p>Manage your personal information, including phone numbers and email addresses where you can be contacted.</p>-->
-<!--      <div class="info-cards">-->
-<!--        <div class="info-card">-->
-<!--          <h3>Name</h3>-->
-<!--          <p>{{ userName }}</p>-->
-<!--        </div>-->
-<!--        <div class="info-card">-->
-<!--          <h3>Areas of Expertise</h3>-->
-<!--          <p>Computer Science (BSc)</p>-->
-<!--          <p>Neuroscience (MSc)</p>-->
-<!--        </div>-->
-<!--        <div class="info-card">-->
-<!--          <h3>Country</h3>-->
-<!--          <p>Greece, Athens</p>-->
-<!--        </div>-->
-<!--        <div class="info-card">-->
-<!--          <h3>Language</h3>-->
-<!--          <p>English</p>-->
-<!--          <p>Greek</p>-->
-<!--        </div>-->
-<!--        <div class="info-card">-->
-<!--          <h3>Contact</h3>-->
-<!--          <p>{{ userEmail }}</p>-->
-<!--        </div>-->
-<!--      </div>-->
-<!--    </section>-->
 </div>

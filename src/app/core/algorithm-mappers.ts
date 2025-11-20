@@ -24,6 +24,14 @@ const CATEGORY_MAPPING: Record<string, string> = {
   // "descriptive_stats": "Statistical Methods",
 };
 
+function guessVariableType(ioField?: { types?: string[] }): string {
+  if (!ioField) return "None";
+  if (ioField?.types?.includes('int')) return "Numerical";
+  if (ioField?.types?.includes('real')) return "Numerical";
+  if (ioField?.types?.includes('text')) return "Nominal";
+  return "Any";
+}
+
 function buildConfigSchema(parameters: Record<string, RawParameter>): Array<any> {
   const schema = [];
 

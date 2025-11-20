@@ -284,7 +284,6 @@ export class AlgorithmPanelComponent {
     }
 
     result$.subscribe(res => {
-      console.log("🚀 Full backend response:", res);
       const status = res?.status;
       const payload = res?.result ?? {};
       if (status === 'error') {

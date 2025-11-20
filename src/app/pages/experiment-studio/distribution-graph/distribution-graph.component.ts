@@ -1,4 +1,4 @@
-import { Component, signal, OnInit, Input, computed } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { HistogramComponent } from '../visualisations/histogram/histogram.component';
 
 @Component({

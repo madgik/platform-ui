@@ -1,5 +1,5 @@
 import { BubbleData } from './../../models/experiment-studio.model';
-import { Component, output } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { VariablesPanelComponent } from './variables-panel/variables-panel.component';
 import { ActivatedRoute } from '@angular/router';

@@ -1,7 +1,7 @@
 export type BackendRule = {
   id: string;
   field: string;
-  type: 'string' | 'integer' | 'real';
+  type: 'string' | 'integer' | 'real';   // backend works with "string", not "nominal"
   input: 'text' | 'number' | 'select';
   operator: string;
   value: any;

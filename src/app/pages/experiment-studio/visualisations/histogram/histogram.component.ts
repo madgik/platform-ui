@@ -24,7 +24,6 @@ export class HistogramComponent implements OnChanges {
 
   renderHistogram(): void {
     if (!this.data || !this.data.bins || !this.data.counts) {
-      // console.log('No data available to render the histogram.');
       return;
     }
 

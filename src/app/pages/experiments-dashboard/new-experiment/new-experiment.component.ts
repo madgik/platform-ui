@@ -1,6 +1,5 @@
 import { Component, EventEmitter, inject, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { v4 as uuidv4 } from 'uuid';
 import { ExperimentsDashboardService } from '../../../services/experiments-dashboard.service';
 import { Router } from '@angular/router';
 
@@ -32,7 +31,6 @@ export class NewExperimentComponent {
       status: this.status,
     };
 
-    // console.log('Creating new experiment:', newExperiment);
     this.expDashboardService.addExperiment(newExperiment);
     this.createExperiment.emit(newExperiment); // Emit created experiment
     this.router.navigate(['/experiment-studio'], { state: { data: newExperiment } });

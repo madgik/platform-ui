@@ -1,7 +1,7 @@
 import { BubbleChartComponent } from './../visualisations/bubble-chart/bubble-chart.component';
 import { ErrorService } from '../../../services/error.service';
 import { ExperimentStudioService } from '../../../services/experiment-studio.service';
-import { Component, signal, EventEmitter, Output, inject, Input, WritableSignal, computed, ViewChild } from '@angular/core';
+import { Component, signal, EventEmitter, Output, inject, Input, WritableSignal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { AccordionComponent } from '../../shared/accordion/accordion.component';
@@ -84,7 +84,7 @@ export class VariablesPanelComponent {
           if (firstHist) {
             this.distributionData.set(firstHist);
           } else {
-            console.warn('⚠️ No histogram data found in response:', response);
+            console.warn('No histogram data found in response:', response);
           }
         },
         error: (error) => {
@@ -99,7 +99,6 @@ export class VariablesPanelComponent {
   onSearchResult(selectedName: string) {
     const found = this.filteredVariables().find(v => v.label === selectedName);
     if (found) {
-      // this.experimentStudioService.addVariableAndEnrich(found);
       this.highlightNode = found;
       this.onSelectedNodeChange(this.highlightNode);
 
@@ -241,7 +240,7 @@ export class VariablesPanelComponent {
         if (firstHist) {
           this.distributionData.set(firstHist);
         } else {
-          console.warn('⚠️ No histogram data found in response:', response);
+          console.warn('No histogram data found in response:', response);
         }
       },
       error: (error) => {

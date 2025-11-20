@@ -9,8 +9,6 @@ import { Experiment } from '../../../models/experiments-dashboard.model';
   styleUrls: ['./experiment-list.component.css']
 })
 export class ExperimentsListComponent {
-  // @Output() experimentSelected = new EventEmitter<Experiment>(); // Emits the selected experiment to parent
-  // @Output() isAddingExperiment = new EventEmitter<void>();
   experimentSelected = output<Experiment>();
   isAddingExperiment = output();
   menuExpanded = false; // Controls the visibility of the experiment list

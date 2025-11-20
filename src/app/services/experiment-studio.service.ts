@@ -2,9 +2,9 @@ import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, filter, interval, map, of, switchMap, take, takeWhile, tap } from 'rxjs';
 import { SessionStorageService } from './session-storage.service';
-import { D3HierarchyNode, DataModel, EnumValue, Group, Variable } from '../models/data-model.interface';
+import { D3HierarchyNode, DataModel, Group, Variable } from '../models/data-model.interface';
 import { mapRawAlgorithmToAlgorithmConfig } from '../core/algorithm-mappers';
-import { RawAlgorithmDefinition, RawInputData } from '../models/backend-algorithms.model';
+import { RawAlgorithmDefinition } from '../models/backend-algorithms.model';
 import { BackendFilter } from '../models/filters.model';
 import { AlgorithmConfig } from '../models/algorithm-definition.model';
 
@@ -30,6 +30,8 @@ export class ExperimentStudioService {
   readonly selectedFilters = computed(() => this.selectedFiltersSignal());
   private selectedDatasetsSignal = signal<string[]>([]);
   private descriptiveStatsData: any[] = [];
+  private transientUrl = '/services/experiments/transient';
+
   lastUsedAlgorithm = signal<string | null>(null);
   selectedDatasets = computed(() => this.selectedDatasetsSignal());
   bubbleData = signal<any>(null);
@@ -125,7 +127,6 @@ export class ExperimentStudioService {
   algorithmEnabled(variableType: string): string[] {
     // create array because raw.type could be string or string[]
     const varTypes = Array.isArray(variableType) ? variableType : [variableType];
-
     const allAlgos = Object.values(this.backendAlgorithms());
 
     // filter inputdata.y and add at least one of the varTypes in types list
@@ -167,18 +168,14 @@ export class ExperimentStudioService {
         return true;
       })
       .map(algo => algo.name);
-    console.log("📦 algorithmEnabled result:", result);
     return result;
 
   }
 
   // adds variables and adds enumerations for the algorithm panel
   addVariableAndEnrich(node: any): void {
-    console.log("addVariableAndEnrich called with:", node);
     const currentVars = this.selectedVariables();
     if (currentVars.some(v => v.code === node.code)) {
-      console.log("Variable already exists:", node.code);
-
       return;
     }
 
@@ -272,15 +269,6 @@ export class ExperimentStudioService {
   }
 
   availableGroupedAlgorithms = computed(() => {
-    const selectedY = this.selectedVariables();
-    const selectedX = this.selectedCovariates();
-    const allAlgos = this.backendAlgorithms();
-
-    console.log("📊 availableGroupedAlgorithms recompute()");
-    console.log("  selectedY:", selectedY.map(v => v.code));
-    console.log("  selectedX:", selectedX.map(v => v.code));
-    console.log("  total algos:", Object.keys(allAlgos).length);
-
     return Object.values(this.backendAlgorithms()).reduce((acc, algo) => {
       const cat = algo.category || 'Other';
       if (!acc[cat]) acc[cat] = [];
@@ -380,7 +368,6 @@ export class ExperimentStudioService {
           y: variables.length > 0 ? variables : null,
           x: covariates.length > 0 ? covariates : null,
           datasets: this.selectedDatasetsSignal(),
-          // filters: null,
           filters: hasFilters ? filterLogic : null,
         },
         parameters: config,
@@ -388,7 +375,6 @@ export class ExperimentStudioService {
         type: "exareme2",
       }
     };
-
     return body;
   }
 
@@ -400,7 +386,6 @@ export class ExperimentStudioService {
     if (!this.dataModelsLoaded) {
       return this.http.get<any[]>(this.apiUrl).pipe(
         tap((models) => {
-          console.log("📦 RAW DATA MODELS RESPONSE (/services/data-models):", models);
           this.dataModels = models;
           this.dataModelsLoaded = true;
         }),
@@ -468,7 +453,6 @@ export class ExperimentStudioService {
   submitRequest(requestBody: any, cacheHandler?: (response: any) => void): Observable<any> {
     return this.http.post<any>(this.experimentUrl, requestBody).pipe(
       switchMap((res) => {
-        console.log("🚀 Backend initial response:", res);
         const uuid = res?.uuid;
         if (!uuid) throw new Error('UUID not found in response');
         return this.pollForResults(`${this.experimentUrl}/${uuid}`);
@@ -495,7 +479,6 @@ export class ExperimentStudioService {
     );
   }
 
-  private transientUrl = '/services/experiments/transient';
 
   private isTransientAlgorithm(name: string): boolean {
     return ['multiple_histograms', 'descriptive_stats'].includes(name);
@@ -522,7 +505,6 @@ export class ExperimentStudioService {
       })
     );
   }
-
 
   //Runs transient or standard algorithm calls.
   //Used for fetching quick results like histograms or descriptive stats.
@@ -570,7 +552,6 @@ export class ExperimentStudioService {
 
   loadDescriptiveOverview(variableCodes: string[]): Observable<any> {
     const requestBody = this.buildDescriptiveRequestBody(variableCodes);
-    console.log("Final descriptive request body:", JSON.stringify(requestBody, null, 2));
 
     return this.submitTransientRequest(requestBody, (result) => {
       this.setDescriptiveStatsData(result?.variable_based || []);
@@ -606,7 +587,6 @@ export class ExperimentStudioService {
       name: `experiment_${selectedAlgo.name}`,
       algorithm: {
         name: selectedAlgo.name,
-        // need to update this with buildRequestBody
         inputdata: {
           data_model: this.getActiveDataModelCode(),
           datasets: this.selectedDatasetsSignal(),
@@ -619,7 +599,6 @@ export class ExperimentStudioService {
         type: selectedAlgo.type || "exareme2"
       }
     };
-    console.log("requestBody run algo: ", requestBody);
     return this.submitRequest(requestBody);
   }
 

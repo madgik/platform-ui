@@ -12,5 +12,5 @@ export interface BubbleData {
 export interface HierarchyData {
   label: string;
   children?: BubbleData[];
-  value?: number; // Optional, depending on how you process the hierarchy
+  value?: number; // Optional, depending on hierarchy
 }

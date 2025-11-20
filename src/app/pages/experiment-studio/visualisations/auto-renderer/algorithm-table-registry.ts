@@ -279,8 +279,7 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
     const nObs = result?.n_obs ?? null;
     const coeff = Array.isArray(result?.coeff) ? result.coeff : [];
     const supportVectors = Array.isArray(result?.support_vectors)
-      ? result.support_vectors.slice(0, 10)
-      : [];
+      ? result.support_vectors.slice(0, 10) : [];
 
     const tables = [];
 
