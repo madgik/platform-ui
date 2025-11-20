@@ -285,7 +285,7 @@ input.q-switch-radio:checked + .q-switch-label {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
 }
 
-/* Wrapper of Χ (align right) */
+/* Wrapper of X (align right) */
 .query-builder .q-rule-actions {
   margin-left: auto;
   display: flex;
@@ -293,7 +293,7 @@ input.q-switch-radio:checked + .q-switch-label {
   gap: 6px;
 }
 
-/* Χ (delete button) */
+/* X (delete button) */
 .query-builder .q-row.q-connector .q-rule-actions > button.q-button.q-remove-button {
   background: #ffe8e8 !important;
   border-radius: 50% !important;
