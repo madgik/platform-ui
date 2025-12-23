@@ -1,15 +1,28 @@
-import { CommonModule, NgIf } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [RouterModule],
   templateUrl: './navbar.component.html',
-  styleUrl: './navbar.component.css'
+  styleUrls: ['./navbar.component.css'],
 })
-
 export class NavbarComponent {
+  isNavOpen = false;
 
+  toggleNav(): void {
+    this.isNavOpen = !this.isNavOpen;
+  }
+
+  closeNav(): void {
+    this.isNavOpen = false;
+  }
+
+  @HostListener('window:resize')
+  onResize(): void {
+    if (window.innerWidth > 768 && this.isNavOpen) {
+      this.isNavOpen = false;
+    }
+  }
 }

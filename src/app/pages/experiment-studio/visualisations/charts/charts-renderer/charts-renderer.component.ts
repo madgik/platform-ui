@@ -24,7 +24,6 @@ export class ChartRendererComponent implements AfterViewInit {
         this.instances = this.echartsDirectives
           .map(d => (d as any).getInstance?.())
           .filter((i): i is ECharts => !!i);
-        console.log('✅ ChartRenderer ready:', this.instances.length);
       }, 1000);
     });
   }

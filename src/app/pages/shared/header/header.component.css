@@ -1,149 +1,168 @@
-/* General header styling */
+/* GLOBAL HEADER */
+
 .header {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 10000;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 0 20px;
-  width: 100%;
-  background-color: #2b2c2e;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 0 2rem;
+  height: 65px;
+  background: linear-gradient(90deg, #015f73 0%, #028090 40%, #012a3a 100%);
+  color: #f9fafb;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(8px);
   box-sizing: border-box;
-  height: 80px; /* Fixed height */
-  color: #f0f0f0;
-  position: fixed; /* Fix the header at the top */
-  top: 0;
-  left: 0;
-  z-index: 10000; /* Ensure it's above other content */
-  border-bottom: 2px solid rgba(0, 0, 0, 0.1);
-  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.3);
 }
 
-/* Logo and Branding Styling */
+/* BRANDING (LEFT) */
+
 .branding {
   display: flex;
   align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
 }
 
 .logo {
-  width: 80px;
-  height: auto;
-  margin-right: 15px;
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  border-radius: 4px;
+  filter: brightness(1.15) contrast(1.1);
+  opacity: 0.95;
+  margin-top: 2%;
 }
 
 .branding-text {
-  display: block;
-  text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
 }
 
 .branding-text h1 {
   margin: 0;
-  font-size: 1.3em;
-  font-family: 'Roboto', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .branding-text p {
-  margin: 0;
-  font-size: 0.9em;
-  color: #b5b5b5;
-  font-family: 'Roboto', sans-serif;
+  margin: 0.1rem 0 0;
+  font-size: 0.75rem;
+  opacity: 0.8;
 }
 
-/* Navbar Wrapper */
+/* NAVBAR (CENTER) */
 .navbar-wrapper {
+  flex: 1;
   display: flex;
-  justify-content: flex-end;
   align-items: center;
-  flex-grow: 1;
-  padding-top: 20px;
+  justify-content: center;
+  min-width: 0;
 }
 
-/* User Icon Styling (far right) */
+.navbar-wrapper > app-navbar {
+  max-width: 100%;
+}
+
+/* USER AREA */
 .user-icon {
   display: flex;
   align-items: center;
-  margin-left: 10px;
+  justify-content: flex-end;
+  min-width: auto;
 }
 
-.account-picture {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid #18a2b8; /* Blue circle around avatar */
-  background-color: transparent; /* Ensure no background */
-}
-
-/* Sign In Button */
 .sign-in-btn {
-  background-color: transparent;
+  background: transparent;
   border: none;
-  cursor: pointer;
   padding: 0;
+  cursor: pointer;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: box-shadow 0.18s ease, transform 0.18s ease,
+    background-color 0.18s ease;
 }
 
+.account-picture,
 .sign-in-btn img {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
+  border-radius: 999px;
   object-fit: cover;
-  border: 2px solid #18a2b8; /* Blue circle around avatar */
-  background-color: transparent; /* Ensure no background */
+  border: 2px solid rgba(224, 242, 254, 0.9);
+  background-color: rgba(15, 23, 42, 0.3);
 }
 
-/* Tablet Layout (768px - 1024px) */
+/* hover / focus state */
+.sign-in-btn:hover,
+.sign-in-btn:focus-visible,
+.user-icon a:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 2px rgba(125, 211, 252, 0.6);
+  outline: none;
+}
+
+/* RESPONSIVE */
+
+/* Tablets */
 @media (max-width: 1024px) {
-  .branding-text h1 {
-    font-size: 1.6em;
-  }
-
-  .branding-text p {
-    font-size: 0.9em;
-  }
-
-  .account-picture {
-    width: 35px;
-    height: 35px;
-  }
-
-  .sign-in-btn img {
-    width: 35px;
-    height: 35px;
-  }
-}
-
-/* Mobile Layout (up to 768px) */
-@media (max-width: 768px) {
   .header {
-    flex-direction: column;
-    align-items: center;
-    height: auto;
-    padding: 10px 15px;
-  }
-
-  .branding {
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 10px;
+    padding: 0 1.25rem;
+    gap: 1rem;
   }
 
   .logo {
-    width: 60px;
+    width: 46px;
+    height: 46px;
   }
 
   .branding-text h1 {
-    font-size: 1.4em;
+    font-size: 1rem;
   }
 
   .branding-text p {
-    font-size: 0.85em;
+    font-size: 0.7rem;
   }
 
-  .account-picture {
-    width: 30px;
-    height: 30px;
-  }
-
+  .account-picture,
   .sign-in-btn img {
-    width: 30px;
-    height: 30px;
+    width: 34px;
+    height: 34px;
+  }
+}
+
+/* Mobiles */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    height: 56px;
+    padding: 0 12px;
+    gap: 0;
+  }
+
+  .branding,
+  .user-icon {
+    display: none !important;
+  }
+
+  .navbar-wrapper {
+    flex: 1;
+    width: 100%;
+    justify-content: stretch;
+    margin-top: 0;
+    order: initial;
   }
 }

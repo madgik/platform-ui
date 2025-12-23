@@ -1,23 +1,24 @@
 import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, catchError, filter, interval, map, of, switchMap, take, takeWhile, tap } from 'rxjs';
+import { Observable, Subject, catchError, filter, interval, map, of, switchMap, take, takeUntil, takeWhile, tap } from 'rxjs';
 import { SessionStorageService } from './session-storage.service';
 import { D3HierarchyNode, DataModel, Group, Variable } from '../models/data-model.interface';
 import { mapRawAlgorithmToAlgorithmConfig } from '../core/algorithm-mappers';
 import { RawAlgorithmDefinition } from '../models/backend-algorithms.model';
 import { BackendFilter } from '../models/filters.model';
 import { AlgorithmConfig } from '../models/algorithm-definition.model';
+import { BackendExperiment } from '../models/backend-experiment.model';
+import { ErrorService } from './error.service';
 
 
 @Injectable({ providedIn: 'root' })
 export class ExperimentStudioService {
   private http = inject(HttpClient);
   private sessionStorage = inject(SessionStorageService);
+  private errorService = inject(ErrorService);
 
   private apiUrl = '/services/data-models';
   private experimentUrl = '/services/experiments';
-  private histogramDataSignal = signal<any | null>(null);
-
   private dataModels: any[] = [];
   private dataModelsLoaded = false;
 
@@ -29,14 +30,35 @@ export class ExperimentStudioService {
   readonly selectedCovariates = computed(() => this.selectedCovariatesSignal());
   readonly selectedFilters = computed(() => this.selectedFiltersSignal());
   private selectedDatasetsSignal = signal<string[]>([]);
-  private descriptiveStatsData: any[] = [];
   private transientUrl = '/services/experiments/transient';
 
   lastUsedAlgorithm = signal<string | null>(null);
   selectedDatasets = computed(() => this.selectedDatasetsSignal());
-  bubbleData = signal<any>(null);
   backendAlgorithms = signal<Record<string, AlgorithmConfig>>({});
   selectedDataModel = signal<DataModel | null>(null);
+
+  private experimentNameSignal = signal<string>('');
+  readonly experimentName = this.experimentNameSignal.asReadonly();
+
+  private experimentDescriptionSignal = signal<string>('');
+  readonly experimentDescription = this.experimentDescriptionSignal.asReadonly();
+
+  private currentExperimentUUIDSignal = signal<string | null>(null);
+  readonly currentExperimentUUID = this.currentExperimentUUIDSignal.asReadonly();
+
+  private lastSavedNameSignal = signal<string | null>(null);
+  readonly lastSavedName = this.lastSavedNameSignal.asReadonly();
+
+  private editingExistingExperimentSignal = signal(false);
+  readonly editingExistingExperiment = this.editingExistingExperimentSignal.asReadonly();
+
+  readonly isShared = signal<boolean>(false);
+
+  private readonly _isRunning = signal(false);
+  readonly isRunning = this._isRunning.asReadonly();
+
+  // teardown for transient requests
+  private destroy$ = new Subject<void>();
 
 
   constructor() {
@@ -52,7 +74,6 @@ export class ExperimentStudioService {
 
       if (noVars || noRules) {
         if (this._filterLogic()) {
-          console.log('🧹 Auto-clearing filter logic (no filters or no rules)');
           this._filterLogic.set(null);
         }
       }
@@ -68,15 +89,45 @@ export class ExperimentStudioService {
         this.setCovariates([]);
         this.setFilters([]);
       } else {
-        console.log('Datasets changed:', selected);
         this.refreshDataModel();
       }
     }, { allowSignalWrites: true });
   }
 
+  setLastSavedName(name: string) {
+    this.lastSavedNameSignal.set(name);
+  }
+
+  setExperimentName(name: string) {
+    this.experimentNameSignal.set(name ?? '');
+  }
+
+  setExperimentDescription(desc: string) {
+    this.experimentDescriptionSignal.set(desc ?? '');
+  }
+
+  patchExperimentDescription(uuid: string, description: string) {
+    return this.http.patch(
+      `/services/experiments/${uuid}`,
+      { description }
+    );
+  }
+
+  getExperimentNameOrDefault(fallback: string): string {
+    const name = (this.experimentNameSignal() || '').trim();
+    return name || fallback;
+  }
+
+  resetExperimentName() {
+    this.experimentNameSignal.set('');
+  }
+
+  resetExperimentDescription() {
+    this.experimentDescriptionSignal.set('');
+  }
+
   setSelectedDataModel(model: DataModel | null): void {
     this.selectedDataModel.set(model);
-    console.log('Selected data model updated:', model?.code || '(none)');
   }
 
   getActiveDataModelCode(): string {
@@ -92,9 +143,9 @@ export class ExperimentStudioService {
     const selected = this.selectedDatasetsSignal();
     if (!selected || selected.length === 0) return;
 
-    console.log('Reloading data models for:', selected);
-
-    this.loadAllDataModels().subscribe(models => {
+    this.loadAllDataModels()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(models => {
       const active = models.filter(m => selected.includes(m.code));
       if (!active.length) return;
 
@@ -109,13 +160,7 @@ export class ExperimentStudioService {
         supportedAlgos: this.algorithmEnabled(v.type ?? 'unknown')
       }));
 
-      // update signals
-      this.bubbleData.set({
-        hierarchy: converted.hierarchy,
-        allVariables: enrichedVariables,
-        allDatasets: model.datasets ?? [],
-      });
-      console.log('Data model refreshed:', model.label);
+      this.selectedDataModel.set(model);
     });
   }
 
@@ -180,7 +225,6 @@ export class ExperimentStudioService {
     }
 
     const enabledAlgos = this.algorithmEnabled(node.type);
-    console.log("algorithmEnabled returned for", node.type, "->", enabledAlgos);
 
     const enrichedNode = {
       ...node,
@@ -193,7 +237,6 @@ export class ExperimentStudioService {
 
     // update signal
     this.selectedVariablesSignal.set([...currentVars, enrichedNode]);
-    console.log("selectedVariablesSignal now:", this.selectedVariablesSignal());
   }
 
   setVariables(vars: D3HierarchyNode[]) {
@@ -213,8 +256,7 @@ export class ExperimentStudioService {
     this.sessionStorage.getItem<AlgorithmConfig>('selectedAlgorithm') ?? null
   );
 
-  // todo: pass appropriate return types
-  algorithmConfigurations = signal<{ [key: string]: Record<string, any> }>(
+  algorithmConfigurations = signal<Record<string, Record<string, any>>>(
     this.sessionStorage.getItem('algorithmConfigurations') || {}
   );
 
@@ -282,42 +324,131 @@ export class ExperimentStudioService {
 
   isAlgorithmAvailable(name: string): boolean {
     const algo = this.backendAlgorithms()[name];
-
     if (!algo?.inputdata) return false;
 
+    // UI selections
     const selections: Record<string, any[]> = {
       y: this.selectedVariables(),
       x: this.selectedCovariates(),
-      filters: this.selectedFilters()
+      filters: this.selectedFilters(),
     };
 
-    for (const [role, req] of Object.entries(algo.inputdata)) {
-      if (role !== 'y' && role !== 'x') continue;
+    // SPECIAL CASES
 
-      const sel = selections[role] || [];
-      // check notblank
+    // 1-way ANOVA: 1 dependent (real/int) + 1 factor (nominal/text)
+    if (name === 'anova_oneway') {
+      const vars = this.selectedVariables();
+      const covs = this.selectedCovariates();
+
+      if (vars.length !== 1) return false;
+      if (covs.length !== 1) return false;
+
+      const yType = vars[0].type;
+      const xType = covs[0].type;
+
+      // y: real/int, x: nominal/text
+      const yOk = ['real', 'integer', 'int'].includes(yType);
+      const xOk = ['nominal', 'text'].includes(xType);
+
+      return yOk && xOk;
+    }
+
+    // 2-way ANOVA: 1 dependent + 2 nominal factors
+    if (name === 'anova') {
+      const vars = this.selectedVariables();
+      const covs = this.selectedCovariates();
+
+      if (vars.length !== 1) return false;
+      if (covs.length !== 2) return false;
+
+      const allCovsNominal = covs.every(c =>
+        ['nominal', 'text'].includes(c.type)
+      );
+
+      const yOk = ['real', 'integer', 'int'].includes(vars[0].type);
+
+      return yOk && allCovsNominal;
+    }
+
+    if (name === 'pca') {
+      if (this.selectedVariables().length < 2) return false;
+      if (this.selectedCovariates().length !== 0) return false;
+      return true;
+    }
+
+
+    // helper: normalize types from UI -> backend
+    const normalizeType = (t: string | undefined | null): string | undefined => {
+      if (!t) return undefined;
+      switch (t) {
+        case 'nominal': return 'text';
+        case 'integer': return 'int';
+        default: return t; // real, text, binary...
+      }
+    };
+
+    const hasRole = (role: string) => Object.prototype.hasOwnProperty.call(algo.inputdata, role);
+
+    if (!hasRole('y') && selections['y'].length > 0) return false;
+    if (!hasRole('x') && selections['x'].length > 0) return false;
+    if (!hasRole('filters') && selections['filters'].length > 0) return false;
+
+    for (const [role, req] of Object.entries(algo.inputdata)) {
+      if (!['y', 'x', 'filters'].includes(role)) continue;
+
+      const sel = selections[role as keyof typeof selections] || [];
+
       if (req.notblank && sel.length === 0) {
         return false;
       }
-      // check if multiple
+
       if (!req.multiple && sel.length > 1) {
         return false;
       }
 
-      const selTypes = sel.map(v => v.type === 'nominal' ? 'text' : v.type);
+      if (sel.length === 0) continue;
 
+      // type check
       if (req.types?.length) {
+        const selTypes = sel
+          .map(v => normalizeType(v.type))
+          .filter((t): t is string => !!t);
+
         const badType = selTypes.find(t => !req.types.includes(t));
         if (badType) {
-          console.warn(`✘ fail type: ${badType} not in [${req.types.join(', ')}]`);
+          console.warn(
+            `✘ ${name}: invalid type on role ${role}: ${badType} not in [${req.types.join(', ')}]`
+          );
           return false;
         }
       }
     }
+
     return true;
   }
 
-  buildRequestBody(algorithmName: string | null = null, yVariables: string[] | null = null, xVariables: string[] | null = null): any {
+  private rolePayload(
+    algo: AlgorithmConfig,
+    role: 'y' | 'x',
+    codes: string[]
+  ): string[] | string | null {
+    const req = algo.inputdata?.[role];
+    if (!req) return null;
+
+    if (!codes || codes.length === 0) return null;
+
+    // multiple=false => scalar
+    if (req.multiple === false) return codes[0];
+
+    // multiple=true (undefined) => array
+    return codes;
+  }
+
+  buildRequestBody(
+    algorithmName: string | null = null,
+    yVariables: string[] | null = null,
+    xVariables: string[] | null = null
+  ): any {
     let algoConfig: AlgorithmConfig | undefined;
 
     if (algorithmName) {
@@ -327,29 +458,48 @@ export class ExperimentStudioService {
     }
 
     if (!algoConfig) {
-      throw new Error("No algorithm config found for " + algorithmName);
+      throw new Error('No algorithm config found for ' + algorithmName);
     }
 
+    const defaultName = `experiment_${algoConfig.name.replace(/\s+/g, '_')}`;
+    const expName = this.getExperimentNameOrDefault(defaultName);
+
+    const description =
+      (this.experimentDescriptionSignal() || '').trim() || null;
+
     // unified signals
-    const variables = yVariables?.length ? yVariables : this.selectedVariables().map(v => v.code);
-    const covariates = xVariables ?? this.selectedCovariates().map(c => c.code);
-    const config = this.algorithmConfigurations()[algoConfig.name ?? ''] || {};
+    const variables = yVariables?.length
+      ? yVariables
+      : this.selectedVariables().map((v) => v.code);
+
+    const covariates =
+      xVariables ?? this.selectedCovariates().map((c) => c.code);
+
+    const allConfigs = this.algorithmConfigurations();
+    const config = allConfigs[algoConfig.name ?? ''] || {};
+
 
     // filters logic
     const filterLogic = this._filterLogic();
-    const hasFilters = !!(filterLogic && Array.isArray(filterLogic.rules) && filterLogic.rules.length > 0);
+    const hasFilters =
+      !!(
+        filterLogic &&
+        Array.isArray(filterLogic.rules) &&
+        filterLogic.rules.length > 0
+      );
 
-    // special case for multiple_histograms (no filters)
+    // special case for multiple_histograms (no filters, transient)
     if (algorithmName === 'multiple_histograms') {
       return {
-        name: `experiment_${algorithmName}`,
+        name: expName,
+        description,
         algorithm: {
           name: algorithmName,
           inputdata: {
             data_model: this.getActiveDataModelCode(),
             y: yVariables ?? null,
             datasets: this.selectedDatasetsSignal(),
-            filters: null, // always null for histograms
+            filters: null,
           },
           parameters: {},
           preprocessing: null,
@@ -357,29 +507,27 @@ export class ExperimentStudioService {
         },
       };
     }
-
+    const yPayload = this.rolePayload(algoConfig, 'y', variables);
+    const xPayload = this.rolePayload(algoConfig, 'x', covariates);
     // generic build
     const body = {
-      name: `experiment_${algoConfig.name.replace(/\s+/g, '_')}`,
+      name: expName,
+      description,
       algorithm: {
         name: algoConfig.name,
         inputdata: {
           data_model: this.getActiveDataModelCode(),
-          y: variables.length > 0 ? variables : null,
-          x: covariates.length > 0 ? covariates : null,
+          y: yPayload,
+          x: xPayload,
           datasets: this.selectedDatasetsSignal(),
           filters: hasFilters ? filterLogic : null,
         },
         parameters: config,
         preprocessing: null,
-        type: "exareme2",
-      }
+        type: 'exareme2',
+      },
     };
     return body;
-  }
-
-  setHistogramData(data: any) {
-    this.histogramDataSignal.set(data);
   }
 
   loadAllDataModels(): Observable<any[]> {
@@ -391,6 +539,7 @@ export class ExperimentStudioService {
         }),
         catchError((err) => {
           console.error('Error fetching data models:', err);
+          this.errorService.setError('Failed to load data models. Please try again.');
           return of([]);
         })
       );
@@ -453,8 +602,11 @@ export class ExperimentStudioService {
   submitRequest(requestBody: any, cacheHandler?: (response: any) => void): Observable<any> {
     return this.http.post<any>(this.experimentUrl, requestBody).pipe(
       switchMap((res) => {
-        const uuid = res?.uuid;
-        if (!uuid) throw new Error('UUID not found in response');
+        const uuid = res?.uuid || res?.algorithm?.execution_id;
+        if (!uuid) {
+          throw new Error('UUID not found in response');
+        }
+        this.currentExperimentUUIDSignal.set(uuid);
         return this.pollForResults(`${this.experimentUrl}/${uuid}`);
       }),
       tap((response) => {
@@ -463,18 +615,10 @@ export class ExperimentStudioService {
         }
       }),
       catchError(async (error) => {
-        console.groupCollapsed('Detailed backend error');
-        console.log('Full HttpErrorResponse:', error);
-
-        try {
-          const text = await error.error?.text?.() ?? error.error;
-          console.log('Raw backend response text:', text);
-        } catch {
-          console.log('Raw backend response (non-text):', error.error);
-        }
-
+        this.errorService.setError('Failed to run experiment. Please try again.');
+        this.setRunning(false);
         console.groupEnd();
-        throw error;
+        return of({ status: 'error', result: { message: 'Experiment request failed.' } });
       })
     );
   }
@@ -498,9 +642,8 @@ export class ExperimentStudioService {
       }),
       catchError((error) => {
         console.groupCollapsed('Transient backend error');
-        console.log('Full HttpErrorResponse:', error);
-        console.log('Backend message:', error?.error || error?.message);
         console.groupEnd();
+        this.errorService.setError('Quick preview failed. Please retry.');
         return of(null);
       })
     );
@@ -509,22 +652,15 @@ export class ExperimentStudioService {
   //Runs transient or standard algorithm calls.
   //Used for fetching quick results like histograms or descriptive stats.
   getAlgorithmResults(algorithmName: string, nodeCodes: string[] | null = null): Observable<any> {
-    let requestBody: any;
-
     if (algorithmName === 'multiple_histograms') {
-      requestBody = this.buildRequestBody(algorithmName, nodeCodes);
-
-      return this.submitTransientRequest(requestBody, (result) => {
-        const list = result?.histogram || [];
-        // list.forEach((hist: any) => this.cacheHistogram(hist.var, hist));
-      }).pipe(
+      const requestBody = this.buildRequestBody(algorithmName, nodeCodes);
+      return this.submitTransientRequest(requestBody).pipe(
         map(resp => this.normalizeResponse(algorithmName, resp))
       );
     }
 
-    // non-transient requests
-    requestBody = this.buildRequestBody(algorithmName, nodeCodes);
-    console.log("Final algorithm request body:", JSON.stringify(requestBody, null, 2));
+    // non-transient: ignore nodeCodes
+    const requestBody = this.buildRequestBody(algorithmName);
     return this.submitRequest(requestBody);
   }
 
@@ -553,23 +689,19 @@ export class ExperimentStudioService {
   loadDescriptiveOverview(variableCodes: string[]): Observable<any> {
     const requestBody = this.buildDescriptiveRequestBody(variableCodes);
 
-    return this.submitTransientRequest(requestBody, (result) => {
-      this.setDescriptiveStatsData(result?.variable_based || []);
-      console.log("Descriptive overview loaded:", result);
-    }).pipe(
+    return this.submitTransientRequest(requestBody).pipe(
       tap((response) => {
         console.log("Raw descriptive overview response:", response);
       }),
       map(resp => this.normalizeResponse("descriptive_stats", resp)),
       catchError((error) => {
         console.error("Error fetching descriptive overview:", error);
+        this.errorService.setError('Failed to load descriptive statistics.');
         return of(null);
       })
     );
   }
 
-  // Executes the currently selected algorithm as a full experiment.
-  // Used by the "Run Experiment" button.
   runSelectedAlgorithm(): Observable<any> | null {
     const selectedAlgo = this.selectedAlgorithm();
     if (!selectedAlgo) {
@@ -577,40 +709,29 @@ export class ExperimentStudioService {
       return null;
     }
 
-    const variables = this.selectedVariables().map((v) => v.code);
-    const covariates = this.selectedCovariates().map((v) => v.code);
-    const filters = this.filterLogic();
-    const hasFilters = (filters?.rules?.length ?? 0) > 0;
-    const config = this.algorithmConfigurations()[selectedAlgo.name] || {};
-
-    const requestBody = {
-      name: `experiment_${selectedAlgo.name}`,
-      algorithm: {
-        name: selectedAlgo.name,
-        inputdata: {
-          data_model: this.getActiveDataModelCode(),
-          datasets: this.selectedDatasetsSignal(),
-          y: variables.length ? variables : null,
-          x: covariates.length ? covariates : null,
-          filters: hasFilters ? filters : null,
-        },
-        parameters: config,
-        preprocessing: null,
-        type: selectedAlgo.type || "exareme2"
+    if (selectedAlgo.name === 'descriptive_stats') {
+      const variableCodes = this.selectedVariables().map((v) => v.code);
+      if (!variableCodes.length) {
+        console.warn('Descriptive stats: no variables selected.');
+        return null;
       }
-    };
-    return this.submitRequest(requestBody);
+      return this.loadDescriptiveOverview(variableCodes);
+    }
+
+    const requestBody = this.buildRequestBody(selectedAlgo.name);
+
+    const defaultName = `experiment_${selectedAlgo.name.replace(/\s+/g, '_')}`;
+    const expName = this.getExperimentNameOrDefault(defaultName);
+
+    return this.submitRequest(requestBody).pipe(
+      tap(() => {
+        this.setLastSavedName(expName);
+      })
+    );
   }
 
-  processHistogramResults(response: any) {
-    if (response?.result?.histogram) {
-      const histograms = response.result.histogram.map((hist: any) => ({
-        bins: hist.bins,
-        counts: hist.counts,
-        variable: hist.var
-      }));
-      this.setHistogramData(histograms);
-    }
+  getCurrentExperimentUUID() {
+    return this.currentExperimentUUID();
   }
 
   pollForResults(url: string): Observable<any> {
@@ -622,15 +743,13 @@ export class ExperimentStudioService {
       switchMap(() =>
         this.http.get<any>(url).pipe(
           map((response) => {
-            console.log("📡 Poll response:", response);
             if (response.status === 'success' || response.status === 'error') {
               return response;
             }
-            return null; // pending
+            return null;
           }),
           catchError((error) => {
-            console.groupCollapsed('Detailed backend error');
-            console.log('Full HttpErrorResponse:', error);
+            console.groupCollapsed('Detailed backend error', error);
             console.groupEnd();
             return of({ status: 'error', result: { data: 'Network or 5xx error' } }); // fallback, no exception
           })
@@ -652,12 +771,8 @@ export class ExperimentStudioService {
     };
   }
 
-  setDescriptiveStatsData(data: any[]): void {
-    this.descriptiveStatsData = data;
-  }
-
-  getDescriptiveStatsData(): any[] {
-    return this.descriptiveStatsData;
+  updateExperimentName(uuid: string, newName: string) {
+    return this.http.patch(`/services/experiments/${uuid}`, { name: newName });
   }
 
   // Filters and rules
@@ -671,4 +786,190 @@ export class ExperimentStudioService {
     this._filterLogic.set(logic);
   }
 
+  private toArray = (v: any): string[] => v == null ? [] : Array.isArray(v) ? v : [v];
+
+  hydrateFromBackendExperiment(exp: BackendExperiment): void {
+    if (!exp || !exp.algorithm) {
+      console.warn('hydrateFromBackendExperiment called with invalid exp:', exp);
+      return;
+    }
+
+    this.isShared.set(!!exp.shared);
+    // flag as editing mode
+    this.setEditingExistingExperiment(true);
+
+    // Basic metadata
+    this.currentExperimentUUIDSignal.set(exp.uuid ?? null);
+    this.setExperimentName(exp.name ?? '');
+    this.setExperimentDescription(exp.description ?? '');
+
+    const algoName = exp.algorithm.name;
+    const input = exp.algorithm.inputdata || {};
+    const params = exp.algorithm.parameters || {};
+
+    const filters = input.filters ?? null;
+
+    // Selected datasets
+    this.setSelectedDatasets(input.datasets ?? []);
+
+    // Filters
+    this.setFilterLogic(filters);
+
+    this.loadAllDataModels()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((models) => {
+      if (!models || !models.length) {
+        console.warn('No data models available for hydration.');
+        return;
+      }
+
+      const model = this.findDataModelByCodeVersion(input.data_model, models);
+      if (!model) {
+        console.warn(
+          'No matching data model found for',
+          input.data_model,
+          'in',
+          models
+        );
+        return;
+      }
+
+      this.selectedDataModel.set(model);
+
+      const converted = this.convertToD3Hierarchy(model);
+      const allVariables = converted.allVariables;
+
+      const yCodes = this.toArray(input.y);
+      const xCodes = this.toArray(input.x);
+      const filterCodes = this.collectFilterVariableCodes(filters);
+
+      const yNodes = allVariables
+        .filter((v: any) => yCodes.includes(v.code))
+        .map((n) => this.enrichVariableNode(n));
+
+      const xNodes = allVariables
+        .filter((v: any) => xCodes.includes(v.code))
+        .map((n) => this.enrichVariableNode(n));
+
+      const filterNodes = allVariables.filter((v: any) =>
+        filterCodes.includes(v.code)
+      );
+
+      this.setVariables(yNodes);
+      this.setCovariates(xNodes);
+      this.setFilters(filterNodes);
+
+      const algoConfig = this.backendAlgorithms()[algoName];
+
+      if (!algoConfig) {
+        console.warn('Algorithm config not found for', algoName);
+        return;
+      }
+
+      const existingConfigs = this.algorithmConfigurations();
+      this.algorithmConfigurations.set({
+        ...existingConfigs,
+        [algoName]: params,
+      });
+
+      this.setAlgorithm(algoConfig);
+    });
+  }
+
+  onToggleShare(): void {
+    const nextShared = !this.isShared();
+    const uuid = this.currentExperimentUUID();
+
+    if (!uuid) {
+      console.warn('Cannot toggle share: missing experiment UUID');
+      return;
+    }
+
+    this.http
+      .patch<BackendExperiment>(`${this.experimentUrl}/${uuid}`, { shared: nextShared })
+      .subscribe({
+        next: (updated) => this.isShared.set(!!updated.shared),
+        error: (err) => console.error('Failed to toggle share', err),
+      });
+  }
+
+  // helpers for edit experiment
+  private findDataModelByCodeVersion(
+    codeVersion: string,
+    models: DataModel[]
+  ): DataModel | null {
+    if (!codeVersion) return null;
+    const [code, version] = codeVersion.split(':');
+    return (
+      models.find(
+        (m) => m.code === code && String(m.version) === String(version)
+      ) ?? null
+    );
+  }
+
+  private enrichVariableNode(node: D3HierarchyNode): any {
+    const supported = this.algorithmEnabled(node.type ?? 'unknown');
+    return { ...node, supportedAlgos: supported };
+  }
+
+  private collectFilterVariableCodes(logic: BackendFilter | null): string[] {
+    if (!logic) return [];
+    const codes = new Set<string>();
+
+    const walk = (node: any) => {
+      if (!node) return;
+      if (Array.isArray(node.rules)) {
+        node.rules.forEach(walk);
+      } else if (node.field || node.id) {
+        const c = node.field ?? node.id;
+        if (typeof c === 'string') codes.add(c);
+      }
+    };
+
+    walk(logic);
+    return [...codes];
+  }
+
+  setEditingExistingExperiment(isEditing: boolean) {
+    this.editingExistingExperimentSignal.set(isEditing);
+  }
+
+  resetStudioState(): void {
+    // basic signals
+    this.selectedDatasetsSignal.set([]);
+    this.selectedDataModel.set(null);
+
+    this.setVariables([]);
+    this.setCovariates([]);
+    this.setFilters([]);
+
+    this._filterLogic.set(null);
+    this.errorService.clearError();
+
+    // algorithm state
+    this.selectedAlgorithm.set(null);
+    this.algorithmConfigurations.set({});
+    this.lastUsedAlgorithm.set(null);
+
+    // meta info
+    this.setExperimentName('');
+    this.setExperimentDescription('');
+    this.currentExperimentUUIDSignal.set(null);
+    this.setEditingExistingExperiment(false);
+
+    // share flag for safety
+    this.isShared.set(false);
+
+    // cancel any in-flight transient requests
+    this.destroy$.next();
+  }
+
+  setRunning(isRunning: boolean): void {
+    this._isRunning.set(isRunning);
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 }

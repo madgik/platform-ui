@@ -21,13 +21,8 @@ export const appRoutes: Routes = [
     component: ExperimentStudioComponent,
     canActivate: [AuthGuard],
   },
-  {
-    path: 'account',
-    component: AccountPageComponent,
-    canActivate: [AuthGuard],
-  },
-  { path: '', redirectTo: 'home', pathMatch: 'full' },
-  { path: '**', redirectTo: 'home' }
+  { path: '', redirectTo: 'experiments-dashboard', pathMatch: 'full' },
+  { path: '**', redirectTo: 'experiments-dashboard' }
 ];
 
 @NgModule({

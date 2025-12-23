@@ -1,90 +1,99 @@
-<app-accordion [accordionTitle]="accordionTitle">
-  <div class="selectors-container">
-    <app-data-model-selector
-      [crossSectionalModels]="crossSectionalModels"
-      [longitudinalModels]="longitudinalModels"
-      [defaultModel]="selectedDataModel()!"
-      (dataModelChange)="onSelectedDataModelChange($event)"
-    >
-    </app-data-model-selector>
-
-    <app-dataset-selector
-      [datasets]="availableDatasets"
-    >
-    </app-dataset-selector>
-
-    <div id="search-bar-container">
-      @if (d3Data) {
-      <app-search-bar
-        [dataModelHierarchy]="d3Data"
-        (searchResultSelected)="onSearchResult($event)"
-      ></app-search-bar>
-      }
-    </div>
-  </div>
-
-  <div class="variables-panel-container">
-    <!-- Bubble Chart -->
-    <div class="bubble-chart-section">
-      @if (selectedDataModel()) {
-      <app-bubble-chart
-        [d3Data]="d3Data"
-        [highlightNode]="highlightNode"
-        [selectedVariables]="selectedVariables"
-        [selectedCovariates]="selectedCovariates"
-        [selectedFilters]="selectedFilters"
-        (selectedNodeChange)="onSelectedNodeChange($event)"
+<app-accordion
+  [accordionTitle]="accordionTitle"
+  [startOpen]="experimentStudioService.editingExistingExperiment()"
+>
+  <div class="variables-panel-shell">
+    <!-- Top selectors strip -->
+    <div class="selectors-row">
+      <app-data-model-selector
+        [crossSectionalModels]="crossSectionalModels"
+        [longitudinalModels]="longitudinalModels"
+        [defaultModel]="selectedDataModel()!"
+        (dataModelChange)="onSelectedDataModelChange($event)"
       >
-      </app-bubble-chart>
-      }
+      </app-data-model-selector>
+
+      <app-dataset-selector [datasets]="availableDatasets">
+      </app-dataset-selector>
+
+      <div class="search-bar-container">
+        @if (d3Data) {
+        <app-search-bar
+          [dataModelHierarchy]="d3Data"
+          (searchResultSelected)="onSearchSelected($event)"
+        ></app-search-bar>
+        }
+      </div>
     </div>
-    <!-- Selected Variables -->
-    <div class="group-components-vertical">
-      <div class="variable-filter-container">
-        <app-variable-filter-selection
-          [selectedNode]="selectedNode"
-          (filtersChange)="onFilterChange($event)"
-          (variableClicked)="onVariableClicked($event)"
-        ></app-variable-filter-selection>
+
+    <!-- Main area: Bubble + Right column -->
+    <div class="variables-main">
+      <!-- Bubble Chart -->
+      <div class="bubble-chart-section">
+        @if (selectedDataModel()) {
+        <app-bubble-chart
+          [d3Data]="d3Data"
+          [highlightNode]="highlightNode"
+          [selectedVariables]="selectedVariables"
+          [selectedCovariates]="selectedCovariates"
+          [selectedFilters]="selectedFilters"
+          (selectedNodeChange)="onSelectedNodeChange($event)"
+        >
+        </app-bubble-chart>
+        }
       </div>
 
-      <!-- Distribution Graph Panel -->
-      <div class="histogam-placeholder">
-        <section class="distribution-graph">
-          <p class="distribution-graph-header"> Distribution Graph</p>
-          @if (isLoadingHistogram()) {
-          <app-loading-spinner></app-loading-spinner>
-          } @else if (errorMessage()) {
-          <div class="message-container error">
-            <mat-icon class="message-icon">bar_chart</mat-icon>
-            <p>{{ errorMessage() }}</p>
-          </div>
-          } @else if (!selectedNode) {
-          <div class="message-container info">
-            <p>Please select a variable to view its distribution.</p>
-          </div>
-          } @else if (distributionData()) {
-          <app-distribution-graph
-            [data]="distributionData()"
-          ></app-distribution-graph>
-          }
+      <!-- Right column: parameters + distribution -->
+      <div class="right-column">
+        <section class="panel-block variable-filter-container">
+          <app-variable-filter-selection
+            [selectedNode]="selectedNode"
+            (filtersChange)="onFilterChange($event)"
+            (variableClicked)="onVariableClicked($event)"
+          ></app-variable-filter-selection>
         </section>
-        <!-- Floating Button -->
-        <button
-          class="floating-button"
-          aria-label="Open Statistical Analysis"
-          [disabled]="isButtonDisabled()"
-          (click)="openStatisticalAnalysis()"
-        >
-          <i class="fa fa-chart-line"></i>
-        </button>
-        @if (isStatisticalAnalysisOpen()) {
-        <app-statistic-analysis-panel
-          [processedData]="processedData"
-          (close)="closeStatisticalAnalysis()"
-        >
-        </app-statistic-analysis-panel>
-        }
+
+        <div class="histogam-placeholder">
+          <section class="panel-block distribution-graph">
+            <p class="distribution-graph-header">Distribution Graph</p>
+
+            @if (isLoadingHistogram()) {
+            <div class="distribution-loader">
+              <app-spinner text="Loading Histogram" [overlay]="false" />
+            </div>
+            } @else if (errorMessage()) {
+            <div class="message-container error">
+              <p>{{ errorMessage() }}</p>
+            </div>
+            } @else if (!selectedNode) {
+            <div class="message-container info">
+              <p>Please select a variable to view its distribution.</p>
+            </div>
+            } @else if (distributionData()) {
+            <app-distribution-graph
+              [data]="distributionData()"
+            ></app-distribution-graph>
+            }
+          </section>
+
+          <!-- Floating Button -->
+          <button
+            class="floating-button"
+            aria-label="Open Statistical Analysis"
+            [disabled]="isButtonDisabled()"
+            (click)="openStatisticalAnalysis()"
+          >
+            <i class="fa fa-chart-line"></i>
+          </button>
+
+          @if (isStatisticalAnalysisOpen()) {
+          <app-statistic-analysis-panel
+            [processedData]="processedData"
+            (close)="closeStatisticalAnalysis()"
+          >
+          </app-statistic-analysis-panel>
+          }
+        </div>
       </div>
     </div>
   </div>

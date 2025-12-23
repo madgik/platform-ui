@@ -97,9 +97,6 @@ const colorForLeaf = (
   if (sets.vars.has(code)) return '#37c0aeff'; // variable
   if (sets.covs.has(code)) return '#c88d00'; // covariate
   if (sets.filters.has(code)) return '#44bf00'; // filter
-  // if (sets.vars.has(code)) return '#37c0aeff'; // variable
-  // if (sets.covs.has(code)) return '#6ac467ff'; // covariate
-  // if (sets.filters.has(code)) return '#7a5cb1ff'; // filter
   return 'white';
 };
 
@@ -218,7 +215,6 @@ export function createZoomableCirclePacking(
     );
 
   // Nodes
-
   const node = svg.append('g')
     .selectAll('circle')
     .data(root.descendants().slice(1))
@@ -249,7 +245,6 @@ export function createZoomableCirclePacking(
 
 
   // Labels
-
   const labelsGroup = svg.append('g').attr('pointer-events', 'none');
   const labelNodes = labelsGroup
     .selectAll('g.label-group')
@@ -314,10 +309,15 @@ export function createZoomableCirclePacking(
   }
 
   function zoomToNode(dataNode: any) {
-    const target = root.descendants().find((n: any) => n.data.code === dataNode.code);
+    const code = dataNode?.code ?? dataNode;  // accepts {code} or "code"
+
+    const target = root.descendants().find((n: any) => n.data.code === code);
     if (!target) return;
 
-    const group = target.parent ?? root;
+    // if group -> zoom to group
+    // if leaf  -> zoom to parent
+    const group = target.children ? target : (target.parent ?? root);
+
     const zoomTarget: [number, number, number] = [group.x, group.y, group.r * 2];
 
     labelNodes.each(function (nd: any) {
@@ -328,15 +328,12 @@ export function createZoomableCirclePacking(
       } else el.style('display', 'none').style('fill-opacity', 0);
     });
 
-    if (!view) {
-      view = [root.x, root.y, root.r * 2];
-    }
+    if (!view) view = [root.x, root.y, root.r * 2];
 
-    // Ensure initial zoom executes even on first external call
     if (focus === root && !selectedDataNode) {
       zoomTo(zoomTarget);
       focus = group;
-      selectedDataNode = target;
+      selectedDataNode = target.children ? null : target; // group -> null
       updateSelection();
     }
 
@@ -348,7 +345,7 @@ export function createZoomableCirclePacking(
       })
       .on('end', () => {
         focus = group;
-        selectedDataNode = target;
+        selectedDataNode = target.children ? null : target; // group -> null
         updateSelection();
 
         labelNodes.each(function (nd: any) {

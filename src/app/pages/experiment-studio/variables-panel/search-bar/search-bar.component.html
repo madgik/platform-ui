@@ -8,8 +8,9 @@
       (focus)="onSearchFocus()"
       (input)="handleSearch(searchQuery)"
     />
+
     @if (searchQuery) {
-    <button class="clear-btn" (click)="closeSearch()">×</button>
+      <button class="clear-btn" (click)="closeSearch()">×</button>
     }
 
     <div class="inline-filters">
@@ -19,73 +20,78 @@
       </select>
 
       @if (filterType === 'variables') {
-      <div class="additional-filter">
-        <select
-          [(ngModel)]="variableTypeFilter"
-          (change)="applyVariableTypeFilter(variableTypeFilter)"
-        >
-          <option value="">All Types</option>
-          @for (type of variableTypes; track type) {
-          <option [value]="type">{{ type }}</option>
-          }
-        </select>
-      </div>
+        <div class="additional-filter">
+          <select
+            [(ngModel)]="variableTypeFilter"
+            (change)="applyVariableTypeFilter(variableTypeFilter)"
+          >
+            <option value="">All Types</option>
+            @for (type of variableTypes; track type) {
+              <option [value]="type">{{ type }}</option>
+            }
+          </select>
+        </div>
       }
     </div>
   </div>
 
   <!-- Suggestions -->
   @if (searchSuggestionsVisible) {
-  <div class="suggestions-container">
-    <!-- VARIABLES -->
-    @if (filterType === 'variables' && filteredItems.length) {
-    <div class="section-header">Variables</div>
-    <ul>
-      @for (item of filteredItems; track item.label) {
-      <li
-        class="variable-item"
-        (click)="onItemClick(item)"
-        [title]="generateTooltip(item)"
-      >
-        <div class="item-top">
-          <span class="result-name" [innerHTML]="highlight(item.label)"></span>
-          <span class="result-group">
-            {{ item.path.split(" > ").slice(-2, -1)[0] }}
-          </span>
-        </div>
-        <div class="item-bottom">
-          <span class="result-type">
-            <span class="type-icon">ⓘ</span>
-            type: {{ item.type }}
-          </span>
-        </div>
-      </li>
+    <div class="suggestions-container">
+      <!-- VARIABLES -->
+      @if (filterType === 'variables' && filteredItems.length) {
+        <div class="section-header">Variables</div>
+        <ul>
+          @for (item of filteredItems; track item.code) {
+            <li
+              class="variable-item"
+              (click)="onItemClick(item)"
+              [title]="generateTooltip(item)"
+            >
+              <div class="item-top">
+                <span
+                  class="result-name"
+                  [innerHTML]="highlight(item.label)"
+                ></span>
+                <span class="result-group">
+                  {{ item.path.split(" > ").slice(-2, -1)[0] }}
+                </span>
+              </div>
+              <div class="item-bottom">
+                <span class="result-type">
+                  <span class="type-icon">ⓘ</span>
+                  type: {{ item.type }}
+                </span>
+              </div>
+            </li>
+          }
+        </ul>
       }
-    </ul>
-    }
 
-    <!-- GROUPS -->
-    @if (filterType === 'groups' && filteredItems.length) {
-    <div class="section-header">Groups</div>
-    <ul>
-      @for (item of filteredItems; track item.label) {
-      <li
-        (click)="onItemClick(item)"
-        [title]="generateTooltip(item)"
-        class="variable-item"
-      >
-        <div class="item-top">
-          <span class="result-name">{{ item.label }}</span>
-        </div>
-        <div class="item-bottom">
-          <span class="result-type">Group</span>
-        </div>
-      </li>
+      <!-- GROUPS -->
+      @if (filterType === 'groups' && filteredItems.length) {
+        <div class="section-header">Groups</div>
+        <ul>
+          @for (item of filteredItems; track item.label) {
+            <li
+              (click)="onItemClick(item)"
+              [title]="generateTooltip(item)"
+              class="variable-item"
+            >
+              <div class="item-top">
+                <span class="result-name">{{ item.label }}</span>
+              </div>
+              <div class="item-bottom">
+                <span class="result-type">Group</span>
+              </div>
+            </li>
+          }
+        </ul>
       }
-    </ul>
-    } @if (!filteredItems.length) {
-    <div class="no-results">No results found</div>
-    }
-  </div>
+
+      @if (!filteredItems.length) {
+        <div class="no-results">No results found</div>
+      }
+    </div>
   }
 </div>

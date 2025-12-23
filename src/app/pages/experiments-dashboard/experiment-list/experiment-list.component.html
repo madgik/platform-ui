@@ -1,41 +1,165 @@
-<div class="experiment-sidebar">
-  <!-- Sidebar Header -->
-  <div class="sidebar-header">
-    <h2 class="sidebar-title">Experiments Dashboard</h2>
+<div class="experiments-list-root">
+  <!-- Search bar -->
+  <div class="list-toolbar">
+    <app-experiment-search
+      [filters]="filters()"
+      (filtersChange)="patchFilters($event)"
+    ></app-experiment-search>
   </div>
 
-  <!-- Experiment List (Collapsible) -->
-  <div class="sidebar-section">
-    <a (click)="toggleMenu()" class="toggle-menu">
-      <i class="fas fa-flask"></i>
-      <span>Experiment List</span>
-      <i [class]="menuExpanded ? 'fas fa-chevron-up' : 'fas fa-chevron-down'"></i>
-    </a>
-    @if(menuExpanded) {
-      <ul class="nested-experiment-list">
-        @for (experiment of experimentsService.experiments(); track experiment) {
-          <li (click)="selectExperiment(experiment)">
-            <i class="fas fa-vial"></i>
-            <span>{{ experiment.name }}</span>
-          </li>
-        }
-        @empty {
-          <div class="sidebar-section">
-            <p>No experiments yet!</p>
-          </div>
-        }
-      </ul>
-    }
+  <!-- My experiments toggle -->
+  <div class="filter-row">
+    <div class="filter-label">
+      <i class="far fa-user"></i>
+      <span>My experiments</span>
+    </div>
+
+    <div class="filter-right">
+      @if (onlyMine()) {
+      <span class="count-label">
+        {{ visibleExperiments() }} / {{ totalExperiments() }} shown
+      </span>
+      }
+
+      <button
+        type="button"
+        class="toggle-switch"
+        [class.on]="onlyMine()"
+        (click)="toggleOnlyMine()"
+      >
+        <span class="toggle-thumb"></span>
+      </button>
+    </div>
   </div>
 
-  <!-- Static Menu Items -->
-  <ul class="static-menu">
-    @for (item of experimentMenuItems; track item) {
-      <li>
-        <a (click)="onMenuItemClick(item)">
-          <i [class]="item.icon"></i> <span>{{ item.label }}</span>
-        </a>
-      </li>
+  @if (!filteredExperiments().length) {
+  <div class="empty-state">
+    <h3>No experiments yet</h3>
+    <p>Run an analysis in the studio and it will appear here.</p>
+  </div>
+  } @else {
+  <!-- Pagination top -->
+  <div class="list-pagination list-pagination--top">
+    <button
+      type="button"
+      class="page-btn"
+      (click)="prevPage()"
+      [disabled]="currentPage() === 1"
+    >
+      ‹ Prev
+    </button>
+
+    <div class="page-info">Page {{ currentPage() }} of {{ totalPages() }}</div>
+
+    <button
+      type="button"
+      class="page-btn"
+      (click)="nextPage()"
+      [disabled]="currentPage() === totalPages()"
+    >
+      Next ›
+    </button>
+  </div>
+
+  <ul class="experiments-list">
+    @for (exp of pagedExperiments(); track exp.id) {
+    <li
+      class="experiment-row"
+      [class.selected]="
+        (!compareMode && exp.id === selectedExperimentId) ||
+        (compareMode && isInCompare(exp.id))
+      "
+      (click)="selectExperiment(exp)"
+    >
+      <!-- LEFT: main info -->
+      <div class="row-main">
+        <div class="row-title-line">
+          <span class="exp-name" [title]="exp.name">
+            {{ exp.name }}
+          </span>
+
+          <span
+            class="status-pill"
+            [ngClass]="{
+              completed: exp.status === 'success',
+              error: exp.status === 'error'
+            }"
+          >
+            {{ exp.status }}
+          </span>
+        </div>
+
+        <div class="row-meta-line">
+          <span class="meta-item">
+            <i class="far fa-calendar"></i>
+            {{ exp.dateCreated | date : "mediumDate" }}
+          </span>
+
+          <span class="meta-item algo-item">
+            <i class="fas fa-flask"></i>
+            {{ exp.algorithmName || "Unknown algorithm" }}
+          </span>
+        </div>
+      </div>
+
+      <!-- RIGHT: actions -->
+      <div class="row-actions">
+        <button
+          class="icon-btn"
+          [class.shared]="exp.isShared"
+          [title]="exp.isShared ? 'Shared – copy link' : 'Share with others'"
+          (click)="onShareClicked(exp, $event)"
+        >
+          <i class="fas fa-share-alt"></i>
+        </button>
+
+        @if (copyToastVisible() && lastSharedExperimentId() === exp.id) {
+        <span class="copy-chip">
+          {{ copyToastMessage() }}
+        </span>
+        }
+
+        <button
+          class="icon-btn"
+          title="Edit"
+          (click)="onEditRequested(exp.id); $event.stopPropagation()"
+        >
+          <i class="far fa-edit"></i>
+        </button>
+
+        <button
+          class="icon-btn danger"
+          title="Delete"
+          (click)="onDeleteRequested(exp.id); $event.stopPropagation()"
+        >
+          <i class="far fa-trash-alt"></i>
+        </button>
+      </div>
+    </li>
     }
   </ul>
+
+  <!-- Pagination bottom -->
+  <div class="list-pagination list-pagination--bottom">
+    <button
+      type="button"
+      class="page-btn"
+      (click)="prevPage()"
+      [disabled]="currentPage() === 1"
+    >
+      ‹ Prev
+    </button>
+
+    <div class="page-info">Page {{ currentPage() }} of {{ totalPages() }}</div>
+
+    <button
+      type="button"
+      class="page-btn"
+      (click)="nextPage()"
+      [disabled]="currentPage() === totalPages()"
+    >
+      Next ›
+    </button>
+  </div>
+  }
 </div>

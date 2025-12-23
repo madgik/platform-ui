@@ -1,17 +1,60 @@
-// experiments.mapper.ts
 import { BackendExperiment } from "../../models/backend-experiment.model";
+import { BackendFilter } from "../../models/filters.model";
 import { Experiment, AlgorithmDetails, UserDetails } from './../../models/experiments-dashboard.model';
+
+
+function collectFilterVariableCodes(
+  logic: BackendFilter | null | undefined
+): string[] {
+  if (!logic) return [];
+  const codes = new Set<string>();
+
+  const walk = (node: any) => {
+    if (!node) return;
+    if (Array.isArray(node.rules)) {
+      node.rules.forEach(walk);
+    } else if (node.field || node.id) {
+      const c = node.field ?? node.id;
+      if (typeof c === 'string') codes.add(c);
+    }
+  };
+
+  walk(logic);
+  return [...codes];
+}
 
 // Map BackendExperiment to Experiment
 export function mapBackendToFrontend(backend: BackendExperiment): Experiment {
+
+  console.groupCollapsed('[Mapper] BackendExperiment → Experiment');
+  console.groupEnd();
+
+  const input = backend.algorithm?.inputdata || {};
+  const filtersLogic = input.filters ?? null;
+
   return {
     id: backend.uuid,
     name: backend.name,
     dateCreated: new Date(backend.created),
-    description: backend.algorithm?.name || '', // Optionally include algorithm name as description
+    description: backend.description ?? '',
     status: backend.status,
+
+    algorithmName: backend.algorithm?.name,
+    author:
+      backend.createdBy.fullname ||
+      backend.createdBy.username ||
+      backend.createdBy.email,
+    authorEmail: backend.createdBy.email,
+    isShared: backend.shared,
+
+    domain: input.data_model ?? null,
+    datasets: input.datasets ?? [],
+    variables: input.y ?? [],
+    covariates: input.x ?? [],
+    filters: collectFilterVariableCodes(filtersLogic),
   };
 }
+
 
 // Map BackendExperiment to AlgorithmDetails
 export function mapBackendToAlgorithmDetails(backend: BackendExperiment): AlgorithmDetails {

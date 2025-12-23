@@ -1,26 +1,33 @@
-/* You can add global styles to this file, and also import other style files */
-
-html, body { height: 100%; }
-
-body { margin: 0; font-family: Roboto, sans-serif; }
-
-/* Style all required fields */
-input:required, textarea:required, select:required {
-  border-color: #ccc; /* Neutral border color for required fields */
-  background-color: #fafafa; /* Light background color */
-  box-shadow: none; /* Remove any default shadow */
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  font-family: Roboto, sans-serif;
 }
 
-/* Style for invalid fields (unfilled required fields) */
-input:required:invalid, textarea:required:invalid, select:required:invalid {
-  border-color: #d32f2f; /* Red border for invalid fields */
-  background-color: #ffe6e6; /* Light red background for visibility */
+
+input:required,
+textarea:required,
+select:required {
+  border-color: #ccc;
+  background-color: #fafafa;
+  box-shadow: none;
 }
 
-/* Style for valid fields (when required fields are filled) */
-input:required:valid, textarea:required:valid, select:required:valid {
-  border-color: #4caf50; /* Green border for valid fields */
-  background-color: #e8f5e9; /* Light green background */
+input:required:invalid,
+textarea:required:invalid,
+select:required:invalid {
+  border-color: #d32f2f;
+  background-color: #ffe6e6;
+}
+
+input:required:valid,
+textarea:required:valid,
+select:required:valid {
+  border-color: #4caf50;
+  background-color: #e8f5e9;
 }
 
 .btn-cancel,
@@ -53,7 +60,7 @@ input:required:valid, textarea:required:valid, select:required:valid {
 
 .custom-validation-tooltip {
   position: absolute;
-  background-color: #d32f2f; /* Red background for error */
+  background-color: #d32f2f;
   color: white;
   padding: 5px 10px;
   border-radius: 4px;
@@ -98,4 +105,19 @@ input:required:valid, textarea:required:valid, select:required:valid {
   font-size: 12px;
   color: #333;
   line-height: 1.4;
+}
+
+/* GLOBAL MOBILE HEADER OVERRIDES */
+@media (max-width: 768px) {
+  header.topbar,
+  .topbar,
+  .topbar-inner,
+  .brand,
+  .account-pill,
+  .header-logo,
+  .header-account,
+  .user-icon,
+  .login-icon {
+    display: none !important;
+  }
 }

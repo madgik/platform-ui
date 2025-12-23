@@ -1,4 +1,5 @@
-// backend-experiment.interface.ts
+import { BackendFilter } from './filters.model';
+
 export interface BackendExperiment {
   uuid: string;
   name: string;
@@ -7,15 +8,19 @@ export interface BackendExperiment {
   shared: boolean;
   viewed: boolean;
   status: string;
+  description?: string;
   algorithm: {
     name: string;
     inputdata: {
       data_model: string;
       datasets: string[];
-      y: string[];
+      y: string[] | null;
+      x: string[] | null;
+      filters: BackendFilter | null;
     };
     parameters: Record<string, unknown>;
     type: string;
+    status: string;
   };
   createdBy: {
     username: string;
@@ -24,4 +29,8 @@ export interface BackendExperiment {
     subjectId: string;
     agreeNDA: boolean;
   };
+}
+
+export interface BackendExperimentWithResult extends BackendExperiment {
+  result?: any;
 }

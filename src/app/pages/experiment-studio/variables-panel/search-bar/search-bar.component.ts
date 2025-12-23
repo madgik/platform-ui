@@ -1,14 +1,4 @@
-import {
-  Component,
-  EventEmitter,
-  Input,
-  Output,
-  OnInit,
-  ElementRef,
-  HostListener,
-  SimpleChanges,
-  OnChanges
-} from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit, ElementRef, HostListener, SimpleChanges, OnChanges } from '@angular/core';
 import { FormsModule } from "@angular/forms";
 
 @Component({
@@ -25,8 +15,8 @@ export class SearchBarComponent implements OnInit, OnChanges {
   @Output() searchResultSelected = new EventEmitter<string>();
 
   searchQuery: string = '';
-  variables: { label: string; type: string; path: string }[] = [];
-  groups: { label: string; path: string }[] = [];
+  variables: { label: string; code: string; type: string; path: string }[] = [];
+  groups: { label: string; code: string; path: string }[] = [];
   filteredItems: any[] = [];
   searchSuggestionsVisible = false;
   isSearchExpanded = false;
@@ -39,8 +29,6 @@ export class SearchBarComponent implements OnInit, OnChanges {
   ngOnInit(): void {
     if (this.dataModelHierarchy) {
       this.extractVariablesAndGroups(this.dataModelHierarchy);
-    } else {
-      console.warn("No data model hierarchy provided!");
     }
   }
 
@@ -55,8 +43,6 @@ export class SearchBarComponent implements OnInit, OnChanges {
       // Extract variables and groups
       this.extractVariablesAndGroups(this.dataModelHierarchy);
 
-    } else {
-      console.warn("No changes detected in `dataModelHierarchy`");
     }
   }
 
@@ -85,6 +71,39 @@ export class SearchBarComponent implements OnInit, OnChanges {
     }
   }
 
+  // extractVariablesAndGroups(hierarchy: any): void {
+  //   this.variables = [];
+  //   this.groups = [];
+  //   this.variableTypes = [];
+
+  //   const traverse = (node: any, path: string) => {
+  //     if (!node) return;
+  //     const currentPath = path ? `${path} > ${node.label}` : node.label;
+
+  //     // If no children, it's a group
+  //     if (Array.isArray(node.children) && node.children.length > 0) {
+  //       this.groups.push({ label: node.label, code: node.code, path: currentPath });
+  //       node.children.forEach((child: any) => traverse(child, currentPath));
+
+  //       // If no children but has type, it's a variable
+  //     } else if (typeof node.type === 'string' || Array.isArray(node.type)) {
+  //       this.variables.push({
+  //         code: node.code,
+  //         label: node.label,
+  //         type: node.type as string,
+  //         path: currentPath
+  //       });
+  //       if (!this.variableTypes.includes(node.type as string)) {
+  //         this.variableTypes.push(node.type as string);
+  //       }
+  //     }
+  //   };
+
+  //   traverse(hierarchy, '');
+  // }
+
+  //  Handles the search query input.
+
   extractVariablesAndGroups(hierarchy: any): void {
     this.variables = [];
     this.groups = [];
@@ -94,33 +113,37 @@ export class SearchBarComponent implements OnInit, OnChanges {
       if (!node) return;
       const currentPath = path ? `${path} > ${node.label}` : node.label;
 
-      // Όλα όσα έχουν children τα θεωρώ ομάδες
+      // GROUP
       if (Array.isArray(node.children) && node.children.length > 0) {
-        this.groups.push({ label: node.label, path: currentPath });
+        this.groups.push({
+          label: node.label,
+          code: node.code ?? node.label, // fallback safe
+          path: currentPath
+        });
         node.children.forEach((child: any) => traverse(child, currentPath));
+        return;
+      }
 
-        // Αν δεν έχουν children αλλά έχουν type, τα θεωρώ μεταβλητές
-      } else if (typeof node.type === 'string' || Array.isArray(node.type)) {
+      // LEAF (variable)
+      if (typeof node.type === 'string' || Array.isArray(node.type)) {
         this.variables.push({
           label: node.label,
+          code: node.code ?? node.label, // fallback safe
           type: node.type as string,
           path: currentPath
         });
-        if (!this.variableTypes.includes(node.type as string)) {
-          this.variableTypes.push(node.type as string);
-        }
+
+        const t = node.type as string;
+        if (!this.variableTypes.includes(t)) this.variableTypes.push(t);
       }
     };
 
     traverse(hierarchy, '');
   }
 
-  //  Handles the search query input.
   handleSearch(query: string): void {
     this.searchQuery = query.toLowerCase();
     this.applyFilter(this.filterType);
-    // console.log("🔎 Searching for:", this.searchQuery);
-    // console.log("🔍 Filtered Items:", this.filteredItems);
     this.searchSuggestionsVisible = this.filteredItems.length > 0;
   }
 
@@ -141,17 +164,16 @@ export class SearchBarComponent implements OnInit, OnChanges {
 
   // Applies the variable type filter.
   applyVariableTypeFilter(type: string): void {
-    console.log(`📌 Applying Variable Type Filter: ${type}`);
     this.variableTypeFilter = type;
     this.applyFilter(this.filterType);
   }
 
-  // Handles clicking on a search suggestion.
   onItemClick(item: any): void {
-    // console.log("✅ Selected Item:", item);
     this.searchQuery = item.label || item;
     this.searchSuggestionsVisible = false;
-    this.searchResultSelected.emit(this.searchQuery);
+
+    const code = item.code ?? item.label ?? item;
+    this.searchResultSelected.emit(code);
   }
 
   //  Generates tooltip text for search results.

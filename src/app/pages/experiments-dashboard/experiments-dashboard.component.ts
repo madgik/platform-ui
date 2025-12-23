@@ -1,73 +1,235 @@
-import { ExperimentsDashboardService } from './../../services/experiments-dashboard.service';
-import { Experiment } from '../../models/experiments-dashboard.model';
-import { Component, OnInit, signal } from '@angular/core';
+import { AuthService } from './../../services/auth.service';
+import { Component, OnInit, OnDestroy, computed, effect, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+
 import { ExperimentDetailsComponent } from './experiment-detail/experiment-detail.component';
-import { NewExperimentComponent } from './new-experiment/new-experiment.component';
 import { ExperimentsListComponent } from './experiment-list/experiment-list.component';
+import { ExperimentsDashboardService } from './../../services/experiments-dashboard.service';
+import { Experiment } from '../../models/experiments-dashboard.model';
+import { ExperimentsCompareComponent } from './experiments-compare/experiments-compare.component';
+import { ActivatedRoute } from '@angular/router';
+import { ErrorService } from '../../services/error.service';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-experiments-dashboard',
   templateUrl: './experiments-dashboard.component.html',
   styleUrls: ['./experiments-dashboard.component.css'],
   standalone: true,
-  imports: [RouterModule, CommonModule, ExperimentDetailsComponent, ExperimentsListComponent, NewExperimentComponent]
+  imports: [
+    RouterModule,
+    CommonModule,
+    FormsModule,
+    ExperimentDetailsComponent,
+    ExperimentsListComponent,
+    ExperimentsCompareComponent
+  ]
 })
-export class ExperimentsDashboardComponent implements OnInit {
-  private experiments = signal<Experiment[]>([]);
+export class ExperimentsDashboardComponent implements OnInit, OnDestroy {
   selectedExperiment = signal<Experiment | null>(null);
-  isAddingExperiment = false;
+
   isConfirmingDelete = false;
   experimentToDeleteId: string | null = null;
 
+  currentUserEmail: string | null = null;
+  compareIds = signal<string[]>([]);
+  compareMode = signal(false);
+  private sharedExperimentId = signal<string | null>(null);
+
+  // Greeting name: default "researcher"
+  greetingName = signal<string>('researcher');
+  errorMessage = signal<string | null>(null);
+  private destroy$ = new Subject<void>();
+
   constructor(
     private router: Router,
-    private experimentsService: ExperimentsDashboardService,
-  ) {}
+    public experimentsService: ExperimentsDashboardService,
+    private authService: AuthService,
+    private route: ActivatedRoute,
+    private errorService: ErrorService
+  ) { }
 
   ngOnInit(): void {
-    // Fetch experiments from the service on initialization
+    this.errorService.clearError();
+    this.errorService.error$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((msg) => this.errorMessage.set(msg));
+
     this.experimentsService.getUserExperiments();
+
+    const user = this.authService.currentUser;
+    this.updateUserInfo(user);
+
+    this.authService.onAuthResolved().subscribe((state) => {
+      this.updateUserInfo(state.user ?? null);
+    });
+
+    this.route.queryParamMap.subscribe(params => {
+      const expId = params.get('experiment');
+      if (expId) {
+        this.sharedExperimentId.set(expId);
+      }
+    });
+  }
+
+  private selectSharedExperimentEffect = effect(
+    () => {
+      const targetId = this.sharedExperimentId();
+      const list = this.experimentsService.experiments();
+
+      if (!targetId || !list.length) return;
+
+      const found = list.find(e => e.id === targetId);
+      if (!found) {
+        console.warn('[SharedLink] Experiment not found for id', targetId);
+        return;
+      }
+
+      // set selected experiment
+      this.selectedExperiment.set(found);
+
+      // not in compare mode
+      this.compareMode.set(false);
+      this.compareIds.set([]);
+
+      this.sharedExperimentId.set(null);
+    },
+    { allowSignalWrites: true }
+  );
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  dismissError() {
+    this.errorService.clearError();
   }
 
 
+  // USER INFO / GREETING
+  private updateUserInfo(user: any | null) {
+    this.currentUserEmail = user?.email ?? null;
+    this.greetingName.set(this.deriveGreetingName(user));
+  }
+
+  private deriveGreetingName(user: any | null): string {
+    if (!user) {
+      return 'researcher';
+    }
+
+    const raw =
+      (user.fullname as string | undefined) ||
+      (user.username as string | undefined) ||
+      '';
+
+    const trimmed = raw.trim();
+    if (!trimmed) {
+      return 'researcher';
+    }
+
+    const lower = trimmed.toLowerCase();
+    // if no user name or anonymous, set it to generic
+    if (lower === 'anonymous' || lower === 'anon') {
+      return 'researcher';
+    }
+
+    // keep only first name for casual greeting
+    const firstPart = trimmed.split(' ')[0];
+    return firstPart || 'researcher';
+  }
+
+  // COMPARE MODE
+
+  toggleCompareMode() {
+    const isOn = this.compareMode();
+
+    if (isOn) {
+      // turn OFF -> clear
+      this.compareMode.set(false);
+      this.compareIds.set([]);
+    } else {
+      // turn ON -> set selected
+      const current = this.selectedExperiment();
+      this.compareMode.set(true);
+      this.compareIds.set(current ? [current.id] : []);
+    }
+  }
+
+  readonly experimentsForCompare = computed(() => {
+    const ids = this.compareIds();
+    const list = this.experimentsService.experiments();
+    return list.filter(exp => ids.includes(exp.id));
+  });
+
+  // click on list row
   onExperimentSelected(experiment: Experiment) {
-    // console.log('this is the experiment object: ', experiment);
     this.selectedExperiment.set(experiment);
+
+    // if in compare mode, toggle comparison list
+    if (this.compareMode()) {
+      const ids = this.compareIds();
+      if (ids.includes(experiment.id)) {
+        this.compareIds.set(ids.filter(id => id !== experiment.id));
+      } else {
+        this.compareIds.set([...ids, experiment.id]);
+      }
+    }
   }
 
-  // Method to open the New Experiment modal by updating the SharedService state
-  onAddExperiment() {
-    this.isAddingExperiment = true;
+  onRunExperiment(expId: string) {
+    this.router.navigate(
+      ['/experiment-studio'],
+      { state: { experimentId: expId, mode: 'run-again' } }
+    );
   }
 
-  handleExperimentCreation(experiment: any) {
-    this.experimentsService.addExperiment(experiment); // Save the experiment
-    this.router.navigate(['/experiment-studio'], { state: experiment }); // Navigate to the studio
+  onEditExperiment(expId: string) {
+    this.router.navigate(['/experiment-studio'], {
+      queryParams: { experimentId: expId, mode: 'edit' }
+    });
   }
 
-  onCloseNewExperiment() {
-    this.isAddingExperiment = false;
+  goToNewExperiment() {
+    this.router.navigate(['/experiment-studio']);
   }
 
   onDeleteRequested() {
     const experiment = this.selectedExperiment();
-    if (!experiment) {
-      console.error('No experiment selected for deletion');
-      return;
-    }
+    if (!experiment) return;
+
     this.experimentToDeleteId = experiment.id;
     this.isConfirmingDelete = true;
   }
 
-  confirmDelete(expId: string) {
-    if (expId) {
-      this.experimentsService.deleteExperiment(expId);
-      this.selectedExperiment.set(null);
-      this.experimentToDeleteId = null;
-      this.isConfirmingDelete = false;
+  onDeleteFromList(expId: string) {
+    this.experimentToDeleteId = expId;
+
+    const current = this.selectedExperiment();
+    if (!current || current.id !== expId) {
+      const found = this.experimentsService
+        .experiments()
+        .find(e => e.id === expId);
+      if (found) this.selectedExperiment.set(found);
     }
+    this.isConfirmingDelete = true;
+  }
+
+  confirmDelete(expId: string) {
+    if (!expId) return;
+
+    this.experimentsService.deleteExperiment(expId);
+
+    if (this.selectedExperiment()?.id === expId) {
+      this.selectedExperiment.set(null);
+    }
+
+    this.compareIds.set(this.compareIds().filter(id => id !== expId));
+
+    this.experimentToDeleteId = null;
+    this.isConfirmingDelete = false;
   }
 
   cancelDelete() {

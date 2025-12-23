@@ -31,15 +31,15 @@
 
 /* Adjust text styles for better readability */
 #histogram-chart text {
-  font-size: 12px; /* Ensure axis labels are readable */
-  font-family: 'Arial', sans-serif; /* Use a clean, legible font */
-  fill: #333; /* Use a dark color for text */
+  font-size: 12px;
+  font-family: 'Arial', sans-serif;
+  fill: #333;
 }
 
 /* Add hover effects for bars if desired */
 .bar:hover {
-  fill: #005f73; /* Darker shade on hover */
-  cursor: pointer; /* Indicate interactivity */
+  fill: #005f73;
+  cursor: pointer;
 }
 
 /* Loading Spinner */

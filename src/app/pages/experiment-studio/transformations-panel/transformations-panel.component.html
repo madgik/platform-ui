@@ -1,9 +1,0 @@
-<app-accordion [accordionTitle]=accordionTitle>
-  <ul>
-    @for (transformation of transformations; track transformation) {
-      <li>
-        <button (click)="applyTransformation(transformation)">{{ transformation }}</button>
-      </li>
-    }
-  </ul>
-</app-accordion>

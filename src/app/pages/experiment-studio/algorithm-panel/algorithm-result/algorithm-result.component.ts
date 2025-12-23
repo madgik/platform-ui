@@ -25,10 +25,6 @@ export class AlgorithmResultComponent {
 
   constructor(private chartBuilder: ChartBuilderService) { }
 
-  ngOnChanges() {
-    // console.log('[AlgorithmResult] input algorithm =', this.algorithm);
-  }
-
   isRenderable = computed(() => {
     return !!this.result && !!this.algorithm;
   });
@@ -84,46 +80,4 @@ export class AlgorithmResultComponent {
     return this.expandedPanels().has(key);
   }
 
-  exportToPDF() {
-    const doc = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
-    let y = 40;
-
-    doc.setFontSize(16);
-    doc.text(`Algorithm: ${this.algorithm}`, 40, y);
-    y += 10;
-
-    doc.setFontSize(10);
-    doc.text(`Generated: ${new Date().toLocaleString()}`, 40, y);
-    y += 20;
-
-    for (const field of this.schema) {
-      const key = field.key;
-      const data = this.result?.[key];
-      if (!data) continue;
-
-      doc.setFontSize(12);
-      doc.text(field.label || key, 40, y);
-      y += 6;
-
-      if (Array.isArray(data) && data.length > 0 && typeof data[0] === 'object') {
-        const headers = Object.keys(data[0]);
-        const rows = data.map((r: any) => headers.map(h => r[h]));
-        autoTable(doc, {
-          startY: y,
-          head: [headers],
-          body: rows,
-          margin: { left: 40, right: 40 },
-          styles: { fontSize: 8 },
-        });
-        y = (doc as any).lastAutoTable.finalY + 15;
-      } else {
-        const text = typeof data === 'object' ? JSON.stringify(data, null, 2) : String(data);
-        const lines = doc.splitTextToSize(text, 500);
-        doc.text(lines, 40, y);
-        y += lines.length * 10 + 10;
-      }
-    }
-
-    doc.save(`${this.algorithm}_results.pdf`);
-  }
 }

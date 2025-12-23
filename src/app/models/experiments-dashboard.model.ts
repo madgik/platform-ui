@@ -4,6 +4,16 @@ export interface Experiment {
   dateCreated: Date;
   description?: string;
   status: string;
+  algorithmName: string;
+  author: string;
+  authorEmail: string;
+  isShared: boolean;
+
+  domain?: string | null;
+  datasets?: string[];
+  variables?: string[];
+  covariates?: string[];
+  filters?: string[];
 }
 
 export interface AlgorithmDetails {

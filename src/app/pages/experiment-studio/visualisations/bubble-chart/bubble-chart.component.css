@@ -14,8 +14,8 @@ circle:hover {
 }
 
 circle.selected {
-  fill: hsl(200,80%,60%) !important; /* Slightly different color for selected */
-  stroke: black !important; /* Optional: Add stroke */
+  fill: hsl(200,80%,60%) !important;
+  stroke: black !important;
   stroke-width: 2px !important;
 }
 
@@ -35,8 +35,6 @@ circle.selected {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   overflow-x: auto;
   overflow-y: auto;
-  /* height: calc(100vh - 250px);
-  width: calc(87% - 20px); */
   height: auto;
   width: 100%;
   display: inline-block;

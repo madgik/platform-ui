@@ -68,7 +68,6 @@ export class BubbleChartComponent implements OnInit, OnChanges {
     }
   }
 
-
   renderChart(): void {
     const container = this.elementRef.nativeElement.querySelector('#chart');
     if (!container) {
@@ -93,6 +92,14 @@ export class BubbleChartComponent implements OnInit, OnChanges {
     );
     this.zoomToNodeFn = zoomToNode;
     this.refreshColorsFn = refreshColors;
+
+
+    // apply pending highlight after chart is created
+    if (this.highlightNode?.code) {
+      this.zoomToNodeFn(this.highlightNode);
+      this.lastHighlighted = this.highlightNode;
+    }
+
   }
 
   public updateSelectionColors(): void {
@@ -111,10 +118,7 @@ export class BubbleChartComponent implements OnInit, OnChanges {
       console.warn('zoomToNodeFn not ready yet, retrying...');
       setTimeout(() => {
         if (this.zoomToNodeFn) {
-          console.log('✅ Retrying zoom after render...');
           this.zoomToNodeFn(variable);
-        } else {
-          console.warn('⚠️ zoomToNodeFn still not ready after delay.');
         }
       }, 15);
     }
