@@ -23,6 +23,7 @@ export class AuthService {
   readonly isAuthenticated$ = this.authState$.pipe(map((state) => state.status === 'authenticated'));
 
   private initialized = false;
+  private hasRedirectedAfterLogin = false;
 
   constructor(private http: HttpClient, private router: Router) {}
 
@@ -40,10 +41,15 @@ export class AuthService {
   }
 
   private refreshUser(): Observable<User | null> {
+    const wasAuthenticated = this.isLoggedIn();
+
     return this.http.get<User>('/services/activeUser').pipe(
       tap((user) => {
         this.authStateSubject.next({ status: 'authenticated', user });
-        this.consumeRedirect();
+        if (!wasAuthenticated && !this.hasRedirectedAfterLogin) {
+          this.hasRedirectedAfterLogin = true;
+          this.consumeRedirect();
+        }
       }),
       catchError((error) => {
         if (error.status !== 401 && error.status !== 403) {
@@ -55,13 +61,12 @@ export class AuthService {
     );
   }
 
-  login(redirectUrl: string = '/'): void {
-    const target = redirectUrl || '/';
+  login(redirectUrl: string = '/experiments-dashboard'): void {
+    const target = redirectUrl.startsWith('http')
+      ? redirectUrl
+      : `${window.location.origin}${redirectUrl.startsWith('/') ? '' : '/'}${redirectUrl}`;
     localStorage.setItem(this.redirectUrlKey, target);
-
-    const normalizedTarget = target.startsWith('/') ? target : `/${target}`;
-
-    const encodedTarget = encodeURIComponent(normalizedTarget);
+    const encodedTarget = encodeURIComponent(target);
     window.location.href = `/services/oauth2/authorization/keycloak?frontend_redirect=${encodedTarget}`;
   }
 
@@ -74,7 +79,7 @@ export class AuthService {
     ).subscribe(() => {
       localStorage.removeItem(this.redirectUrlKey);
       this.authStateSubject.next({ status: 'unauthenticated' });
-      this.router.navigate(['/']).then(() => window.location.reload());
+      this.router.navigate(['/experiments-dashboard']).then(() => window.location.reload());
     });
   }
 
@@ -91,14 +96,16 @@ export class AuthService {
   }
 
   private consumeRedirect(): void {
-    const redirectUrl = localStorage.getItem(this.redirectUrlKey);
-    if (!redirectUrl) {
-      return;
-    }
-
+    const redirectUrl = '/experiments-dashboard';
     localStorage.removeItem(this.redirectUrlKey);
     this.router.navigateByUrl(redirectUrl).catch((error) => {
       console.error('Navigation to stored redirect failed:', error);
+      // hard fallback: force location change
+      window.location.href = redirectUrl;
     });
+  }
+
+  private clearRedirectFlag(): void {
+    localStorage.removeItem(this.redirectUrlKey);
   }
 }

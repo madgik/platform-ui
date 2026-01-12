@@ -1,14 +1,208 @@
-.experiment-studio {
-  margin-top: 5%;
+.full-bleed {
+  margin: -1%;
+  margin-top: 0;
+  position: relative;
 }
 
-.dropdown:hover {
-  background: linear-gradient(90deg, #f9f9f9, #eef2f3);
-  border-color: #00758c; /* Highlight border */
+/* Page wrapper */
+.experiment-studio-page {
+  min-height: 100vh;
+  padding: 24px 32px;
+  position: relative;
+  background: radial-gradient(
+    circle at top left,
+    #8d0dc933 0,
+    #67f8ec4d 40%,
+    #d474a13a 100%
+  );
+  font-family: 'Roboto', system-ui, -apple-system, BlinkMacSystemFont,
+    'Segoe UI', sans-serif;
+  color: #0f172a;
+  box-sizing: border-box;
+  margin-top: 1%;
 }
 
-.dropdown:focus {
+/* Inner wrapper */
+.studio-inner {
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.global-error-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  left: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+  z-index: 2000;
+  background: linear-gradient(135deg, #fee2e2, #fecaca);
+  border: 1px solid #f87171;
+  color: #7f1d1d;
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin-top: 3%;
+  box-shadow: 0 8px 18px rgba(127, 29, 29, 0.12);
+}
+
+.global-error-banner .banner-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.banner-close {
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.banner-close:hover,
+.banner-close:focus-visible {
+  background: rgba(127, 29, 29, 0.08);
   outline: none;
-  border-color: #005f73;
-  box-shadow: 0 0 6px rgba(0, 90, 102, 0.5);
+}
+
+/* Header */
+.studio-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 24px;
+}
+
+.studio-title {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #0b1420;
+}
+
+.studio-subtitle {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #64748b;
+}
+
+.studio-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.studio-header-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #0f172a;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.15);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+}
+
+.studio-header-btn i {
+  font-size: 0.8rem;
+}
+
+.studio-header-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.25);
+  opacity: 0.96;
+}
+
+/* Main vertical layout */
+.studio-main {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Section wrapper around accordions */
+.studio-section {
+  max-width: 100%;
+  margin-bottom: 4px;
+}
+
+/* Light frame */
+.studio-section--variables,
+.studio-section--algorithm {
+  padding: 2px 4px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.10);
+  transition: background 0.18s ease, box-shadow 0.18s ease;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.2);
+}
+
+/* Global full-page overlay loader */
+.global-overlay-loader {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  pointer-events: all;
+  animation: studioFadeIn 0.2s ease-out;
+}
+
+@keyframes studioFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Responsive */
+@media (max-width: 960px) {
+  .experiment-studio-page {
+    padding: 16px;
+    margin-top: 4%;
+  }
+
+  .studio-inner {
+    max-width: 100%;
+  }
+
+  .studio-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .studio-header-actions {
+    align-self: stretch;
+    justify-content: flex-end;
+  }
+
+  .studio-main {
+    gap: 16px;
+  }
+
+  .studio-section--variables,
+  .studio-section--algorithm {
+    border-radius: 16px;
+    padding: 4px 2px;
+  }
 }

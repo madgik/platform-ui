@@ -1,74 +1,126 @@
-/* Navbar Styling (align closer to the right and compact layout) */
+/* BASE */
 .navbar {
-  margin-left: auto;
+  width: 100%;
   display: flex;
   align-items: center;
+  position: relative;
+  min-width: 0;
+  background: transparent;
 }
 
-.navbar ul {
+/* Desktop menu only */
+.nav-burger,
+.nav-logo,
+.nav-account {
+  display: none;
+}
+
+.nav-list {
   display: flex;
   justify-content: flex-end;
+  align-items: flex-end;
   list-style: none;
   margin: 25px;
   padding: 0;
+  gap: 14px;
 }
 
-.navbar ul li {
-  margin-left: 10px; /* Reduced space between navbar items */
-}
-
-.navbar ul li a {
-  color: #c0c0c0;
+.nav-list li a {
+  color: #ffffff;
   text-decoration: none;
-  font-size: 0.8em; /* Increase for better readability */
-  transition: color 0.3s ease;
+  font-size: 0.85em;
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
   font-weight: 300;
+  opacity: 0.75;
+  transition: opacity 0.25s ease, transform 0.2s ease;
 }
 
-.navbar ul li a:hover {
-  color: #18a2b8; /* Blue accent on hover */
-}
-
-.navbar ul li a i {
-  font-size: 1.8em; /* Adjust icon size */
+.nav-list li a i {
+  font-size: 1.6em;
   margin-bottom: 2px;
+  opacity: 0.85;
 }
 
-.navbar ul li a.active {
-  color: #18a2b8; /* Change color to highlight the active route */
-  font-weight: bold;
-}
-
-/* Responsive Design */
-@media (max-width: 1024px) {
-  .navbar ul li a {
-    font-size: 1em; /* Consistent font size for tablet */
-  }
-
-  .navbar ul li a i {
-    font-size: 1.4em; /* Smaller icons for tablet */
-  }
-}
-
+/* MOBILE */
 @media (max-width: 768px) {
-  .navbar ul {
-    flex-direction: column;
+  .navbar {
+    height: 52px;
+    padding: 0 12px;
+    background: transparent;
+    display: grid;
+    grid-template-columns: 44px 1fr minmax(44px, 56px);
     align-items: center;
+    grid-auto-rows: min-content;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
   }
 
-  .navbar ul li {
-    margin-bottom: 10px;
+  .nav-burger,
+  .nav-logo,
+  .nav-account {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 
-  .navbar ul li a {
-    font-size: 1em;
+  .nav-burger,
+  .nav-account {
+    width: 44px;
+    height: 44px;
+    border: none;
+    background: transparent;
+    color: #fff;
+    cursor: pointer;
   }
 
-  .navbar ul li a i {
-    font-size: 1.4em;
+  .nav-burger i,
+  .nav-account i {
+    font-size: 1.35em;
+  }
+
+  .nav-account {
+    margin-right: 15px;
+    justify-self: end;
+    opacity: 0.95;
+  }
+
+  .nav-logo img {
+    height: 30px;
+    width: auto;
+    display: block;
+  }
+
+  .nav-list {
+    grid-column: 1 / -1;
+    margin: 0;
+    padding: 10px 12px 12px;
+    display: none;
+    flex-direction: column;
+    gap: 6px;
+    background: linear-gradient(180deg, #006d77 0%, #005c66 100%);
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+  }
+
+  .navbar.is-open .nav-list {
+    display: flex;
+  }
+
+  .nav-list li a {
+    flex-direction: row;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 0.95em;
+    opacity: 0.95;
+    transform: none;
+  }
+
+  .nav-list li a i {
+    margin: 0;
+    font-size: 1.15em;
+    width: 22px;
+    text-align: center;
   }
 }

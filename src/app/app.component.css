@@ -22,7 +22,7 @@
 }
 
 main {
-  padding: 20px;
+  padding: 1%;
   min-height: 80vh; /* Ensures the content area takes up space */
 }
 
@@ -31,3 +31,4 @@ main {
   padding: 10px;
   text-align: center;
 }
+

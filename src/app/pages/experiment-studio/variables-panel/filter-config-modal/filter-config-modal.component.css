@@ -1,0 +1,301 @@
+/* ===== WRAPPER & OVERLAY ===== */
+
+.modal-wrapper {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: all;
+}
+
+.modal-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(2px);
+  z-index: 1;
+}
+
+/* ===== MODAL SHELL ===== */
+
+.filter-modal {
+  position: relative;
+  z-index: 2;
+  width: 820px;
+  max-width: 95vw;
+  max-height: 85vh;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.35);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ===== HEADER ===== */
+
+.filter-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  background: linear-gradient(90deg, #026d6d, #7ce8d9);
+  color: #f9ffff;
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.filter-modal-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 999px;
+  transition: background 0.18s ease, transform 0.18s ease, opacity 0.18s ease;
+}
+
+.close-btn:hover {
+  background: rgba(15, 23, 42, 0.18);
+  transform: scale(1.05);
+  opacity: 0.9;
+}
+
+/* ===== BODY ===== */
+
+.filter-modal-body {
+  padding: 16px 18px 14px;
+  background: #f6fafb;
+  overflow-y: auto;
+  max-height: calc(85vh - 56px - 60px); /* header + footer approx */
+}
+
+/* ===== FOOTER ===== */
+
+.filter-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 12px 18px;
+  background-color: #f5f8f9;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* Primary & secondary actions consistent with rest of app */
+
+.save-btn {
+  background: #009fa4;
+  border: none;
+  color: #ffffff;
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 159, 164, 0.35);
+  transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease;
+}
+
+.save-btn:hover {
+  background: #007b83;
+  box-shadow: 0 4px 12px rgba(0, 90, 92, 0.4);
+  transform: translateY(-1px);
+}
+
+.cancel-btn {
+  background: #e2e8f0;
+  border: none;
+  color: #1f2933;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 0.92rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+
+.cancel-btn:hover {
+  background: #cbd5e1;
+  color: #0f172a;
+}
+
+/* ===== NGX QUERY BUILDER THEME (teal, clean) ===== */
+
+/* Outer container */
+:host ::ng-deep ngx-query-builder .query-builder,
+:host ::ng-deep .query-builder {
+  background: #ffffff !important;
+  padding: 14px !important;
+  border-radius: 10px;
+  border: 1px solid #d6e4ea !important;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+}
+
+/* Rules group container */
+:host ::ng-deep ngx-query-builder .rules-group-container,
+:host ::ng-deep .query-builder .rules-group-container {
+  border: 1px solid #c3e4e7 !important;
+  border-radius: 10px;
+  padding: 12px;
+  background: #f4fbfb !important;
+  box-shadow: none !important;
+}
+
+/* Group header (AND/OR + actions row) */
+:host ::ng-deep .query-builder .rules-group-header {
+  background: transparent !important;
+  border: none !important;
+  padding: 6px 4px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* AND / OR button group */
+:host ::ng-deep .query-builder .btn-group {
+  display: inline-flex !important;
+  gap: 4px !important;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+/* AND / OR buttons – teal pills */
+:host ::ng-deep ngx-query-builder .btn-primary,
+:host ::ng-deep .query-builder .btn-primary {
+  background: #e1f6f7 !important;
+  color: #006b77 !important;
+  border: 1px solid #8ee0e5 !important;
+  font-weight: 600 !important;
+  border-radius: 999px !important;
+  padding: 4px 12px !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  font-size: 0.85rem !important;
+  opacity: 1 !important;
+  cursor: pointer !important;
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+
+:host ::ng-deep ngx-query-builder .btn-primary.active,
+:host ::ng-deep .query-builder .btn-primary.active {
+  background: #009fa4 !important;
+  border-color: #009fa4 !important;
+  color: #ffffff !important;
+}
+
+:host ::ng-deep ngx-query-builder .btn-primary:hover,
+:host ::ng-deep .query-builder .btn-primary:hover {
+  background: #00aab0 !important;
+  color: #ffffff !important;
+}
+
+/* "Add rule" / "Add group" buttons, aligned with theme */
+:host ::ng-deep .query-builder .rule-actions {
+  display: flex !important;
+  gap: 6px !important;
+  margin-left: auto !important;
+}
+
+:host ::ng-deep ngx-query-builder .btn-success,
+:host ::ng-deep .query-builder .btn-success {
+  background: #00a76f !important;
+  border: none !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  border-radius: 999px !important;
+  padding: 4px 12px !important;
+  font-size: 0.85rem !important;
+  margin: 0 !important;
+  box-shadow: 0 1px 4px rgba(16, 185, 129, 0.35) !important;
+  text-transform: none !important;
+}
+
+:host ::ng-deep ngx-query-builder .btn-success:hover,
+:host ::ng-deep .query-builder .btn-success:hover {
+  background: #059669 !important;
+}
+
+/* Each rule row */
+:host ::ng-deep .query-builder .rule-container {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  width: 100%;
+  justify-content: space-between;
+  padding: 6px 4px !important;
+}
+
+/* Inputs & selects */
+:host ::ng-deep .query-builder select,
+:host ::ng-deep .query-builder input {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  padding: 6px 10px !important;
+  font-size: 0.9rem !important;
+  color: #111827 !important;
+  min-width: 150px !important;
+}
+
+:host ::ng-deep .query-builder select:focus,
+:host ::ng-deep .query-builder input:focus {
+  outline: none !important;
+  border-color: #009fa4 !important;
+  box-shadow: 0 0 0 1px rgba(0, 159, 164, 0.2) !important;
+}
+
+/* Delete (trash) button */
+:host ::ng-deep ngx-query-builder .btn-danger,
+:host ::ng-deep .query-builder .btn-danger {
+  background: none !important;
+  border: none !important;
+  color: #dc3545 !important;
+  font-size: 1.1rem !important;
+  cursor: pointer !important;
+  padding: 4px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: none !important;
+}
+
+:host ::ng-deep ngx-query-builder .btn-danger:hover,
+:host ::ng-deep .query-builder .btn-danger:hover {
+  color: #b91c1c !important;
+  transform: scale(1.08);
+}
+
+/* ===== RESPONSIVE ===== */
+
+@media (max-width: 768px) {
+  .filter-modal {
+    width: 100%;
+    max-width: 96vw;
+    max-height: 90vh;
+  }
+
+  .filter-modal-body {
+    padding: 12px 10px;
+  }
+
+  :host ::ng-deep .query-builder .rule-container {
+    flex-wrap: wrap !important;
+    align-items: flex-start !important;
+  }
+
+  :host ::ng-deep .query-builder select,
+  :host ::ng-deep .query-builder input {
+    min-width: 120px !important;
+  }
+}

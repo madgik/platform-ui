@@ -1,19 +1,16 @@
-<div>
+<div class="data-model-selector">
   <select
-    class="dropdown"
+    class="data-model-select"
     id="dataModel"
     [(ngModel)]="selectedDataModel"
     (change)="onDataModelChange()"
     aria-labelledby="dataModel"
   >
     <!-- Cross-Sectional Data Models Group -->
-    @if(crossSectionalModels.length > 0){
+    @if (crossSectionalModels.length > 0) {
       <optgroup label="Cross-Sectional">
-        @for (model of crossSectionalModels; track model)
-        {
-          <option
-            [ngValue]="model"
-          >
+        @for (model of crossSectionalModels; track model) {
+          <option [ngValue]="model">
             {{ model.code + '_' + model.version }}
           </option>
         }
@@ -21,17 +18,14 @@
     }
 
     <!-- Longitudinal Data Models Group -->
-    @if(longitudinalModels.length > 0){
+    @if (longitudinalModels.length > 0) {
       <optgroup label="Longitudinal">
-        @for (model of longitudinalModels; track model){
-          <option
-          [ngValue]="model"
-          >
-          {{ model.code + '_' + model.version }}
+        @for (model of longitudinalModels; track model) {
+          <option [ngValue]="model">
+            {{ model.code + '_' + model.version }}
           </option>
         }
-    </optgroup>
+      </optgroup>
     }
-
   </select>
 </div>

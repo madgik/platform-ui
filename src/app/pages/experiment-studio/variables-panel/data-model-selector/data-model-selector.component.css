@@ -1,40 +1,60 @@
-/* Dropdown Container */
-.dropdown-container {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 5px;
+.data-model-selector {
+  display: inline-flex;
+  align-items: center;
+  font-family: "Roboto", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
 }
 
-/* Dropdown Label */
-.dropdown-label {
-  font-size: 16px;
-  font-weight: lighter;
-  color: #333;
-  margin-bottom: 4px;
-}
-
-/* Styled Dropdown */
-.dropdown {
-  padding: 9px 12px; /* Extra padding for a modern look */
-  margin-left: 2%;
-  font-size: 15px;
+/* Styled select, more in line with dashboard pills */
+.data-model-select {
+  min-width: 210px;
+  padding: 12px 34px 6px 12px;
+  font-size: 0.9rem;
   font-weight: 500;
-  color: #333;
-  background-color: #fff;
-  border: 1px solid #ccc; /* Lighter border */
-  border-radius: 6px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease; /* Smooth transitions */
-}
-
-.dropdown:hover {
-  background: linear-gradient(90deg, #f9f9f9, #eef2f3);
-  border-color: #00758c; /* Highlight border */
-}
-
-.dropdown:focus {
+  color: #0f172a;
+  background: #ffffff;
+  border-radius: 999px;
+  border: 1px solid #d1e4ea;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
   outline: none;
-  border-color: #005f73;
-  box-shadow: 0 0 6px rgba(0, 90, 102, 0.5);
+  cursor: pointer;
+
+  /* Native select cleanup */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+
+  /* Custom arrow */
+  background-image: url("data:image/svg+xml,%3Csvg width='16' height='16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 6l4 4 4-4' stroke='%2302686d' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 14px;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease,
+    background-color 0.16s ease, transform 0.12s ease;
+}
+
+.data-model-select:hover {
+  background-color: #f7fcfd;
+  border-color: #028080;
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.12);
+  transform: translateY(-0.5px);
+}
+
+.data-model-select:focus {
+  border-color: #028080;
+  box-shadow: 0 0 0 1px rgba(2, 128, 128, 0.35), 0 6px 14px rgba(15, 23, 42, 0.12);
+}
+
+/* Just to keep optgroup labels readable */
+.data-model-select optgroup[label] {
+  font-weight: 600;
+  color: #036b6b;
+}
+
+/* Mobile tweaks */
+@media (max-width: 960px) {
+  .data-model-select {
+    min-width: 180px;
+    font-size: 0.85rem;
+  }
 }

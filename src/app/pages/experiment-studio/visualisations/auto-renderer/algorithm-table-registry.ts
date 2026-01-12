@@ -10,12 +10,28 @@ function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-function formatDecimal(value: any): string | number {
-  if (typeof value !== 'number') return value ?? '';
-  const rounded = Number(value.toFixed(3));
-  return Number.isInteger(rounded) ? Math.round(rounded) : rounded;
-}
+function formatDecimal(value: any): string {
+  if (typeof value !== 'number' || isNaN(value)) return value ?? '';
 
+  const abs = Math.abs(value);
+  if (abs === 0) return '0';
+
+  // Too small or too big numbers -> scientific
+  if (abs < 1e-4 || abs >= 1_000_000) {
+    return value.toExponential(3);
+  }
+
+  const decimals = abs < 1 ? 4 : 3;
+  let formatted = value.toFixed(decimals);
+
+  formatted = formatted
+    .replace(/(\.\d*?[1-9])0+$/u, '$1')
+    .replace(/\.0+$/u, '');
+
+  if (formatted === '-0') formatted = '0';
+
+  return formatted;
+}
 
 export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
   kmeans: (result) => {
@@ -62,31 +78,55 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
   linear_regression_cv: (result) => {
     if (!result) return [];
 
-    const n_obs = result?.n_obs || [];
-    const sampleSizeRows = n_obs.map((val: number, i: number) => [
-      `Fold ${i + 1}`, val
-    ]);
+    // 1) Training set sample sizes
+    const nObs = result?.n_obs;
+    const sampleSizeRows = Array.isArray(nObs)
+      ? nObs.map((val: number, i: number) => [`Fold ${i + 1}`, val])
+      : [];
 
-    const summary = [
-      ['Root mean squared error', result?.mean_sq_error_avg, result?.mean_sq_error_std],
-      ['R-squared', result?.r_squared_avg, result?.r_squared_std],
-      ['Mean absolute error', result?.mean_abs_error_avg, result?.mean_abs_error_std],
+    const getMetric = (field: any): [number | null, number | null] => {
+      if (!field) return [null, null];
+
+      if (Array.isArray(field)) {
+        return [
+          typeof field[0] === 'number' ? field[0] : null,
+          typeof field[1] === 'number' ? field[1] : null,
+        ];
+      }
+
+      if (typeof field === 'object') {
+        const avg = typeof field.avg === 'number' ? field.avg : null;
+        const std = typeof field.std === 'number' ? field.std : null;
+        return [avg, std];
+      }
+
+      // fallback
+      return [typeof field === 'number' ? field : null, null];
+    };
+
+    const [rmseMean, rmseStd] = getMetric(result?.mean_sq_error);
+    const [r2Mean, r2Std] = getMetric(result?.r_squared);
+    const [maeMean, maeStd] = getMetric(result?.mean_abs_error);
+
+    const summaryRows = [
+      ['Root mean squared error', rmseMean, rmseStd],
+      ['R-squared', r2Mean, r2Std],
+      ['Mean absolute error', maeMean, maeStd],
     ];
 
     return [
       {
         title: 'Training set sample sizes',
-        columns: ['Fold', 'Training set sample sizes'],
-        rows: sampleSizeRows
+        columns: ['Fold', 'Training Set Sample Sizes'],
+        rows: sampleSizeRows,
       },
       {
-        title: '',
-        columns: ['Mean', 'Standard deviation'],
-        rows: summary.map(([label, mean, std]) => [label, mean, std])
-      }
+        title: 'Error metrics',
+        columns: ['Metric', 'Mean', 'Standard Deviation'],
+        rows: summaryRows,
+      },
     ];
   },
-
 
   pearson_correlation: (result) => {
     const rows = result?.correlations;
@@ -100,7 +140,7 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
     if (!summary) return [];
 
     const metrics = ['accuracy', 'precision', 'recall', 'fscore'];
-    const classes = Object.keys(summary.accuracy); // π.χ. F, M
+    const classes = Object.keys(summary.accuracy);
     const folds = Object.keys(summary.accuracy[classes[0]]).filter(k => k !== 'average' && k !== 'stdev');
 
     const rows = [...folds, 'average', 'stdev'].map(fold => {
@@ -133,36 +173,204 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
   },
 
   logistic_regression: (result) => {
-    const coef = result?.coefficients;
-    const modelStats = result?.model_statistics;
-    if (!coef || !modelStats) return [];
+    if (!result) return [];
 
-    const coefColumns = Object.keys(coef[0]);
-    const coefRows = coef.map((c: any) => coefColumns.map(col => c[col]));
+    const dep = result?.dependent_var ?? '';
+    const indep: string[] = Array.isArray(result?.indep_vars) ? result.indep_vars : [];
 
-    const statColumns = ['Name', 'Value'];
-    const statRows = Object.entries(modelStats);
+    const s = result?.summary ?? {};
+    const coef: number[] = Array.isArray(s?.coefficients) ? s.coefficients : [];
+    const se: number[] = Array.isArray(s?.std_err) ? s.std_err : [];
+    const z: number[] = Array.isArray(s?.z_scores) ? s.z_scores : [];
+    const p: number[] = Array.isArray(s?.pvalues) ? s.pvalues : [];
+    const lo: number[] = Array.isArray(s?.lower_ci) ? s.lower_ci : [];
+    const hi: number[] = Array.isArray(s?.upper_ci) ? s.upper_ci : [];
+
+    // needs at least coefficients + indep vars
+    if (!indep.length || !coef.length) return [];
+
+    const n = Math.min(indep.length, coef.length, se.length || indep.length);
+
+    const coefRows: any[][] = [];
+    for (let i = 0; i < n; i++) {
+      coefRows.push([
+        indep[i] ?? `var_${i + 1}`,
+        formatDecimal(coef[i]),
+        formatDecimal(se[i]),
+        formatDecimal(z[i]),
+        formatDecimal(p[i]),
+        formatDecimal(lo[i]),
+        formatDecimal(hi[i]),
+      ]);
+    }
+
+    // Model info rows, if not arrays
+    const modelInfoKeys = Object.keys(s).filter((k) => !Array.isArray((s as any)[k]));
+    const modelInfoRows: any[][] = [
+      ...(dep ? [['Dependent variable', dep]] : []),
+      ...modelInfoKeys.map((k) => [capitalize(k.replace(/_/g, ' ')), formatDecimal((s as any)[k])]),
+    ];
 
     return [
-      { title: 'Logistic Regression Coefficients', columns: coefColumns, rows: coefRows },
-      { title: 'Model Statistics', columns: statColumns, rows: statRows },
+      {
+        title: 'Logistic Regression Coefficients',
+        columns: ['Variable', 'Coefficient', 'Std.Err.', 'z', 'P(>|z|)', 'Lower 95% CI', 'Upper 95% CI'],
+        rows: coefRows,
+      },
+      {
+        title: 'Model Summary',
+        columns: ['Metric', 'Value'],
+        rows: modelInfoRows,
+      },
     ];
   },
 
-  logistic_regression_cv_fedaverage: (result) => {
-    const metrics = result?.metrics;
-    if (!Array.isArray(metrics)) return [];
-    const columns = Object.keys(metrics[0]);
-    const rows = metrics.map((m: any) => columns.map(col => m[col]));
-    return [{ title: 'Logistic Regression CV with Federated Average Strategy Metrics', columns, rows }];
+  logistic_regression_cv_fedaverage: (result: any, title = 'Logistic Regression Cross-Validation'): TableSpec[] => {
+    if (!result) return [];
+
+    // (A) Preferred: summary tabular shape
+    // summary: { row_names: string[], n_obs: number[], accuracy: number[], ... }
+
+    const s = result?.summary;
+    const rowNames: any[] = Array.isArray(s?.row_names) ? s.row_names : (Array.isArray(s?.fold_names) ? s.fold_names : []);
+
+    const nObsArr: any[] = Array.isArray(s?.n_obs) ? s.n_obs : [];
+    const accArr: any[] = Array.isArray(s?.accuracy) ? s.accuracy : [];
+    const recArr: any[] = Array.isArray(s?.recall) ? s.recall : [];
+    const precArr: any[] = Array.isArray(s?.precision) ? s.precision : [];
+    const fArr: any[] = Array.isArray(s?.fscore) ? s.fscore : (Array.isArray(s?.f1) ? s.f1 : []);
+
+    const hasSummary =
+      rowNames.length > 0 &&
+      (accArr.length === rowNames.length || recArr.length === rowNames.length || precArr.length === rowNames.length || fArr.length === rowNames.length);
+
+    if (hasSummary) {
+      const n = rowNames.length;
+
+      const rows: any[][] = [];
+      for (let i = 0; i < n; i++) {
+        rows.push([
+          rowNames[i] ?? `fold_${i + 1}`,
+          nObsArr[i] == null ? '' : formatDecimal(nObsArr[i]),
+          formatDecimal(accArr[i]),
+          formatDecimal(recArr[i]),
+          formatDecimal(precArr[i]),
+          formatDecimal(fArr[i]),
+        ]);
+      }
+
+      return [{
+        title,
+        columns: ['Fold', 'Number of observations', 'Accuracy', 'Recall', 'Precision', 'F-score'],
+        rows,
+      }];
+    }
+
+    // (B) Alternative: metrics array shape
+    // metrics: Array<{ fold, n_obs, accuracy, recall, precision, fscore }>
+
+    const metrics = Array.isArray(result?.metrics) ? result.metrics : null;
+    if (metrics?.length) {
+      const getFoldLabel = (m: any) => m.fold ?? m.fold_id ?? m.name ?? m.id ?? '';
+      const getVal = (m: any, keys: string[]) => {
+        for (const k of keys) if (m?.[k] !== undefined) return m[k];
+        return null;
+      };
+
+      const rows = metrics.map((m: any) => [
+        getFoldLabel(m),
+        (() => {
+          const v = getVal(m, ['n_obs', 'n', 'num_observations', 'observations']);
+          return v == null ? '' : formatDecimal(v);
+        })(),
+        formatDecimal(getVal(m, ['accuracy', 'acc'])),
+        formatDecimal(getVal(m, ['recall', 'tpr'])),
+        formatDecimal(getVal(m, ['precision', 'ppv'])),
+        formatDecimal(getVal(m, ['fscore', 'f_score', 'f1', 'f1_score'])),
+      ]);
+
+      return [{
+        title,
+        columns: ['Fold', 'Number of observations', 'Accuracy', 'Recall', 'Precision', 'F-score'],
+        rows,
+      }];
+    }
+
+    return [];
   },
 
-  logistic_regression_cv: (result) => {
-    const metrics = result?.metrics;
-    if (!Array.isArray(metrics)) return [];
-    const columns = Object.keys(metrics[0]);
-    const rows = metrics.map((m: any) => columns.map(col => m[col]));
-    return [{ title: 'Logistic Regression CV Metrics', columns, rows }];
+  logistic_regression_cv: (result: any, title = 'Logistic Regression Cross-Validation'): TableSpec[] => {
+    if (!result) return [];
+
+    // (A) Preferred: summary tabular shape
+    // summary: { row_names: string[], n_obs: number[], accuracy: number[], ... }
+
+    const s = result?.summary;
+    const rowNames: any[] = Array.isArray(s?.row_names) ? s.row_names : (Array.isArray(s?.fold_names) ? s.fold_names : []);
+
+    const nObsArr: any[] = Array.isArray(s?.n_obs) ? s.n_obs : [];
+    const accArr: any[] = Array.isArray(s?.accuracy) ? s.accuracy : [];
+    const recArr: any[] = Array.isArray(s?.recall) ? s.recall : [];
+    const precArr: any[] = Array.isArray(s?.precision) ? s.precision : [];
+    const fArr: any[] = Array.isArray(s?.fscore) ? s.fscore : (Array.isArray(s?.f1) ? s.f1 : []);
+
+    const hasSummary =
+      rowNames.length > 0 &&
+      (accArr.length === rowNames.length || recArr.length === rowNames.length || precArr.length === rowNames.length || fArr.length === rowNames.length);
+
+    if (hasSummary) {
+      const n = rowNames.length;
+
+      const rows: any[][] = [];
+      for (let i = 0; i < n; i++) {
+        rows.push([
+          rowNames[i] ?? `fold_${i + 1}`,
+          nObsArr[i] == null ? '' : formatDecimal(nObsArr[i]),
+          formatDecimal(accArr[i]),
+          formatDecimal(recArr[i]),
+          formatDecimal(precArr[i]),
+          formatDecimal(fArr[i]),
+        ]);
+      }
+
+      return [{
+        title,
+        columns: ['Fold', 'Number of observations', 'Accuracy', 'Recall', 'Precision', 'F-score'],
+        rows,
+      }];
+    }
+
+    // (B) Alternative: metrics array shape
+    // metrics: Array<{ fold, n_obs, accuracy, recall, precision, fscore }>
+
+    const metrics = Array.isArray(result?.metrics) ? result.metrics : null;
+    if (metrics?.length) {
+      const getFoldLabel = (m: any) => m.fold ?? m.fold_id ?? m.name ?? m.id ?? '';
+      const getVal = (m: any, keys: string[]) => {
+        for (const k of keys) if (m?.[k] !== undefined) return m[k];
+        return null;
+      };
+
+      const rows = metrics.map((m: any) => [
+        getFoldLabel(m),
+        (() => {
+          const v = getVal(m, ['n_obs', 'n', 'num_observations', 'observations']);
+          return v == null ? '' : formatDecimal(v);
+        })(),
+        formatDecimal(getVal(m, ['accuracy', 'acc'])),
+        formatDecimal(getVal(m, ['recall', 'tpr'])),
+        formatDecimal(getVal(m, ['precision', 'ppv'])),
+        formatDecimal(getVal(m, ['fscore', 'f_score', 'f1', 'f1_score'])),
+      ]);
+
+      return [{
+        title,
+        columns: ['Fold', 'Number of observations', 'Accuracy', 'Recall', 'Precision', 'F-score'],
+        rows,
+      }];
+    }
+
+    return [];
   },
 
   naive_bayes_categorical_cv: (result) => {
@@ -181,7 +389,6 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
       return val.toFixed(3);
     };
 
-
     if (!table || !comparisons) return [];
 
     const summaryData = [
@@ -191,16 +398,16 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
         ss: table.ss_explained,
         ms: table.ms_explained,
         f: table.f_stat,
-        p: table.p_value
+        p: table.p_value,
       },
       {
         label: 'Residual',
         df: table.df_residual,
         ss: table.ss_residual,
         ms: table.ms_residual,
-        f: table.f_residual, // optional
-        p: table.p_residual  // optional
-      }
+        f: table.f_residual,
+        p: table.p_residual,
+      },
     ];
 
     const summaryCols = ['Source', 'DF', 'SS', 'MS', 'F ratio', 'P value'];
@@ -210,7 +417,7 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
       formatDecimal(row.ss),
       formatDecimal(row.ms),
       formatDecimal(row.f),
-      formatP(row.p)
+      formatP(row.p),
     ]);
 
     const compCols = Object.keys(comparisons[0]);
@@ -222,21 +429,89 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
       {
         title: 'ANOVA Summary',
         columns: summaryCols,
-        rows: summaryRows
+        rows: summaryRows,
       },
       {
         title: 'Pairwise Comparisons',
         columns: compCols,
-        rows: compRows
-      }
+        rows: compRows,
+      },
     ];
   },
 
-  anova_twoway: (result) => {
-    const rows = result?.table;
-    if (!Array.isArray(rows)) return [];
-    const columns = Object.keys(rows[0]);
-    return [{ title: 'Two-Way ANOVA Results', columns, rows: rows.map((r: any) => columns.map(c => r[c])) }];
+  anova: (result) => {
+    if (!result) return [];
+
+    // future proof, supports if backend returns table[]
+    if (Array.isArray((result as any).table) && (result as any).table.length > 0) {
+      const rows = (result as any).table;
+      const columns = Object.keys(rows[0]);
+
+      return [
+        {
+          title: 'Two-Way ANOVA Results',
+          columns,
+          rows: rows.map((r: any) => columns.map(c => formatDecimal(r[c]))),
+        },
+      ];
+    }
+
+    // Current layout: df[], sum_sq[], f_stat[] / f_value[], p_value[], terms[]
+    const terms = Array.isArray(result.terms) ? result.terms : [];
+    const df = Array.isArray(result.df) ? result.df : [];
+    const ss = Array.isArray(result.sum_sq) ? result.sum_sq : [];
+    const fArray =
+      Array.isArray(result.f_stat)
+        ? result.f_stat
+        : Array.isArray(result.f_value)
+          ? result.f_value
+          : [];
+
+    const p =
+      Array.isArray(result.p_value)
+        ? result.p_value
+        : Array.isArray(result.pvalue)
+          ? result.pvalue
+          : Array.isArray(result.f_pvalue)
+            ? result.f_pvalue
+            : [];
+
+
+    if (!terms.length) return [];
+
+    const n = terms.length;
+    const rows: any[][] = [];
+
+    for (let i = 0; i < n; i++) {
+      const label = terms[i];
+      const dfVal = df[i];
+      const ssVal = ss[i];
+      const msVal =
+        typeof dfVal === 'number' && dfVal !== 0 && typeof ssVal === 'number'
+          ? ssVal / dfVal
+          : null;
+      const fVal = fArray[i];
+      const pVal = p[i];
+
+      rows.push([
+        label,
+        formatDecimal(dfVal),
+        formatDecimal(ssVal),
+        formatDecimal(msVal),
+        formatDecimal(fVal),
+        formatDecimal(pVal),
+      ]);
+    }
+
+    const columns = ['Source', 'DF', 'SS', 'MS', 'F', 'P value'];
+
+    return [
+      {
+        title: 'Two-Way ANOVA Results',
+        columns,
+        rows,
+      },
+    ];
   },
 
   ttest_onesample: (result) => {
@@ -250,6 +525,7 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
       }
     ];
   },
+
   ttest_independent: (result) => {
     if (!result || typeof result !== 'object') return [];
     const rows = Object.entries(result);
@@ -279,7 +555,7 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
     const nObs = result?.n_obs ?? null;
     const coeff = Array.isArray(result?.coeff) ? result.coeff : [];
     const supportVectors = Array.isArray(result?.support_vectors)
-      ? result.support_vectors.slice(0, 10) // limit για λόγους εμφάνισης
+      ? result.support_vectors.slice(0, 10) // limit
       : [];
 
     const tables = [];
@@ -310,7 +586,5 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
 
     return tables;
   },
-
-
   default: () => [],
 };

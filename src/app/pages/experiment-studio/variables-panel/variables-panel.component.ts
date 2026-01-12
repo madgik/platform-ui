@@ -1,20 +1,20 @@
 import { BubbleChartComponent } from './../visualisations/bubble-chart/bubble-chart.component';
 import { ErrorService } from '../../../services/error.service';
 import { ExperimentStudioService } from '../../../services/experiment-studio.service';
-import { Component, signal, EventEmitter, Output, inject, Input, WritableSignal, computed } from '@angular/core';
+import { Component, signal, inject, Input, WritableSignal, computed, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { AccordionComponent } from '../../shared/accordion/accordion.component';
 import { MatChipsModule } from '@angular/material/chips';
-import { DistributionGraphComponent } from '../distribution-graph/distribution-graph.component';
-import { BubbleData } from '../../../models/experiment-studio.model';
 import { DataModel } from '../../../models/data-model.interface';
 import { DataModelSelectorComponent } from './data-model-selector/data-model-selector.component';
 import { DatasetSelectorComponent } from './dataset-selector/dataset-selector.component';
 import { SearchBarComponent } from './search-bar/search-bar.component';
-import { VariableFilterSelectionComponent } from '../variable-filter-selection/variable-filter-selection.component';
-import { LoadingSpinnerComponent } from '../../shared/loading-spinner/loading-spinner.component';
-import { StatisticAnalysisPanelComponent } from '../statistic-analysis-panel/statistic-analysis-panel.component';
+import { VariableFilterSelectionComponent } from './variable-filter-selection/variable-filter-selection.component';
+import { DistributionGraphComponent } from './distribution-graph/distribution-graph.component';
+import { StatisticAnalysisPanelComponent } from './statistic-analysis-panel/statistic-analysis-panel.component';
+import { SpinnerComponent } from '../../shared/spinner/spinner.component';
+import { catchError, map, of, Subject, switchMap, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-variables-panel',
@@ -32,14 +32,13 @@ import { StatisticAnalysisPanelComponent } from '../statistic-analysis-panel/sta
     DatasetSelectorComponent,
     SearchBarComponent,
     VariableFilterSelectionComponent,
-    LoadingSpinnerComponent,
+    SpinnerComponent,
     StatisticAnalysisPanelComponent
   ],
 })
-export class VariablesPanelComponent {
+export class VariablesPanelComponent implements OnDestroy {
   @Input() defaultModel: DataModel | null = null;
   @Input() dataModelHierarchy: any;
-  @Output() variableSelected = new EventEmitter<BubbleData>();
   highlightNode: any = null;
 
   experimentStudioService = inject(ExperimentStudioService);
@@ -65,39 +64,19 @@ export class VariablesPanelComponent {
   isStatisticalAnalysisOpen = signal(false);
   processedData: any[] = [];
   refreshKey = signal(0);
+  private destroy$ = new Subject<void>();
+  private histogramRequest$ = new Subject<{ codes: string[]; label?: string }>();
 
+  constructor() {
+    this.setupHistogramPipeline();
+  }
 
-  constructor() { }
   ngOnInit(): void {
     this.selectedDataModel.set(this.defaultModel);
     this.loadDataModels();
-
-    // Fetch the federation-wide histogram based on the selected federation
-    const federation = this.selectedDataModel();
-    if (federation) {
-      const algorithmName = 'multiple_histograms';
-      this.experimentStudioService.getAlgorithmResults(algorithmName).subscribe({
-        next: (response) => {
-          const histList = response?.result?.histogram ?? response?.histogram ?? [];
-          const firstHist = histList[0];
-
-          if (firstHist) {
-            this.distributionData.set(firstHist);
-          } else {
-            console.warn('No histogram data found in response:', response);
-          }
-        },
-        error: (error) => {
-          console.error('Error fetching federation-wide histogram:', error);
-        },
-      });
-    } else {
-      console.warn('No federation selected during initialization.');
-    }
   }
 
   onSearchResult(selectedName: string) {
-    console.log('d3data:', this.d3Data);
     const found = this.filteredVariables().find(v => v.label === selectedName);
     if (found) {
       this.highlightNode = found;
@@ -109,9 +88,35 @@ export class VariablesPanelComponent {
     }
   }
 
-  onVariableClicked(variable: any): void {
-    console.log('Variable clicked in filter panel:', variable);
+  onSearchSelected(code: string) {
+    const foundVar = this.filteredVariables().find(v => v.code === code);
+    if (foundVar) {
+      this.highlightNode = foundVar;              // zoom + highlight leaf
+      this.onSelectedNodeChange(foundVar);        // histogram for leaf
+      return;
+    }
 
+    const foundGroup = this.findNodeByCode(this.d3Data, code);
+    if (foundGroup) {
+      this.highlightNode = { code };
+      this.onSelectedNodeChange(foundGroup);
+      return;
+    }
+
+    console.warn('[Search] No node found for code:', code);
+  }
+
+  private findNodeByCode(node: any, code: string): any | null {
+    if (!node) return null;
+    if (node.code === code) return node;
+    for (const child of node.children ?? []) {
+      const found = this.findNodeByCode(child, code);
+      if (found) return found;
+    }
+    return null;
+  }
+
+  onVariableClicked(variable: any): void {
     if (!variable?.code) {
       console.warn('Invalid variable clicked:', variable);
       return;
@@ -164,9 +169,11 @@ export class VariablesPanelComponent {
   }
 
   loadDataModels(): void {
-    this.experimentStudioService.getAllDataModels().subscribe((dataModels) => {
-      this.handleDataModelResponse(dataModels);
-    });
+    this.experimentStudioService.getAllDataModels()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((dataModels) => {
+        this.handleDataModelResponse(dataModels);
+      });
   }
 
   handleDataModelResponse(dataModels: DataModel[]): void {
@@ -179,26 +186,10 @@ export class VariablesPanelComponent {
       this.experimentStudioService.selectedDataModel.set(this.selectedDataModel() ?? null);
 
       if (this.selectedDataModel()) {
-        const algorithmName = "multiple_histograms";
         this.loadVisualizationData();
+        this.queueHistogramRequest([], 'Initial');
         setTimeout(() => {
           this.fetchFederationHistogram();
-        });
-
-        this.experimentStudioService.getAlgorithmResults(algorithmName).subscribe({
-          next: (response) => {
-            const histList = response?.result?.histogram ?? response?.histogram ?? [];
-            const firstHist = histList[0];
-
-            if (firstHist) {
-              this.distributionData.set(firstHist);
-            } else {
-              console.warn('⚠️ No histogram data found in response:', response);
-            }
-          },
-          error: (err) => {
-            console.error("Histogram fetch error:", err);
-          }
         });
       }
     }
@@ -220,7 +211,6 @@ export class VariablesPanelComponent {
     }));
   }
 
-  //todo: decide what should be done
   fetchFederationHistogram(): void {
     const federation = this.selectedDataModel();
     if (!federation) {
@@ -233,21 +223,7 @@ export class VariablesPanelComponent {
 
     const algorithmName = "multiple_histograms";
 
-    this.experimentStudioService.getAlgorithmResults(algorithmName, groupCodes).subscribe({
-      next: (response) => {
-        const histList = response?.result?.histogram ?? response?.histogram ?? [];
-        const firstHist = histList[0];
-
-        if (firstHist) {
-          this.distributionData.set(firstHist);
-        } else {
-          console.warn('No histogram data found in response:', response);
-        }
-      },
-      error: (error) => {
-        console.error('Error fetching federation-wide histogram:', error);
-      },
-    });
+    this.queueHistogramRequest(groupCodes, 'Federation');
   }
 
   // end of services functions
@@ -292,10 +268,6 @@ export class VariablesPanelComponent {
     this.filteredData = filterNodes(this.d3Data) || { name: 'No Results', children: [] };
   }
 
-  onSelectedItem(item: any): void {
-    // console.log('Selected Item:', item);
-  }
-
   getAllLeafNodes(node: any): any[] {
     if (!node.children || node.children.length === 0) {
       return [];
@@ -315,9 +287,7 @@ export class VariablesPanelComponent {
   }
 
   onSelectedNodeChange(node: any): void {
-    console.log('Node selected:', node?.code);
     this.selectedNode = { ...node };
-    this.isLoadingHistogram.set(true);
     this.errorMessage.set(null);
     this.distributionData.set(null); // clear previous histogram
 
@@ -327,29 +297,8 @@ export class VariablesPanelComponent {
       return;
     }
 
-    const algorithmName = "multiple_histograms";
     const codes = node.children ? this.getAllLeafNodes(node).map((c: any) => c.code) : [node.code];
-
-    this.experimentStudioService.getAlgorithmResults(algorithmName, codes).subscribe({
-      next: (response) => {
-        this.isLoadingHistogram.set(false);
-
-        const histList = response?.result?.histogram ?? response?.histogram ?? [];
-        const firstHist = histList[0];
-
-        if (firstHist) {
-          const dataWithName = { ...firstHist, variableName: node.label };
-          this.distributionData.set(dataWithName);
-        } else {
-          this.errorMessage.set('No histogram data found for this variable.');
-        }
-      },
-      error: (error) => {
-        this.isLoadingHistogram.set(false);
-        console.error('Error fetching histogram:', error);
-        this.errorMessage.set('Error loading histogram. Please try again.');
-      },
-    });
+    this.queueHistogramRequest(codes, node.label);
   }
 
   addGroupVariables(): void {
@@ -378,6 +327,55 @@ export class VariablesPanelComponent {
 
   closeStatisticalAnalysis(): void {
     this.isStatisticalAnalysisOpen.set(false);
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private setupHistogramPipeline(): void {
+    this.histogramRequest$
+      .pipe(
+        takeUntil(this.destroy$),
+        switchMap(({ codes, label }) => {
+          const algoName = 'multiple_histograms';
+          return this.experimentStudioService
+            .getAlgorithmResults(algoName, codes)
+            .pipe(
+              catchError((error) => {
+                this.isLoadingHistogram.set(false);
+                console.error('Error fetching histogram:', error);
+                this.errorMessage.set('Error loading histogram. Please try again.');
+                return of(null);
+              }),
+              map((response) => ({ response, label }))
+            );
+        })
+      )
+      .subscribe(({ response, label }) => {
+        this.isLoadingHistogram.set(false);
+
+        if (!response) return;
+
+        const histList = response?.result?.histogram ?? response?.histogram ?? [];
+        const firstHist = histList[0];
+
+        if (firstHist) {
+          const dataWithName = { ...firstHist, variableName: label ?? firstHist.variable };
+          this.distributionData.set(dataWithName);
+          this.errorMessage.set(null);
+        } else {
+          this.errorMessage.set('No histogram data found for this selection.');
+        }
+      });
+  }
+
+  private queueHistogramRequest(codes: string[], label?: string) {
+    this.isLoadingHistogram.set(true);
+    this.errorMessage.set(null);
+    this.distributionData.set(null);
+    this.histogramRequest$.next({ codes, label });
   }
 
 }

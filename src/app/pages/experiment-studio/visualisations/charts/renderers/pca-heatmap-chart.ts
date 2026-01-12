@@ -3,7 +3,6 @@ import { EChartsOption } from "echarts";
 export function buildPCAHeatmapChart(result: any): EChartsOption[] {
   const matrix = result?.eigenvectors;
 
-  console.log('[PCAHeatmap] result:', result);
   if (!matrix || !Array.isArray(matrix)) {
     console.warn('[PCAHeatmap] Eigenvectors missing or invalid');
     return [];

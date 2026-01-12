@@ -5,15 +5,16 @@
   color: #1f2937;
 }
 
-/* Container for all tables */
+ /* CONTAINER – GRID LAYOUT */
 .ar-container {
-  display: flex;
-  flex-direction: column;
-  gap: 1.75rem;
   width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 1.75rem;
+  align-items: stretch;
 }
 
-/* Each result card */
+ /* CARDS */
 .ar-card {
   background: #ffffff;
   border: 1px solid #e1e7e9;
@@ -21,13 +22,20 @@
   box-shadow: 0 2px 6px rgba(0, 60, 60, 0.08);
   overflow: hidden;
   transition: box-shadow 0.2s ease-in-out, transform 0.15s ease-in-out;
+  grid-column: span 1;
+  animation: fadeIn 0.25s ease-in-out;
 }
 
 .ar-card:hover {
   box-shadow: 0 4px 10px rgba(0, 80, 80, 0.15);
 }
 
-/* Table Title */
+/* Wide tables = full width row */
+.ar-card--full {
+  grid-column: 1 / -1;
+}
+
+ /* TITLES */
 .ar-title {
   background: linear-gradient(90deg, #027a7a, #4dcaca);
   color: white;
@@ -38,13 +46,13 @@
   letter-spacing: 0.3px;
 }
 
-/* Scroll wrapper for overflow tables */
+ /* TABLE WRAPPER */
 .ar-table-wrapper {
   overflow-x: auto;
   padding: 0.75rem 1rem 1rem 1rem;
 }
 
-/* Base table styling */
+ /* TABLE BASE STYLING */
 .ar-table {
   width: 100%;
   border-collapse: collapse;
@@ -64,7 +72,7 @@
   letter-spacing: 0.2px;
 }
 
-/* Table rows */
+/* Body rows */
 .ar-table tbody tr:nth-child(even) {
   background-color: #f9fdfd;
 }
@@ -73,7 +81,7 @@
   background-color: #e9f7f7;
 }
 
-/* Table cells */
+/* Cells */
 .ar-table td {
   padding: 8px 12px;
   border-bottom: 1px solid #edf2f2;
@@ -83,22 +91,46 @@
   transition: background 0.2s ease;
 }
 
-/* Zebra and subtle focus */
+/* First column emphasis */
 .ar-table td:first-child {
   font-weight: 500;
   color: #035e5e;
 }
 
+/* Last column (numeric) */
 .ar-table td:last-child {
-  /* text-align: right; */
   color: #222;
 }
 
-/* Fade-in animation */
+ /* ANIMATION */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-.ar-card {
-  animation: fadeIn 0.25s ease-in-out;
+
+ /* RESPONSIVE */
+
+/* Medium screens */
+@media (max-width: 1024px) {
+  .ar-container {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+}
+
+/* Small screens - single column */
+@media (max-width: 768px) {
+  .ar-container {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.25rem;
+  }
+
+  .ar-table {
+    min-width: 0;
+  }
 }

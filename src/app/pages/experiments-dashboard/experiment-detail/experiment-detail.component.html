@@ -1,31 +1,199 @@
-<!-- Experiment details container -->
-  @if (selectedExperiment()) {
-  <div class="experiment-details">
-    <h2>Experiment: {{ selectedExperiment()?.name }}</h2>
-
-    <div class="experiment-meta">
-      <p><strong>Description:</strong> {{ selectedExperiment()?.description }}</p>
-      <p><strong>Date Created:</strong> {{ selectedExperiment()?.dateCreated }}</p>
-      <p><strong>Status:</strong> {{ selectedExperiment()?.status }}</p>
-    </div>
-
-    <div class="experiment-data">
-      <h3>Experiment Data</h3>
-      <p>Charts, graphs, or tables to display the experiment’s results or data.</p>
-    </div>
-
-    <div class="experiment-actions">
-      <button (click)="runExperiment()">Run Again</button>
-      <button (click)="editExperiment()">Edit Experiment</button>
-      <button (click)="onDelete(selectedExperiment()?.id ?? 'No-ID')">Delete Experiment</button>
-    </div>
+<div class="experiment-details-root">
+  @if (copyToastVisible()) {
+  <div class="copy-toast">
+    <i class="fas fa-check-circle"></i>
+    <span>{{ copyToastMessage() }}</span>
   </div>
-}
+  } @if (!selectedExperiment()) {
+  <div class="empty-details">
+    <h2>Select an experiment</h2>
+    <p>
+      Pick an experiment from the list to see its configuration and results.
+    </p>
+  </div>
+  } @else {
+  <div class="experiment-details-body" #resultsCard>
+    <!-- META CARD -->
+    <section class="experiment-meta-card">
+      <div class="meta-header">
+        <span class="meta-pill">Experiment</span>
 
-<!-- Fallback content when no experiment is selected -->
- @if(!selectedExperiment()) {
-   <div class="no-experiment-selected">
-     <h3>No Experiment Selected</h3>
-     <p>Please select an experiment from the list to view its details.</p>
-   </div>
- }
+        <span
+          class="status-chip"
+          [ngClass]="{
+            completed: selectedExperiment()?.status === 'success',
+            error: selectedExperiment()?.status === 'error'
+          }"
+        >
+          {{ selectedExperiment()?.status }}
+        </span>
+      </div>
+
+      <h1 class="experiment-title">
+        {{ selectedExperiment()?.name }}
+      </h1>
+
+      <p class="experiment-description">
+        {{ selectedExperiment()?.description || "No description provided." }}
+      </p>
+
+      <div class="meta-grid">
+        <div class="meta-item">
+          <span class="label">Created</span>
+          <span class="value">
+            {{ selectedExperiment()?.dateCreated | date : "medium" }}
+          </span>
+        </div>
+
+        <div class="meta-item">
+          <span class="label">Algorithm</span>
+          <span class="value">
+            {{ selectedExperiment()?.algorithmName || "Unknown" }}
+          </span>
+        </div>
+      </div>
+
+      <div class="meta-item">
+        <span class="label">Created by</span>
+        <span class="value">
+          {{ selectedExperiment()?.author || "Unknown" }}
+        </span>
+      </div>
+
+      <div class="details-actions">
+        <button type="button" class="ghost-btn" (click)="runExperiment()">
+          <i class="fas fa-play-circle"></i>
+          <span>Run again</span>
+        </button>
+
+        <button type="button" class="ghost-btn" (click)="editExperiment()">
+          <i class="far fa-edit"></i>
+          <span>Edit in studio</span>
+        </button>
+
+        <button
+          type="button"
+          class="ghost-btn"
+          [class.shared]="isShared()"
+          (click)="onToggleShare()"
+          [title]="isShared() ? 'Stop sharing' : 'Share with others'"
+        >
+          <i class="fas fa-share-alt"></i>
+          <span>{{ isShared() ? "Shared" : "Share" }}</span>
+        </button>
+
+        <button
+          type="button"
+          class="ghost-btn"
+          (click)="onExportPdf()"
+          title="Export to PDF"
+        >
+          <i class="far fa-file-pdf"></i>
+          <span>Export</span>
+        </button>
+
+        <button type="button" class="ghost-btn danger" (click)="onDelete()">
+          <i class="far fa-trash-alt"></i>
+          <span>Delete</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- CONFIGURATION CARD -->
+    @if (selectedExperiment(); as exp) {
+    <section class="config-card">
+      <div class="config-header">
+        <h3>Configuration</h3>
+        <p class="config-subtitle">
+          Data model, datasets and variables used in this run.
+        </p>
+      </div>
+
+      <div class="config-grid">
+        <!-- Row 1: Domain | Datasets -->
+        <div class="config-row config-row--top">
+          <!-- Domain -->
+          <div class="config-field">
+            <span class="label">Domain</span>
+            <div class="domain-value" [class.domain-value--empty]="!exp.domain">
+              <i class="fas fa-layer-group"></i>
+              <span class="domain-text">{{
+                exp.domain || "Not specified"
+              }}</span>
+            </div>
+          </div>
+
+          <!-- Datasets -->
+          <div class="config-field">
+            <span class="label">Datasets</span>
+            <div class="datasets-value">
+              <i class="fas fa-database"></i>
+              <span class="datasets-text">
+                @if (exp.datasets?.length) {
+                {{ exp.datasets?.join(", ") }}
+                } @else { Not specified }
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      @if (variablesWithLabels().length) {
+      <div class="config-tags-row">
+        <span class="label">Variables (Y)</span>
+        <div class="tag-list">
+          @for (v of variablesWithLabels(); track v.code) {
+          <span class="tag">{{ v.label }}</span>
+          }
+        </div>
+      </div>
+      } @if (covariatesWithLabels().length) {
+      <div class="config-tags-row">
+        <span class="label">Covariates (X)</span>
+        <div class="tag-list">
+          @for (c of covariatesWithLabels(); track c.code) {
+          <span class="tag">{{ c.label }}</span>
+          }
+        </div>
+      </div>
+      } @if (filtersWithLabels().length) {
+      <div class="config-tags-row">
+        <span class="label">Filters</span>
+        <div class="tag-list">
+          @for (f of filtersWithLabels(); track f.code) {
+          <span class="tag">{{ f.label }}</span>
+          }
+        </div>
+      </div>
+      }
+    </section>
+    }
+
+    <!-- RESULTS -->
+    <section class="results-card">
+      <div class="results-header">
+        <div>
+          <h3>Results</h3>
+          <p class="results-subtitle">
+            Visualisation and tables for the selected experiment.
+          </p>
+        </div>
+      </div>
+
+      @if (isLoading()) {
+      <app-spinner [overlay]="false"></app-spinner>
+      } @else if (loadError()) {
+      <div class="error-box">{{ loadError() }}</div>
+      } @else if (experimentResult()) {
+      <app-algorithm-result
+        [result]="experimentResult()"
+        [schema]="outputSchema()"
+        [algorithm]="experimentalAlgorithmName()"
+      />
+      } @else {
+      <p class="no-data-text">No results available for this experiment yet.</p>
+      }
+    </section>
+  </div>
+  }
+</div>

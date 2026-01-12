@@ -1,0 +1,337 @@
+/* === BACKDROP === */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 6000;
+}
+
+/* === MODAL SHELL === */
+.modal-container {
+  position: fixed;
+  top: 54%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(80%, 90vw);
+  max-height: 85vh;
+  overflow: auto;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+  z-index: 6001;
+  font-family: "Roboto", sans-serif;
+  animation: fadeIn 0.25s ease-out both;
+}
+
+/* === HEADER (New Teal Gradient) === */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 22px;
+  background: linear-gradient( 90deg, #026d6d, #7ce8d9);
+  color: white;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  box-shadow: inset 0 -1px 0 rgba(255,255,255,0.15);
+}
+
+.modal-header p {
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  font-size: 1.1rem;
+}
+
+/* Close button */
+.close-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 18px;
+  transition: opacity 0.2s ease;
+}
+.close-btn:hover {
+  opacity: 0.7;
+}
+
+/* === TABS === */
+.modal-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 0;
+  background: #f5f8f9;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.modal-tabs button {
+  border: 1px solid #b8e4e6;
+  border-radius: 18px;
+  padding: 6px 16px;
+  background: #e7f6f7;
+  color: #007b83;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-tabs button.active {
+  background: #009fa4;
+  border-color: #009fa4;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(0, 159, 164, 0.35);
+}
+
+/* === BODY === */
+.modal-body {
+  padding: 20px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+/* === Expand/Collapse buttons — NOT uppercase === */
+.accordion-controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin: 10px 0 15px 0;
+}
+
+.expand-all,
+.collapse-all {
+  background: #009fa4;
+  color: #fff;
+  border: none;
+  padding: 7px 16px;
+  border-radius: 40px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.9rem;
+  letter-spacing: 0;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 6px rgba(0, 90, 92, 0.2);
+}
+
+.expand-all:hover,
+.collapse-all:hover {
+  background: #007b83;
+  transform: translateY(-1px);
+}
+
+/* === ACCORDION === */
+.accordion {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 127, 133, 0.08);
+  margin-bottom: 14px;
+  transition: box-shadow 0.3s ease;
+}
+
+.accordion:hover {
+  box-shadow: 0 6px 14px rgba(0, 127, 133, 0.15);
+}
+
+/* Header */
+.accordion-header {
+  background: linear-gradient( 90deg, #026d6d, #7ce8d9);
+  padding: 12px 16px;
+  border-radius: 12px 12px 0 0;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 15px;
+  font-weight: 600;
+  color: #f8ffff;
+  border-bottom: 1px solid #cfeeee;
+}
+
+.accordion-icon {
+  font-size: 13px;
+  opacity: 0.75;
+}
+
+/* Body */
+.accordion-body {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: max-height 0.4s cubic-bezier(0.25, 0.1, 0.25, 1),
+    opacity 0.3s ease, transform 0.3s ease;
+}
+
+.accordion-body.open {
+  max-height: 1000px;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* === TABLE === */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th {
+  background: #e6fafb;
+  color: #006b6f;
+  text-align: center;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  border-bottom: 2px solid #009fa4;
+}
+
+.data-table td {
+  text-align: center;
+  padding: 9px 12px;
+  font-size: 14px;
+  color: #333;
+  border-bottom: 1px solid #edf7f7;
+}
+
+.data-table tbody tr:nth-child(odd) {
+  background-color: #fcfefe;
+}
+.data-table tbody tr:nth-child(even) {
+  background-color: #f7fcfc;
+}
+
+.data-table tbody tr:hover {
+  background-color: #eefafa;
+}
+
+/* First column (metric label) */
+.data-table td:first-child {
+  font-weight: 600;
+  color: #007b83;
+  text-align: left;
+  padding-left: 16px;
+}
+
+/* === BOX PLOTS === */
+.boxplots-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.mini-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.mini-tabs button {
+  border: 1px solid #b5e2e8;
+  background: #e8f9fb;
+  border-radius: 14px;
+  padding: 6px 12px;
+  color: #00758c;
+  cursor: pointer;
+}
+
+.mini-tabs button.active {
+  background: #009fa4;
+  color: #fff;
+  border: none;
+}
+
+.chart-container {
+  width: 90%;
+  max-width: 700px;
+  min-height: 380px;
+}
+
+/* === FOOTER === */
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 22px;
+  background: #f5f8f9;
+  border-top: 1px solid #e0e0e0;
+}
+
+.btn-close {
+  background: #7a9fa2;
+  border: none;
+  color: white;
+  padding: 8px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn-download {
+  background: #009fa4;
+  border: none;
+  color: white;
+  padding: 8px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.btn-download:hover {
+  background: #007b83;
+}
+
+/* === Export overlay === */
+.pdf-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  font-size: 1.2rem;
+  color: #333;
+  font-weight: 500;
+}
+
+.btn-download[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* === HIDDEN CHARTS FOR EXPORT (keep rendered but off-screen) === */
+.hidden-charts-for-export {
+  position: fixed;
+  top: -9999px;
+  left: -9999px;
+  width: 900px;
+  height: auto;
+  opacity: 1;
+  pointer-events: none;
+  background: #fff;
+}
+
+.hidden-charts-for-export app-chart-renderer {
+  width: 800px;
+  height: 500px;
+  display: block;
+}
+
+.invisible {
+  opacity: 0;
+}
+
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}

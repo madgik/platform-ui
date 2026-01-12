@@ -22,7 +22,6 @@ export class HeaderComponent implements OnInit {
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
         this.currentRoute = event.urlAfterRedirects; // Update to the latest route
-        console.log("Updated current route:", this.currentRoute);
       });
   }
 
@@ -31,7 +30,8 @@ export class HeaderComponent implements OnInit {
   }
 
   login(): void {
-    this.authService.login(this.currentRoute);
+    // Always route back to dashboard after login for a clean start
+    this.authService.login();
   }
 
   logout(): void {

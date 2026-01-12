@@ -1,7 +1,7 @@
 import { RawAlgorithmDefinition, RawParameter } from '../models/backend-algorithms.model';
 import { AlgorithmConfig } from '../models/algorithm-definition.model';
 
-// Lookup για κατηγορίες
+// Lookup for categories
 const CATEGORY_MAPPING: Record<string, string> = {
   "kmeans": "Machine Learning",
   "svm_scikit": "Machine Learning",
@@ -109,7 +109,6 @@ export function mapRawAlgorithmToAlgorithmConfig(raw: RawAlgorithmDefinition): A
 
 
 export function getOutputSchema(algorithmName: string): any[] | undefined {
-  // console.log("algorithm name in mappers: ", algorithmName);
   switch (algorithmName) {
     case 'anova':
       return [
@@ -402,7 +401,7 @@ export function getOutputSchema(algorithmName: string): any[] | undefined {
         { key: 'df', label: 'Degrees of Freedom', type: 'number' },
         { key: 'mean_diff', label: 'Mean Difference', type: 'number' },
         { key: 'se_difference', label: 'Std. Error of Difference', type: 'number' },
-        { key: 'ci_lower', label: 'CI Lower', type: 'string' },  // ή 'number' αν το χειρίζεσαι αλλιώς
+        { key: 'ci_lower', label: 'CI Lower', type: 'string' },
         { key: 'ci_upper', label: 'CI Upper', type: 'string' },
         { key: 'cohens_d', label: 'Cohen\'s d', type: 'number' }
       ];
@@ -413,7 +412,7 @@ export function getOutputSchema(algorithmName: string): any[] | undefined {
         { key: 'p_value', label: 'p-value', type: 'number', format: 'pval' },
         { key: 'df', label: 'Degrees of Freedom', type: 'number' },
         { key: 'mean_diff', label: 'Mean Difference', type: 'number' },
-        { key: 'se_diff', label: 'Std. Error', type: 'array' }, // αν έχει πάντα ένα στοιχείο μπορούμε να το χειριστούμε
+        { key: 'se_diff', label: 'Std. Error', type: 'array' },
         { key: 'ci_lower', label: 'CI Lower', type: 'string' },
         { key: 'ci_upper', label: 'CI Upper', type: 'string' },
         { key: 'cohens_d', label: 'Cohen\'s d', type: 'number' }

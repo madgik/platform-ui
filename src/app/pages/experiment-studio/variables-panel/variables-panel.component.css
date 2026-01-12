@@ -1,163 +1,156 @@
-.variables-panel-container {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  justify-content: space-between;
-  align-items: flex-start;
-  height: 100%;
+/* ---------- SHELL  ---------- */
+
+.variables-panel-shell {
   width: 100%;
+  box-sizing: border-box;
+  background: rgb(234, 248, 243);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+  padding: 8px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ---------- TOP STRIP: selectors (model / datasets / search) ---------- */
+
+.selectors-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  padding: 6px 4px 10px;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+.selectors-row > *:not(.search-bar-container) {
+  flex-shrink: 0;
 }
 
 .search-bar-container {
-  width: 100%;
-  padding: 10px;
-  border-bottom: 1px solid #ccc;
-  background-color: #f9f9f9;
-  z-index: 1000;
-}
-
-.main-panel {
   display: flex;
-  flex-grow: 1;
-  justify-content: space-between;
-  padding: 10px;
+  align-items: center;
+  justify-content: flex-start;
+  min-width: 260px;
+  flex: 1 1 260px;
+  margin-left: 0;
 }
 
+/* ---------- MAIN LAYOUT: bubble + right column ---------- */
+
+.variables-main {
+  display: grid;
+  grid-template-columns: minmax(0, 0.55fr) minmax(0, 0.45fr);
+  gap: 16px;
+  padding-top: 6px;
+  align-items: flex-start;
+}
+
+/* Left: bubble chart “canvas” */
 .bubble-chart-section {
-  flex-shrink: 0;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  background-color: #fff;
-  padding: 5px;
-  width: fit-content;
-  min-width: 52%;
+  min-height: 470px;
+  background: radial-gradient(
+    circle at top left,
+    #dbf6ff 0,
+    #e0fbf5 55%,
+    #f4fbff 100%
+  );
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  padding: 6px;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
+/* Right column: parameters + distribution */
+.right-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Common block styling */
+.panel-block {
+  background: #f9fafb;
+  border-radius: 12px;
+  border: 1px solid rgba(203, 213, 225, 0.9);
+  padding: 8px 10px;
+  box-sizing: border-box;
+}
+
+/* Variable / covariate / filter panel */
 .variable-filter-container {
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  background-color: #fff;
-  padding: 5px;
-  width: 99%;
-  box-sizing: border-box;
+  min-height: 140px;
 }
 
-.selection-panel {
-  flex: 1;
-  margin-left: 10px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  background-color: #f9f9f9;
-  padding: 10px;
-  overflow-y: auto;
-}
-
-.selection-panel h4 {
-  margin-bottom: 10px;
-}
-
-.selection-panel ul {
-  list-style: none;
-  padding: 0;
-}
-
-.selection-panel li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 5px;
-}
-
-.selectors-container {
-  display: flex;
-  gap: 20px;
-  align-items: center;
-}
-
+/* Distribution graph card */
 .distribution-graph {
-  display: block;
-  width: 99%;
-  min-height: 68vh;
-  height: auto;
-  padding: 10px;
-  background-color: #fff;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  box-sizing: border-box;
-  margin-bottom: 20px;
-  overflow: visible;
-  padding: 0px;
+  position: relative;
+  min-height: 235px;
+  margin: 0;
 }
 
 .distribution-graph-header {
-  font-size: 20px;
+  font-size: 0.95rem;
   color: #026d6d;
-  margin-bottom: 8px;
-  font-weight: bold;
-  margin: 5px;
+  margin: 4px 2px 8px;
+  font-weight: 600;
 }
 
-
-.histogram-placeholder {
-  width: 100%;
-  height: 250px;
-  background: linear-gradient(90deg, #f0f0f0, #e0e0e0, #f0f0f0);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-  border-radius: 8px;
-}
-
-.group-components-vertical {
-  display: block;
-  width: 60%;
-}
-
-/* Adjust "No Data Available" Message */
-.no-data-message {
+.distribution-loader {
   display: flex;
-  justify-content: center;
   align-items: center;
-  font-size: 1.2em;
-  min-height: 450px;
-  color: #666;
-  text-align: center;
-  height: 100%; /* Make it fill the height of the panel */
-  margin: 0; /* Remove any margin that could affect positioning */
+  justify-content: center;
+  min-height: 180px;
 }
+
+/* Wrapper for the floating button */
+.histogam-placeholder {
+  position: relative;
+  width: 100%;
+  padding-bottom: 8px;
+}
+
+/* ---------- FLOATING STATISTICS BUTTON ---------- */
 
 .floating-button {
-  position: absolute; /* Absolute positioning relative to the parent container */
-  top: 115%;
-  right: 1%; /* Pin to the right of the grandparent container */
-  background: linear-gradient(90deg, #00758c, #00a6c0);
+  position: absolute;
+  right: 8px;
+  bottom: 15px;
+  background: linear-gradient(135deg, #009b8e, #76c7c0cb);
   color: white;
   border: none;
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
-  font-size: 1.3em;
+  border-radius: 999px;
+  width: 38px;
+  height: 38px;
+  font-size: 1.2rem;
   display: flex;
   justify-content: center;
   align-items: center;
-  box-shadow: 1px 3px 6px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.4);
   cursor: pointer;
-  z-index: 10; /* Ensure it stays above other elements */
+  z-index: 10;
+  transition: background 0.18s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .floating-button:hover {
   background: #f3f6f7;
   color: #00758c;
-  transform: scale(1.1);
-  transition: background 0.3s ease, transform 0.2s ease;
+  transform: translateY(-1px) scale(1.04);
+  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.45);
 }
 
 .floating-button:disabled {
-  background: black;
-  color: gray;
-  opacity: 0.5;
+  background: #d1d5db;
+  color: #6b7280;
+  opacity: 0.7;
   cursor: not-allowed;
-  pointer-events: none; /* Prevents clicking */
+  box-shadow: none;
 }
+
+/* ---------- MESSAGES (no variable / error) ---------- */
 
 .message-container {
   display: flex;
@@ -168,10 +161,10 @@
   padding: 24px;
   border-radius: 12px;
   text-align: center;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 500;
   animation: fadeIn 0.4s ease-in-out;
-  margin: 20px auto;
+  margin: 14px auto 6px;
   max-width: 80%;
 }
 
@@ -182,18 +175,63 @@
 }
 
 .message-container.error {
-  background: rgba(255, 0, 0, 0.05);
+  background: rgba(255, 0, 0, 0.04);
   color: #b00020;
   border: 1px solid rgba(255, 0, 0, 0.2);
 }
 
 .message-icon {
-  font-size: 40px;
-  opacity: 0.8;
+  font-size: 36px;
+  opacity: 0.85;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
+/* ---------- RESPONSIVE ---------- */
+
+@media (max-width: 1200px) {
+  .variables-main {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bubble-chart-section {
+    min-height: 420px;
+  }
+
+  .floating-button {
+    bottom: -16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .variables-panel-shell {
+    padding: 8px;
+    border-radius: 14px;
+  }
+
+  .selectors-row {
+    gap: 10px;
+    padding: 6px 0 8px;
+  }
+
+  .variables-main {
+    gap: 12px;
+  }
+
+  .bubble-chart-section {
+    min-height: 360px;
+  }
+
+  .distribution-graph {
+    min-height: 210px;
+  }
+}

@@ -1,48 +1,154 @@
-<div class="experiments-dashboard">
-  <div class="main-content">
-    <!-- Top section with a button to create new experiments -->
-    <div class="top-section">
+<div class="experiments-dashboard full-bleed">
+  @if (errorMessage()) {
+  <div
+    class="dashboard-error-banner"
+    role="alert"
+    aria-live="assertive"
+    aria-atomic="true"
+  >
+    <div class="banner-content">
+      <i class="fas fa-exclamation-triangle"></i>
+      <span>{{ errorMessage() }}</span>
+    </div>
+    <button type="button" class="banner-close" (click)="dismissError()">
+      &times;
+    </button>
+  </div>
+  }
+
+  <!-- Top header -->
+  <header class="dashboard-header">
+    <div class="greeting-block">
+       <h1 class="greeting-title">Hello, {{ greetingName() }} 👋</h1>
+      <p class="greeting-subtitle">
+        Manage your experiments and compare their results.
+      </p>
     </div>
 
-    <!-- Content section with experiment list and details -->
-    <div class="content-body">
-      <!-- Experiment menu with a dynamic list of experiments -->
-      <div class="experiment-menu">
-        <app-experiments-list
-          (experimentSelected)="onExperimentSelected($event)"
-          (isAddingExperiment)="onAddExperiment()"
-        ></app-experiments-list>
+    <div class="header-actions">
+      <button
+        class="btn-new-experiment"
+        type="button"
+        (click)="goToNewExperiment()"
+      >
+        <i class="fas fa-plus"></i>
+        <span>New Experiment</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main layout -->
+  <div class="dashboard-layout">
+    <!-- LEFT: experiments list -->
+    <aside class="experiments-panel">
+      <div class="panel-header">
+        <div>
+          <h2>Experiments List</h2>
+          <p class="panel-subtitle">
+            Browse your saved runs and pick one to inspect.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          class="compare-mode-btn"
+          [class.active]="compareMode()"
+          (click)="toggleCompareMode()"
+        >
+          <i class="fas fa-columns"></i>
+          <span>Compare</span>
+        </button>
       </div>
 
-      @if (isAddingExperiment) {
-      <app-new-experiment
-      (createExperiment)="handleExperimentCreation($event)"
-      (cancel)="onCloseNewExperiment()" />
-      }
-      <!-- Experiment Details -->
-      @if (selectedExperiment()) {
-        <app-experiment-details
-          [selectedExperiment]="selectedExperiment()"
-          (deleteExperiment)="onDeleteRequested()"
-        ></app-experiment-details>
+      <section class="experiments-list-section">
+        <app-experiments-list
+          [selectedExperimentId]="selectedExperiment()?.id ?? null"
+          [currentUserEmail]="currentUserEmail"
+          [compareIds]="compareIds()"
+          [compareMode]="compareMode()"
+          (experimentSelected)="onExperimentSelected($event)"
+          (editRequested)="onEditExperiment($event)"
+          (deleteRequested)="onDeleteFromList($event)"
+        >
+        </app-experiments-list>
+      </section>
+    </aside>
+
+    <!-- RIGHT: details + results -->
+    <main class="details-panel">
+      @if (!compareMode()) {
+      <app-experiment-details
+        [selectedExperiment]="selectedExperiment()"
+        (run)="onRunExperiment($event)"
+        (edit)="onEditExperiment($event)"
+        (deleteExperiment)="onDeleteRequested()"
+      >
+      </app-experiment-details>
+      } @else if (experimentsForCompare().length < 2) {
+      <section class="compare-placeholder-card">
+        <h2>Compare mode is on</h2>
+
+        @if (experimentsForCompare().length === 0) {
+        <p>
+          Click experiments in the list on the left to start building your
+          comparison grid.
+        </p>
+        } @else if (experimentsForCompare().length === 1) {
+        <p>
+          One experiment selected. Pick at least one more from the list to see
+          them side by side.
+        </p>
+        } @else {
+        <p>
+          {{ experimentsForCompare().length }} experiments selected. Scroll down
+          to see the comparison grid.
+        </p>
+        }
+      </section>
       }
 
-      <!-- Delete Confirmation Modal -->
-      @if (isConfirmingDelete) {
-      <div class="modal-overlay" (click)="cancelDelete()">
-        <div class="modal-container" (click)="$event.stopPropagation()">
-          <p>Are you sure you want to delete this experiment?</p>
-          <div class="dialog-actions">
-            <button type="button" class="btn-create" (click)="confirmDelete(selectedExperiment()?.id ?? 'No experiment id')">
-              OK
-            </button>
-            <button type="button" class="btn-cancel" (click)="cancelDelete()">
-              Cancel
-            </button>
-          </div>
+      <!-- Comparison Grid -->
+      @if (compareMode() && experimentsForCompare().length >= 2) {
+      <app-experiments-compare
+        [experiments]="experimentsForCompare()"
+      ></app-experiments-compare>
+      }
+    </main>
+
+    <!-- Delete Confirmation Modal -->
+    @if (isConfirmingDelete) {
+    <div class="modal-overlay" (click)="cancelDelete()">
+      <div class="modal-container" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Delete experiment?</h3>
+          <button class="close-btn" type="button" (click)="cancelDelete()">
+            &times;
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <p>
+            Are you sure you want to permanently delete this experiment and its
+            results?
+          </p>
+        </div>
+
+        <div class="dialog-actions">
+          <button type="button" class="btn-cancel" (click)="cancelDelete()">
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="btn-create danger"
+            (click)="
+              confirmDelete(selectedExperiment()?.id ?? 'No experiment id')
+            "
+          >
+            Delete
+          </button>
         </div>
       </div>
-      }
     </div>
+    }
   </div>
 </div>

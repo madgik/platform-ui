@@ -1,9 +1,47 @@
-<nav class="navbar">
-  <ul>
-    <li><a href="https://datacatalogue.mip.ebrains.eu/home"><i class="fas fa-home"></i>Home</a></li>
-    <li><a href="https://datacatalogue.mip.ebrains.eu/federations"><i class="fas fa-users"></i>Federations</a></li>
-    <li><a href="https://datacatalogue.mip.ebrains.eu/data-models"><i class="fas fa-brain"></i>Data Models</a></li>
-    <li><a routerLink="/experiments-dashboard"><i class="fas fa-flask"></i>Experiments</a></li>
-    <li><a href="https://datacatalogue.mip.ebrains.eu/about"><i class="fas fa-info"></i>About</a></li>
+<nav class="navbar" [class.is-open]="isNavOpen">
+  <button
+    class="nav-burger"
+    type="button"
+    (click)="toggleNav()"
+    [attr.aria-expanded]="isNavOpen"
+    aria-label="Menu"
+  >
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <a class="nav-logo" routerLink="/experiments-dashboard" aria-label="Home" (click)="closeNav()">
+    <img src="assets/logo.png" alt="mip" />
+  </a>
+
+  <a class="nav-account" routerLink="/account" aria-label="Account" (click)="closeNav()">
+    <i class="fas fa-user-circle"></i>
+  </a>
+
+  <ul class="nav-list" [attr.aria-hidden]="!isNavOpen">
+    <li>
+      <a href="https://datacatalogue.mip.ebrains.eu/home" (click)="closeNav()">
+        <i class="fas fa-home"></i><span>Home</span>
+      </a>
+    </li>
+    <li>
+      <a href="https://datacatalogue.mip.ebrains.eu/federations" (click)="closeNav()">
+        <i class="fas fa-users"></i><span>Federations</span>
+      </a>
+    </li>
+    <li>
+      <a href="https://datacatalogue.mip.ebrains.eu/data-models" (click)="closeNav()">
+        <i class="fas fa-brain"></i><span>Data Models</span>
+      </a>
+    </li>
+    <li>
+      <a routerLink="/experiments-dashboard" (click)="closeNav()">
+        <i class="fas fa-flask"></i><span>Experiments</span>
+      </a>
+    </li>
+    <li>
+      <a href="https://datacatalogue.mip.ebrains.eu/about" (click)="closeNav()">
+        <i class="fas fa-info"></i><span>About</span>
+      </a>
+    </li>
   </ul>
 </nav>

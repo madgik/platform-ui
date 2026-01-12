@@ -1,7 +1,11 @@
 @if (tableSpec()) {
   <div class="ar-container">
     @for (table of tableSpec(); track table) {
-      <div class="ar-card">
+      <div
+        class="ar-card"
+        [class.ar-card--full]="!isCompactTable(table)"
+        [class.ar-card--compact]="isCompactTable(table)"
+      >
         @if (table.title) {
           <div class="ar-title">{{ table.title }}</div>
         }
@@ -30,4 +34,3 @@
     }
   </div>
 }
-

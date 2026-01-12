@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, signal, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -6,16 +6,35 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './accordion.component.html',
-  styleUrls: ['./accordion.component.css']
+  styleUrls: ['./accordion.component.css'],
 })
-export class AccordionComponent {
+export class AccordionComponent implements OnInit, OnChanges {
   @Input() accordionTitle: string = '';
-  @Input() openByDefault: boolean = false;
   @Input() fontSize: string = '1.2rem';
+  @Input() startOpen: boolean = false;
+  @Input() openByDefault: boolean = false;
 
-  isOpen: boolean = this.openByDefault;
+  isOpen = signal(false);
+
+  private userToggled = false;
+
+  ngOnInit() {
+    const initial = this.startOpen ?? this.openByDefault;
+    this.isOpen.set(!!initial);
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (
+      (changes['startOpen'] || changes['openByDefault']) &&
+      !this.userToggled
+    ) {
+      const val = this.startOpen ?? this.openByDefault;
+      this.isOpen.set(!!val);
+    }
+  }
 
   toggleAccordion() {
-    this.isOpen = !this.isOpen;
+    this.userToggled = true;
+    this.isOpen.update((open) => !open);
   }
 }

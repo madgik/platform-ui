@@ -1,0 +1,26 @@
+<div class="desc-modal-overlay" (click)="closeDescriptionModal()">
+  <div class="desc-modal" (click)="$event.stopPropagation()">
+    <header class="desc-modal-header">
+      <div>
+        <h4>Experiment description</h4>
+        <p class="desc-subtitle">Optional context to help you remember what this run is.</p>
+      </div>
+
+      <button class="desc-close" type="button" (click)="closeDescriptionModal()" aria-label="Close">
+        ✕
+      </button>
+    </header>
+
+    <textarea
+      rows="6"
+      [ngModel]="experimentDescription()"
+      (ngModelChange)="onExperimentDescriptionChange($event)"
+      placeholder="Write a short description…"
+    ></textarea>
+
+    <div class="desc-modal-actions">
+      <button class="btn ghost" type="button" (click)="closeDescriptionModal()">Cancel</button>
+      <button class="btn primary" type="button" (click)="saveDescriptionClick()">Save</button>
+    </div>
+  </div>
+</div>

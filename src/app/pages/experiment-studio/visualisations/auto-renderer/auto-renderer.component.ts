@@ -1,6 +1,5 @@
-import { Component, inject, Input, signal } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, signal } from '@angular/core';
 import { AlgorithmTableRegistry, TableSpec } from './algorithm-table-registry';
-import { ExperimentStudioService } from '../../../../services/experiment-studio.service';
 
 
 @Component({
@@ -10,59 +9,94 @@ import { ExperimentStudioService } from '../../../../services/experiment-studio.
   templateUrl: './auto-renderer.component.html',
   styleUrl: './auto-renderer.component.css'
 })
-export class AutoRendererComponent {
+export class AutoRendererComponent implements OnChanges {
   @Input() value: any = null;
   @Input() algorithm: string | null = null;
-  experimentService = inject(ExperimentStudioService);
   algorithmToRender: string = '';
 
   tableSpec = signal<TableSpec[] | null>(null);
+  error = signal<string | null>(null);
 
-  ngOnChanges() {
-    if (!this.algorithm) return;
+  private lastKey: string | null = null;
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (!this.algorithm) {
+      this.tableSpec.set(null);
+      this.error.set(null);
+      return;
+    }
 
     const builder = AlgorithmTableRegistry[this.algorithm];
     if (!builder) {
       this.tableSpec.set(null);
+      this.error.set(`No renderer for algorithm ${this.algorithm}`);
       return;
     }
+
+    const key = `${this.algorithm}-${JSON.stringify(this.value)}`;
+    if (key === this.lastKey && this.tableSpec()) return;
 
     try {
       const spec = builder(this.value);
       this.tableSpec.set(spec);
+      this.error.set(null);
+      this.lastKey = key;
     } catch (err) {
       console.warn('[AutoRenderer] Builder failed', err);
       this.tableSpec.set(null);
+      this.error.set('Unable to render this result.');
     }
+  }
+
+  // Heuristic: smaller tables are rendered side by side
+  isCompactTable(table: TableSpec | null | undefined): boolean {
+    if (!table) return false;
+
+    const colCount = table.columns?.length ?? 0;
+    const rowCount = table.rows?.length ?? 0;
+
+    // few columns + not a lot of rows -> compact
+    if (colCount === 0) return false;
+
+    return colCount <= 3 && rowCount <= 12;
   }
 
   // helper
   formatValue(value: any): string {
     if (value === null || value === undefined) return '';
 
-    // turn string to number if string is number
-    const num = typeof value === 'string' && !isNaN(Number(value))
-      ? Number(value)
-      : value;
+    // If number type is string, turn to number
+    const maybeNum =
+      typeof value === 'string' && value.trim() !== '' && !isNaN(Number(value))
+        ? Number(value)
+        : value;
 
-    if (typeof num !== 'number' || isNaN(num)) {
+    if (typeof maybeNum !== 'number' || isNaN(maybeNum)) {
       return String(value);
     }
 
-    // Scientific format for too small or too large numbers
-    if ((Math.abs(num) < 0.001 && num !== 0) || Math.abs(num) >= 1_000_000) {
+    const num = maybeNum;
+    const abs = Math.abs(num);
+    if (abs === 0) return '0';
+
+    // scientific numbers
+    if (abs < 1e-4 || abs >= 1_000_000) {
       return num.toExponential(3);
     }
 
-    // Show up to 3 decimals
-    let formatted = Number(num.toFixed(3)).toString();
+    // Less decimals
+    const decimals = abs < 1 ? 4 : 3;
+    let fixed = num.toFixed(decimals);
 
-    // if -0 show 0
-    if (formatted === '-0') formatted = '0';
+    // Less zeros
+    fixed = fixed
+      .replace(/(\.\d*?[1-9])0+$/, '$1')
+      .replace(/\.0+$/, '');
 
-    return formatted;
+    if (fixed === '-0') fixed = '0';
+
+    return fixed;
   }
-
 
   getOverrideTables(): TableSpec[] | null {
     if (!this.algorithm) return null;
@@ -72,14 +106,12 @@ export class AutoRendererComponent {
 
     try {
       const table = builder(this.value);
-      // console.log('[AutoRenderer] Generated table:', table);
       return table;
     } catch (err) {
       console.warn('[AutoRenderer] Custom table builder failed', err);
       return null;
     }
   }
-
 
   isPrimitive(val: any): boolean {
     return val === null || ['string', 'number', 'boolean'].includes(typeof val);
