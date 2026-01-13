@@ -1,14 +1,23 @@
 # Step 1: Build the Angular app
-FROM node:18 AS build
+FROM node:20-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm install
+RUN npm config set fetch-retries 5 \
+    && npm config set fetch-retry-mintimeout 20000 \
+    && npm config set fetch-retry-maxtimeout 120000 \
+    && npm ci --legacy-peer-deps --no-audit --no-fund
 COPY . .
-RUN npm run build -- --configuration production
+ARG BUILD_CONFIGURATION=production
+ENV NG_BUILD_SKIP_FONT_GENERATION=1
+RUN npm run build -- --configuration ${BUILD_CONFIGURATION}
 
 # Step 2: Use Nginx to serve the Angular app
 FROM nginx:alpine
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /app/dist/fl-platform /usr/share/nginx/html
+RUN apk add --no-cache gettext
+ENV PORTAL_BACKEND_SERVER=portalbackend:8080 \
+    PORTAL_BACKEND_CONTEXT=services
+COPY nginx.conf.template /etc/nginx/templates/default.conf.template
+RUN rm -rf /usr/share/nginx/html/*
+COPY --from=build /app/dist/fl-platform/browser /usr/share/nginx/html
 EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["/bin/sh", "-c", "envsubst '$$PORTAL_BACKEND_SERVER $$PORTAL_BACKEND_CONTEXT' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"]

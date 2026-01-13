@@ -6,8 +6,8 @@ server {
     index index.html;
 
     # Route other API requests to the backend
-    location /services/ {
-        proxy_pass http://backend:8090; # Use the service name from docker-compose
+    location /${PORTAL_BACKEND_CONTEXT}/ {
+        proxy_pass http://${PORTAL_BACKEND_SERVER};
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
