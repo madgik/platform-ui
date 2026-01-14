@@ -391,10 +391,12 @@ export class ExperimentStudioService {
 
     if (!hasRole('y') && selections['y'].length > 0) return false;
     if (!hasRole('x') && selections['x'].length > 0) return false;
-    if (!hasRole('filters') && selections['filters'].length > 0) return false;
+
+    // Filters are treated as optional; if the algo doesn't declare them, keep the algo available.
+    const filterReq = hasRole('filters') ? (algo.inputdata as any).filters : null;
 
     for (const [role, req] of Object.entries(algo.inputdata)) {
-      if (!['y', 'x', 'filters'].includes(role)) continue;
+      if (!['y', 'x'].includes(role)) continue;
 
       const sel = selections[role as keyof typeof selections] || [];
 
@@ -418,6 +420,26 @@ export class ExperimentStudioService {
         if (badType) {
           console.warn(
             `✘ ${name}: invalid type on role ${role}: ${badType} not in [${req.types.join(', ')}]`
+          );
+          return false;
+        }
+      }
+    }
+
+    if (filterReq) {
+      const sel = selections['filters'] || [];
+      if (filterReq.notblank && sel.length === 0) return false;
+      if (filterReq.multiple === false && sel.length > 1) return false;
+
+      if (filterReq.types?.length) {
+        const selTypes = sel
+          .map(v => normalizeType(v.type))
+          .filter((t): t is string => !!t);
+
+        const badType = selTypes.find(t => !filterReq.types.includes(t));
+        if (badType) {
+          console.warn(
+            `✘ ${name}: invalid type on role filters: ${badType} not in [${filterReq.types.join(', ')}]`
           );
           return false;
         }
@@ -503,7 +525,6 @@ export class ExperimentStudioService {
           },
           parameters: {},
           preprocessing: null,
-          type: 'exareme2',
         },
       };
     }
@@ -524,7 +545,6 @@ export class ExperimentStudioService {
         },
         parameters: config,
         preprocessing: null,
-        type: 'exareme2',
       },
     };
     return body;

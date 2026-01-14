@@ -14,7 +14,6 @@ describe('ExperimentStudioService', () => {
     label: 'Mock Algo',
     desc: '',
     enabled: true,
-    type: 'exareme2',
     inputdata: {
       data_model: { label: '', desc: '', types: [] },
       datasets: { label: '', desc: '', types: [] },
@@ -30,7 +29,6 @@ describe('ExperimentStudioService', () => {
     label: 'Histograms',
     desc: '',
     enabled: true,
-    type: 'exareme2',
     inputdata: {
       data_model: { label: '', desc: '', types: [] },
       datasets: { label: '', desc: '', types: [] },
