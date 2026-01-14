@@ -349,11 +349,11 @@ export class VariablesPanelComponent implements OnDestroy {
                 this.errorMessage.set('Error loading histogram. Please try again.');
                 return of(null);
               }),
-              map((response) => ({ response, label }))
+              map((response) => ({ response, label, codes }))
             );
         })
       )
-      .subscribe(({ response, label }) => {
+      .subscribe(({ response, label, codes }) => {
         this.isLoadingHistogram.set(false);
 
         if (!response) return;
@@ -362,7 +362,14 @@ export class VariablesPanelComponent implements OnDestroy {
         const firstHist = histList[0];
 
         if (firstHist) {
-          const dataWithName = { ...firstHist, variableName: label ?? firstHist.variable };
+          const variableCode = firstHist?.variable ?? codes?.[0];
+          const variableNode = variableCode ? this.findNodeByCode(this.d3Data, variableCode) : null;
+          const enrichedHistogram = this.mapBinsToEnumLabels(firstHist, variableNode?.enumerations);
+
+          const dataWithName = {
+            ...enrichedHistogram,
+            variableName: label ?? variableNode?.label ?? enrichedHistogram.variable ?? enrichedHistogram.variableName
+          };
           this.distributionData.set(dataWithName);
           this.errorMessage.set(null);
         } else {
@@ -376,6 +383,30 @@ export class VariablesPanelComponent implements OnDestroy {
     this.errorMessage.set(null);
     this.distributionData.set(null);
     this.histogramRequest$.next({ codes, label });
+  }
+
+  /**
+   * Replace histogram bin codes with enumeration labels when available.
+   */
+  private mapBinsToEnumLabels(hist: any, enumerations?: Array<{ code?: any; label?: string; name?: string }>) {
+    if (!hist || !Array.isArray(hist.bins) || !enumerations || !enumerations.length) return hist;
+
+    const codeToLabel = new Map(
+      enumerations.map((e) => [String(e.code ?? e.label ?? ''), e.label ?? e.name ?? String(e.code ?? '')])
+    );
+
+    let mapped = 0;
+    const binsWithLabels = hist.bins.map((b: any) => {
+      const label = codeToLabel.get(String(b));
+      if (label) {
+        mapped += 1;
+        return label;
+      }
+      return b;
+    });
+
+    if (!mapped) return hist;
+    return { ...hist, bins: binsWithLabels };
   }
 
 }
