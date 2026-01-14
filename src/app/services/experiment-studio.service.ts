@@ -311,7 +311,12 @@ export class ExperimentStudioService {
   }
 
   availableGroupedAlgorithms = computed(() => {
-    return Object.values(this.backendAlgorithms()).reduce((acc, algo) => {
+    // Hide quick-preview algorithms from the selection list.
+    const hidden = new Set(['multiple_histograms', 'descriptive_stats', 'logistic_regression_fedaverage_flower']);
+
+    return Object.values(this.backendAlgorithms())
+      .filter(algo => !hidden.has(algo.name))
+      .reduce((acc, algo) => {
       const cat = algo.category || 'Other';
       if (!acc[cat]) acc[cat] = [];
       acc[cat].push({
@@ -319,7 +324,7 @@ export class ExperimentStudioService {
         isDisabled: !this.isAlgorithmAvailable(algo.name)
       });
       return acc;
-    }, {} as Record<string, AlgorithmConfig[]>);
+      }, {} as Record<string, AlgorithmConfig[]>);
   });
 
   isAlgorithmAvailable(name: string): boolean {
