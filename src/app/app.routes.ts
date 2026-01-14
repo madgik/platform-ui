@@ -1,4 +1,4 @@
-import { RouterModule, Routes } from '@angular/router';
+import {RouterModule, Routes} from '@angular/router';
 import { ExperimentsDashboardComponent } from './pages/experiments-dashboard/experiments-dashboard.component';
 import { AccountPageComponent } from './pages/account-page/account-page.component';
 import { ExperimentStudioComponent } from './pages/experiment-studio/experiment-studio.component';
@@ -12,6 +12,11 @@ export const appRoutes: Routes = [
     canActivate: [AuthGuard],
   },
   {
+    path: '',
+    redirectTo: 'experiment-studio',
+    pathMatch: 'full'
+  },
+  {
     path: 'account',
     component: AccountPageComponent,
     canActivate: [AuthGuard],
@@ -21,8 +26,7 @@ export const appRoutes: Routes = [
     component: ExperimentStudioComponent,
     canActivate: [AuthGuard],
   },
-  { path: '', redirectTo: 'experiments-dashboard', pathMatch: 'full' },
-  { path: '**', redirectTo: 'experiments-dashboard' }
+  { path: '**', redirectTo: 'experiment-studio' }
 ];
 
 @NgModule({
