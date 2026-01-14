@@ -1,27 +1,70 @@
 # FlPlatform
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 18.2.3.
+Angular 18 standalone application for running experiments, configuring algorithms, and reviewing results. It integrates with a backend over `/services` (proxied in dev) and uses Keycloak for authentication.
 
-## Development server
+## Highlights
+- **Experiment Studio** (`src/app/pages/experiment-studio`): select data models/datasets, pick variables and filters (QueryBuilder), configure algorithms, run jobs, view charts/tables.
+- **Experiments Dashboard** (`src/app/pages/experiments-dashboard`): list/search/paginate, share links, compare results side by side, export to PDF.
+- **Auth**: Keycloak-based session via `/services/activeUser`; guard protects routes and redirects to login if unauthenticated.
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+## Requirements
+- Node 20+ and npm 10+
+- Backend reachable at `http://localhost:8080/services` (adjustable in proxy/Docker env).
+- Keycloak endpoints exposed at `/services/oauth2/authorization/keycloak` and `/services/logout`.
 
-## Code scaffolding
+## Quick Start (dev)
+1) Install dependencies: `npm ci`
+2) Start dev server with proxy: `npm start`
+   - Serves at `http://localhost:4200/`
+   - Proxies `/services` to `http://localhost:8080` via `src/proxy.conf.json`
+3) Ensure backend is running and you can authenticate with Keycloak.
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+## Scripts
+- `npm start` – dev server (`ng serve`) with proxy.
+- `npm run build` – production build to `dist/fl-platform`.
+- `npm run watch` – development build in watch mode.
+- `npm test` – unit tests via Karma.
 
-## Build
+## Backend Endpoints (expected)
+- `GET /services/activeUser` – current user/session.
+- `GET /services/algorithms` – algorithm catalog.
+- `GET /services/data-models` – available data models (used to build variable tree and datasets).
+- `POST /services/experiments` – run experiment (polls for results).
+- `POST /services/experiments/transient` – quick previews (histograms, descriptive stats).
+- `GET /services/experiments/:id` – fetch experiment (and results).
+- `PATCH /services/experiments/:id` – update name/description/shared flag.
+- `DELETE /services/experiments/:id` – delete experiment.
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+## Auth Flow
+- Routes are guarded (`AuthGuard` in `src/app/guards/auth.guard.ts`).
+- Login redirects to `/services/oauth2/authorization/keycloak?frontend_redirect=<current or target>`.
+- Logout calls `/services/logout` then returns to dashboard.
 
-## Running unit tests
+## Project Structure
+- `src/main.ts` – bootstraps app with router, HTTP client, credentials interceptor, ECharts.
+- `src/app/app.component.*` – shell with header/footer.
+- `src/app/services/` – auth/session/error handling, experiment studio orchestration, dashboard data, PDF export, label resolver, HTTP interceptor.
+- `src/app/models/` – experiment, algorithm, data-model, filters, user interfaces.
+- `src/app/core/algorithm-mappers.ts` – backend → UI algorithm config and output schemas.
+- `src/app/pages/experiment-studio/` – variables panel, filter modal, algorithm panel, visualisations (charts/histograms/bubble).
+- `src/app/pages/experiments-dashboard/` – list/search, detail, compare, mapper.
+- `src/app/pages/account-page/` – basic profile view.
+- `src/app/pages/shared/` – header/footer/navbar/accordion/spinner utilities.
+- `src/styles.css` – global styles and QueryBuilder theming; assets in `src/assets/`.
+- `Dockerfile` / `nginx.conf.template` – container build and runtime proxy (`PORTAL_BACKEND_SERVER`, `PORTAL_BACKEND_CONTEXT` envs).
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+## Docker
+Build and serve with nginx:
+```bash
+docker build -t fl-platform .
+docker run -e PORTAL_BACKEND_SERVER=portalbackend:8080 -e PORTAL_BACKEND_CONTEXT=services -p 80:80 fl-platform
+```
+Nginx proxies `/${PORTAL_BACKEND_CONTEXT}/` to the backend; everything else serves the Angular app.
 
-## Running end-to-end tests
+## Testing
+- Unit: `npm test` (Karma).
+- Manual: run `npm start`, authenticate, and exercise Experiment Studio and Dashboard against a running backend.
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+## Notes
+- Many features require authenticated backend access; unauthenticated calls will trigger login redirect.
+- Algorithm availability depends on selected variables/datasets; some algorithms are transient-only (`multiple_histograms`, `descriptive_stats`).
