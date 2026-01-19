@@ -1,18 +1,14 @@
 import { Injectable } from '@angular/core';
+import { User } from '../models/user.interface';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TermsService {
-  private readonly acceptedKey = 'tos_accepted_v1';
   private readonly redirectKey = 'tos_redirect_url';
 
-  isAccepted(): boolean {
-    return localStorage.getItem(this.acceptedKey) === 'true';
-  }
-
-  accept(): void {
-    localStorage.setItem(this.acceptedKey, 'true');
+  hasAgreed(user: User | null | undefined): boolean {
+    return Boolean(user?.agreeNDA);
   }
 
   setRedirectUrl(url: string): void {

@@ -13,9 +13,12 @@
         <input type="checkbox" [(ngModel)]="accepted" />
         <span>I accept the Terms of Use.</span>
       </label>
-      <button class="tos-proceed" [disabled]="!accepted" (click)="onProceed()">
-        Proceed
-      </button>
+      <div class="tos-action-right">
+        <div class="tos-accept-error" *ngIf="acceptError">Unable to save acceptance. Please try again.</div>
+        <button class="tos-proceed" [disabled]="!accepted || submitting" (click)="onProceed()">
+          Proceed
+        </button>
+      </div>
     </div>
   </div>
 </section>

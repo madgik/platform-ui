@@ -1,5 +1,5 @@
 .tos-page {
-  background: #f5f6fb;
+  background: #f4f6f9;
   min-height: calc(100vh - 120px);
   padding: 32px 20px 48px;
 }
@@ -8,10 +8,10 @@
   max-width: 1024px;
   margin: 0 auto;
   background: #ffffff;
-  border: 1px solid #e6e7ee;
+  border: 1px solid #e2e6ef;
   border-radius: 12px;
   padding: 28px 32px 24px;
-  box-shadow: 0 10px 30px rgba(20, 20, 40, 0.06);
+  box-shadow: 0 10px 26px rgba(20, 20, 40, 0.05);
 }
 
 .tos-intro {
@@ -28,7 +28,15 @@
   font-size: 16px;
   margin: 0 0 12px;
   font-weight: 600;
-  color: #2b2b2b;
+  color: #3a3a3a;
+}
+
+.tos-intro::after {
+  content: '';
+  display: block;
+  height: 1px;
+  background: #e2e6ef;
+  margin: 10px 0 16px;
 }
 
 .tos-content {
@@ -47,6 +55,7 @@
   font-size: 18px;
   margin: 18px 0 8px;
   font-weight: 600;
+  color: #1e2a3a;
 }
 
 .tos-content p {
@@ -68,7 +77,7 @@
 }
 
 .tos-content a {
-  color: #2f5bff;
+  color: #2563eb;
   text-decoration: none;
 }
 
@@ -87,7 +96,14 @@
   gap: 16px;
   margin-top: 28px;
   padding-top: 18px;
-  border-top: 1px solid #e1e3ed;
+  border-top: 1px solid #e2e6ef;
+}
+
+.tos-action-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
 }
 
 .tos-checkbox {
@@ -101,13 +117,13 @@
 .tos-checkbox input {
   width: 16px;
   height: 16px;
-  accent-color: #6f6af8;
+  accent-color: #2563eb;
 }
 
 .tos-proceed {
   border: none;
   border-radius: 8px;
-  background: #6f6af8;
+  background: #2563eb;
   color: #fff;
   padding: 10px 20px;
   font-size: 14px;
@@ -118,14 +134,19 @@
 
 .tos-proceed:disabled {
   cursor: not-allowed;
-  background: #b6b9d8;
+  background: #a6b3d6;
   box-shadow: none;
 }
 
 .tos-proceed:not(:disabled):hover {
-  background: #5e58f2;
-  box-shadow: 0 8px 16px rgba(111, 106, 248, 0.25);
+  background: #1d4ed8;
+  box-shadow: 0 8px 16px rgba(37, 99, 235, 0.25);
   transform: translateY(-1px);
+}
+
+.tos-accept-error {
+  color: #b42318;
+  font-size: 12px;
 }
 
 .tos-loading,
@@ -141,6 +162,10 @@
 
   .tos-actions {
     flex-direction: column;
+    align-items: stretch;
+  }
+
+  .tos-action-right {
     align-items: stretch;
   }
 

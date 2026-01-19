@@ -4,3 +4,13 @@
   text-align: center;
   color: #333;
 }
+
+.footer-link {
+  color: #1d4ed8;
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.footer-link:hover {
+  text-decoration: underline;
+}

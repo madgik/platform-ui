@@ -4,6 +4,7 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { AuthService } from '../../services/auth.service';
 import { TermsService } from '../../services/terms.service';
 
 @Component({
@@ -18,15 +19,19 @@ export class TermsPageComponent {
   accepted = false;
   loading = true;
   loadError = false;
+  acceptError = false;
+  submitting = false;
 
   constructor(
     private http: HttpClient,
     private sanitizer: DomSanitizer,
     private termsService: TermsService,
+    private authService: AuthService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
+    this.accepted = Boolean(this.authService.currentUser?.agreeNDA);
     this.http.get('assets/tos.md', { responseType: 'text' }).subscribe({
       next: (markdown) => {
         const cleaned = this.stripIntro(this.stripGeneralTermsHeading(markdown));
@@ -42,12 +47,27 @@ export class TermsPageComponent {
   }
 
   onProceed(): void {
-    if (!this.accepted) {
+    if (!this.accepted || this.submitting) {
       return;
     }
-    this.termsService.accept();
-    const redirect = this.termsService.consumeRedirectUrl() || '/experiments-dashboard';
-    this.router.navigateByUrl(redirect);
+    if (this.authService.currentUser?.agreeNDA) {
+      const redirect = this.termsService.consumeRedirectUrl() || '/experiments-dashboard';
+      this.router.navigateByUrl(redirect);
+      return;
+    }
+    this.acceptError = false;
+    this.submitting = true;
+    this.http.post('/services/activeUser/agreeNDA', {}).subscribe({
+      next: () => {
+        this.authService.refreshAuthState();
+        const redirect = this.termsService.consumeRedirectUrl() || '/experiments-dashboard';
+        this.router.navigateByUrl(redirect);
+      },
+      error: () => {
+        this.submitting = false;
+        this.acceptError = true;
+      }
+    });
   }
 
   private markdownToHtml(markdown: string): string {
@@ -205,6 +225,7 @@ export class TermsPageComponent {
   private formatInline(text: string): string {
     return text
       .replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+      .replace(/\[([^\]]+)\]\((mailto:[^)]+)\)/g, '<a href="$2">$1</a>')
       .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
       .replace(/_([^_]+)_/g, '<em>$1</em>');
   }
