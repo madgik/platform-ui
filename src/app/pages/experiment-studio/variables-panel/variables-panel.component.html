@@ -85,10 +85,17 @@
                 </span>
               </p>
               <p class="group-summary-count-row">
-                <span class="group-summary-label">Number of groups in</span>
+                <span class="group-summary-label">
+                  {{ groupSummary()?.hasGroups ? 'Number of groups in' : 'Number of variables in' }}
+                </span>
                 <span class="group-summary-value">{{ selectedNode?.label }}</span>
                 <span class="group-summary-count">{{ groupSummary()?.groupCount }}</span>
               </p>
+              @if (!groupSummary()?.hasGroups) {
+              <p class="group-summary-empty">
+                There are no groups, only variables.
+              </p>
+              }
             </div>
             <ul class="group-summary-list">
               @for (group of groupSummary()?.groupNodes; track group.code) {

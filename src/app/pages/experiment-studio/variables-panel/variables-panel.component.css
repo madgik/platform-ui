@@ -205,6 +205,12 @@
   font-weight: 700;
 }
 
+.group-summary-empty {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-top: 4px;
+}
+
 .group-summary-path {
   display: flex;
   flex-wrap: wrap;
@@ -235,11 +241,19 @@
 
 .group-summary-path-link {
   color: #0f172a;
-  text-decoration-thickness: 2px;
+  text-decoration: none;
+  background: rgba(2, 109, 109, 0.12);
+  border: 1px solid rgba(2, 109, 109, 0.2);
+  border-radius: 999px;
+  padding: 2px 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .group-summary-path-link:hover {
   color: #026d6d;
+  background: rgba(2, 109, 109, 0.18);
 }
 
 .group-summary-list-link {

@@ -47,6 +47,7 @@ export class VariablesPanelComponent implements OnDestroy {
     pathNodes: Array<{ code: string; label: string }>;
     groupCount: number;
     groupNodes: Array<{ code: string; label: string }>;
+    hasGroups: boolean;
   } | null>(null);
   d3Data: any;
   selectedDataModel = this.experimentStudioService.selectedDataModel;
@@ -317,13 +318,14 @@ export class VariablesPanelComponent implements OnDestroy {
     }
 
     if (node.children && node.children.length > 0) {
-      const groupNodes = this.getGroupNodes(node);
+      const { nodes: groupNodes, hasGroups } = this.getGroupNodes(node);
       const pathNodes = this.getPathNodes(node);
       this.isLoadingHistogram.set(false);
       this.groupSummary.set({
         pathNodes,
         groupCount: groupNodes.length,
         groupNodes,
+        hasGroups,
       });
       return;
     }
@@ -435,16 +437,18 @@ export class VariablesPanelComponent implements OnDestroy {
     return false;
   }
 
-  private getGroupNodes(node: any): Array<{ code: string; label: string }> {
+  private getGroupNodes(node: any): { nodes: Array<{ code: string; label: string }>; hasGroups: boolean } {
     const children = Array.isArray(node?.children) ? node.children : [];
     const groups = children.filter((child: any) => child?.children && child.children.length > 0);
-    const items = groups.length > 0 ? groups : children;
-    return items
+    const hasGroups = groups.length > 0;
+    const items = hasGroups ? groups : children;
+    const nodes = items
       .map((child: any) => ({
         code: String(child?.code ?? ''),
         label: String(child?.label ?? child?.name ?? child?.code ?? ''),
       }))
       .filter((child: { code: string; label: string }) => child.label && child.code);
+    return { nodes, hasGroups };
   }
 
   onGroupSummaryClick(node: { code: string }): void {
