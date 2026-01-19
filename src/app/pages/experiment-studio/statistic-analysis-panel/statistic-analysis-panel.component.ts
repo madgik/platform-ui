@@ -1,22 +1,20 @@
 import {
   Component,
-  EventEmitter,
   Input,
-  Output,
-  OnInit,
   SimpleChanges,
   OnChanges,
+  effect,
   inject
 } from '@angular/core';
-import { ExperimentStudioService } from '../../../../services/experiment-studio.service';
-import { ChartBuilderService } from '../../visualisations/charts/chart-builder.service';
-import { ChartRendererComponent } from '../../visualisations/charts/charts-renderer/charts-renderer.component';
+import { ExperimentStudioService } from '../../../services/experiment-studio.service';
+import { ChartBuilderService } from '../visualisations/charts/chart-builder.service';
+import { ChartRendererComponent } from '../visualisations/charts/charts-renderer/charts-renderer.component';
 import { EChartsOption } from 'echarts';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { ViewChildren, QueryList } from '@angular/core';
 import html2canvas from 'html2canvas';
-import { SpinnerComponent } from '../../../shared/spinner/spinner.component';
+import { SpinnerComponent } from '../../shared/spinner/spinner.component';
 
 
 type TabKey = 'Variables' | 'Model' | 'Boxplots';
@@ -37,12 +35,11 @@ interface ModelTableBlock {
   templateUrl: './statistic-analysis-panel.component.html',
   styleUrls: ['./statistic-analysis-panel.component.css']
 })
-export class StatisticAnalysisPanelComponent implements OnInit, OnChanges {
+export class StatisticAnalysisPanelComponent implements OnChanges {
   @Input() processedData: any[] = [];
   @Input() variables: any[] = [];
   @Input() covariates: any[] = [];
   @Input() filters: any[] = [];
-  @Output() close = new EventEmitter<void>();
   @ViewChildren(ChartRendererComponent)
   chartRenderers!: QueryList<ChartRendererComponent>;
   isExporting = false;
@@ -67,8 +64,22 @@ export class StatisticAnalysisPanelComponent implements OnInit, OnChanges {
     rows: Array<{ metric: string; values: Record<string, string> }>;
   }> = [];
 
-  ngOnInit(): void {
-    this.fetchDescriptiveStatistics();
+  constructor() {
+    effect(() => {
+      const variables = this.expStudioService.selectedVariables();
+      const covariates = this.expStudioService.selectedCovariates();
+      const filters = this.expStudioService.selectedFilters();
+
+      if (!variables.length && !covariates.length && !filters.length) {
+        this.processedData = [];
+        this.modelData = [];
+        this.showBoxPlots = false;
+        this.isLoading = false;
+        return;
+      }
+
+      this.fetchDescriptiveStatistics();
+    });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -414,7 +425,4 @@ export class StatisticAnalysisPanelComponent implements OnInit, OnChanges {
     data.forEach((v: any) => (this.openAccordions[v.name] = false));
   }
 
-  closeModal(): void {
-    this.close.emit();
-  }
 }

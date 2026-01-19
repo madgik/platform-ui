@@ -9,6 +9,7 @@ import { AuthService } from '../../services/auth.service';
 import { ExperimentsDashboardService } from '../../services/experiments-dashboard.service';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
 import { ErrorService } from '../../services/error.service';
+import { StatisticAnalysisPanelComponent } from './statistic-analysis-panel/statistic-analysis-panel.component';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -19,7 +20,8 @@ import { Subject, takeUntil } from 'rxjs';
     VariablesPanelComponent,
     AlgorithmPanelComponent,
     FormsModule,
-    SpinnerComponent
+    SpinnerComponent,
+    StatisticAnalysisPanelComponent
   ],
   templateUrl: './experiment-studio.component.html',
   styleUrls: ['./experiment-studio.component.css'],

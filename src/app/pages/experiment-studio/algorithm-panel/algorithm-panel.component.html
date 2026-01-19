@@ -1,10 +1,10 @@
-<app-accordion
-  [accordionTitle]="accordionTitle"
-  [startOpen]="experimentStudioService.editingExistingExperiment()"
->
-  <div class="experiment-container">
-    <aside class="algorithm-panel">
-      <h5>Available Algorithms</h5>
+<div class="panel-header">
+  <p>Algorithm Selection and Configuration</p>
+</div>
+
+<div class="experiment-container">
+  <aside class="algorithm-panel">
+    <h5>Available Algorithms</h5>
 
       <div class="algo-toolbar">
         <button
@@ -402,7 +402,6 @@
       }
     </main>
   </div>
-</app-accordion>
 
 @if (descriptionModalOpen) {
 <app-algorithm-description-modal

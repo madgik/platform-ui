@@ -1,10 +1,9 @@
 import { BubbleChartComponent } from './../visualisations/bubble-chart/bubble-chart.component';
 import { ErrorService } from '../../../services/error.service';
 import { ExperimentStudioService } from '../../../services/experiment-studio.service';
-import { Component, signal, inject, Input, WritableSignal, computed, OnDestroy } from '@angular/core';
+import { Component, signal, inject, Input, WritableSignal, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
-import { AccordionComponent } from '../../shared/accordion/accordion.component';
 import { MatChipsModule } from '@angular/material/chips';
 import { DataModel } from '../../../models/data-model.interface';
 import { DataModelSelectorComponent } from './data-model-selector/data-model-selector.component';
@@ -12,7 +11,6 @@ import { DatasetSelectorComponent } from './dataset-selector/dataset-selector.co
 import { SearchBarComponent } from './search-bar/search-bar.component';
 import { VariableFilterSelectionComponent } from './variable-filter-selection/variable-filter-selection.component';
 import { DistributionGraphComponent } from './distribution-graph/distribution-graph.component';
-import { StatisticAnalysisPanelComponent } from './statistic-analysis-panel/statistic-analysis-panel.component';
 import { SpinnerComponent } from '../../shared/spinner/spinner.component';
 import { catchError, map, of, Subject, switchMap, takeUntil } from 'rxjs';
 
@@ -25,7 +23,6 @@ import { catchError, map, of, Subject, switchMap, takeUntil } from 'rxjs';
     CommonModule,
     MatChipsModule,
     MatIconModule,
-    AccordionComponent,
     BubbleChartComponent,
     DistributionGraphComponent,
     DataModelSelectorComponent,
@@ -33,7 +30,6 @@ import { catchError, map, of, Subject, switchMap, takeUntil } from 'rxjs';
     SearchBarComponent,
     VariableFilterSelectionComponent,
     SpinnerComponent,
-    StatisticAnalysisPanelComponent
   ],
 })
 export class VariablesPanelComponent implements OnDestroy {
@@ -44,7 +40,6 @@ export class VariablesPanelComponent implements OnDestroy {
   experimentStudioService = inject(ExperimentStudioService);
 
   errorService = inject(ErrorService);
-  accordionTitle: string = "Variables and Covariates";
   filteredVariables: WritableSignal<any[]> = signal([]);
   filteredGroups: WritableSignal<any[]> = signal([]);
   distributionData = signal<any | null>(null);
@@ -61,8 +56,6 @@ export class VariablesPanelComponent implements OnDestroy {
   groupVariables: any[] = [];
   isLoadingHistogram = signal(false);
   errorMessage = signal<string | null>(null);
-  isStatisticalAnalysisOpen = signal(false);
-  processedData: any[] = [];
   refreshKey = signal(0);
   private destroy$ = new Subject<void>();
   private histogramRequest$ = new Subject<{ codes: string[]; label?: string }>();
@@ -199,16 +192,34 @@ export class VariablesPanelComponent implements OnDestroy {
     const model = this.selectedDataModel();
     if (!model) return; // exit early
 
-    const { hierarchy, allVariables, allDatasets } =
+    const { hierarchy, allVariables } =
       this.experimentStudioService.convertToD3Hierarchy(model);
 
     this.d3Data = hierarchy;
     this.filteredVariables.set(allVariables);
     this.filteredGroups.set(this.d3Data.children.filter((item: any) => item.children));
-    this.availableDatasets = allDatasets.map((dataset: any) => ({
-      code: dataset.code,
-      label: dataset.label,
-    }));
+    // TODO: Refactor dataset sourcing via Exaflow so datasets/labels come from a single canonical source.
+    const datasetVariable = allVariables.find(
+      (variable: any) => String(variable?.code ?? '').toLowerCase() === 'dataset'
+    );
+    const datasetEnums = datasetVariable?.enumerations ?? [];
+    const datasetSource: any = (model as any).datasets;
+    const allowedCodes = new Set<string>(
+      Array.isArray(datasetSource)
+        ? datasetSource
+            .map((item: any) => String(item?.code ?? item ?? ''))
+            .filter((code: string) => code)
+        : []
+    );
+    this.availableDatasets = datasetEnums
+      .filter((dataset: any) => {
+        const code = String(dataset?.code ?? '');
+        return allowedCodes.size === 0 || allowedCodes.has(code);
+      })
+      .map((dataset: any) => ({
+        code: String(dataset?.code ?? ''),
+        label: String(dataset?.label ?? dataset?.name ?? dataset?.code ?? ''),
+      }));
   }
 
   fetchFederationHistogram(): void {
@@ -313,20 +324,6 @@ export class VariablesPanelComponent implements OnDestroy {
 
     // Update signal if it needs to refresh manually
     this.onVariableChange([...this.selectedVariables, ...newVariables]);
-  }
-
-  isButtonDisabled = computed(() =>
-    this.experimentStudioService.selectedVariables().length === 0 &&
-    this.experimentStudioService.selectedCovariates().length === 0 &&
-    this.experimentStudioService.selectedFilters().length === 0
-  );
-
-  openStatisticalAnalysis(): void {
-    this.isStatisticalAnalysisOpen.set(true);
-  }
-
-  closeStatisticalAnalysis(): void {
-    this.isStatisticalAnalysisOpen.set(false);
   }
 
   ngOnDestroy(): void {

@@ -12,6 +12,26 @@
   gap: 8px;
 }
 
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  background: linear-gradient(90deg, #026d6d, #3ac6b8);
+  color: #ffffff;
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
+  border-radius: 18px;
+  margin: 2px 0 6px;
+}
+
+.panel-header p {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
 /* ---------- TOP STRIP: selectors (model / datasets / search) ---------- */
 
 .selectors-row {
@@ -132,43 +152,6 @@
   padding-bottom: 8px;
 }
 
-/* ---------- FLOATING STATISTICS BUTTON ---------- */
-
-.floating-button {
-  position: absolute;
-  right: 8px;
-  bottom: 15px;
-  background: linear-gradient(135deg, #009b8e, #76c7c0cb);
-  color: white;
-  border: none;
-  border-radius: 999px;
-  width: 38px;
-  height: 38px;
-  font-size: 1.2rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.4);
-  cursor: pointer;
-  z-index: 10;
-  transition: background 0.18s ease, transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.floating-button:hover {
-  background: #f3f6f7;
-  color: #00758c;
-  transform: translateY(-1px) scale(1.04);
-  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.45);
-}
-
-.floating-button:disabled {
-  background: #d1d5db;
-  color: #6b7280;
-  opacity: 0.7;
-  cursor: not-allowed;
-  box-shadow: none;
-}
-
 /* ---------- MESSAGES (no variable / error) ---------- */
 
 .message-container {
@@ -227,9 +210,6 @@
     min-height: 420px;
   }
 
-  .floating-button {
-    bottom: -16px;
-  }
 }
 
 @media (max-width: 768px) {

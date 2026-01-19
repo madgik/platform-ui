@@ -1,11 +1,3 @@
-/* Backdrop */
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.55);
-  z-index: 6000;
-}
-
 /* Container */
 .modal-container {
   position: fixed;
@@ -43,29 +35,6 @@
   margin: 0;
   font-size: 18px;
   font-weight: 600;
-}
-
-/* Close X */
-.modal-header .close-btn {
-  background: rgba(15, 23, 42, 0.15);
-  border: none;
-  color: #ffffff;
-  font-size: 18px;
-  cursor: pointer;
-  border-radius: 999px;
-  width: 32px;
-  height: 32px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition:
-    background 0.15s ease-in-out,
-    transform 0.12s ease-in-out;
-}
-
-.modal-header .close-btn:hover {
-  background: rgba(15, 23, 42, 0.28);
-  transform: translateY(-1px);
 }
 
 /* Tabs (Variables / Model / Boxplots) */
@@ -342,24 +311,6 @@
   box-shadow: 0 8px 18px rgba(6, 95, 70, 0.45);
 }
 
-.btn-close {
-  border-radius: 999px;
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  border: none;
-  cursor: pointer;
-  background: #e5e7eb;
-  color: #111827;
-  transition:
-    background 0.15s ease-in-out,
-    transform 0.08s ease-in-out;
-}
-
-.btn-close:hover {
-  background: #d1d5db;
-}
-
 /* Disabled export state */
 .btn-download[disabled] {
   opacity: 0.6;
@@ -456,8 +407,7 @@ body.pdf-exporting,
     padding: 8px 12px 10px;
   }
 
-  .btn-download,
-  .btn-close {
+  .btn-download {
     padding: 6px 12px;
     font-size: 13px;
   }

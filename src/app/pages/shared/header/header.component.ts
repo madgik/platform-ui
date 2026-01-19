@@ -34,6 +34,11 @@ export class HeaderComponent implements OnInit {
     this.authService.login();
   }
 
+  goHome(event?: Event): void {
+    event?.preventDefault();
+    this.router.navigate(['/experiment-studio']);
+  }
+
   logout(): void {
     this.authService.logout();
   }

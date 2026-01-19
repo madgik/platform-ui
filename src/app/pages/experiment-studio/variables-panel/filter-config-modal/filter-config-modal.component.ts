@@ -1,6 +1,6 @@
 import { EnumValue } from '../../../../models/data-model.interface';
 import { Component, Output, EventEmitter, OnInit, effect, signal, computed, Input, SimpleChanges, OnChanges } from '@angular/core';
-import { QueryBuilderConfig, QueryBuilderModule } from '@kerwin612/ngx-query-builder';
+import { QueryBuilderConfig, QueryBuilderModule } from "@kerwin612/ngx-query-builder";
 import { ExperimentStudioService } from '../../../../services/experiment-studio.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';

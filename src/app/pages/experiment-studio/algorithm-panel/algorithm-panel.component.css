@@ -1,5 +1,25 @@
 /* ROOT LAYOUT - CONTAINER */
 
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  background: linear-gradient(90deg, #026d6d, #3ac6b8);
+  color: #ffffff;
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
+  border-radius: 18px;
+  margin: 2px 0 10px;
+}
+
+.panel-header p {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
 .experiment-container {
   display: grid;
   grid-template-columns: minmax(220px, 260px) minmax(0, 1fr);

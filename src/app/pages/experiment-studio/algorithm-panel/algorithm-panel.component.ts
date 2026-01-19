@@ -1,7 +1,6 @@
 import { SessionStorageService } from './../../../services/session-storage.service';
 import { Component, inject, signal, computed, effect, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AccordionComponent } from '../../shared/accordion/accordion.component';
 import { ExperimentStudioService } from '../../../services/experiment-studio.service';
 import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { buildFormControl } from '../../shared/utils/form-control.factory';
@@ -19,7 +18,6 @@ import { ErrorService } from '../../../services/error.service';
   standalone: true,
   imports: [
     CommonModule,
-    AccordionComponent,
     FormsModule,
     ReactiveFormsModule,
     AlgorithmResultComponent,
@@ -201,7 +199,6 @@ export class AlgorithmPanelComponent {
     });
   }
 
-  accordionTitle = 'Algorithm Selection & Configuration';
 
   configForm: FormGroup = new FormGroup({});
   formKey = 0;

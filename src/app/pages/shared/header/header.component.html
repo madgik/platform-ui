@@ -1,11 +1,16 @@
 <header class="header">
   <!-- Logo -->
-  <div class="branding">
-    <img src="assets/logo.png" alt="Platform Logo" class="logo" />
+  <a
+    class="branding"
+    routerLink="/experiment-studio"
+    (click)="goHome($event)"
+    aria-label="Go to home"
+  >
+    <img src="assets/mip-logo.png" alt="Platform Logo" class="logo" />
     <div class="branding-text">
       <!-- <h1>Medical Informatics Platform</h1> -->
     </div>
-  </div>
+  </a>
   <!-- Navbar -->
   <div class="navbar-wrapper">
     <app-navbar></app-navbar>

@@ -1,0 +1,138 @@
+<div class="modal-header">
+  <p>Statistical Analysis</p>
+</div>
+
+<!-- Tabs -->
+<div class="modal-tabs">
+  <button
+    [class.active]="activeTab === 'Variables'"
+    (click)="setTab('Variables')"
+  >
+    Variables
+  </button>
+  <button
+    [class.active]="activeTab === 'Model'"
+    (click)="setTab('Model')"
+  >
+    Model
+  </button>
+  @if (showBoxPlots) {
+    <button
+      [class.active]="activeTab === 'Boxplots'"
+      (click)="setTab('Boxplots')"
+    >
+      Box Plots
+    </button>
+  }
+</div>
+
+<div class="modal-body">
+  @if (isLoading) {
+    <app-spinner text="Statistical Analysis Loading" [overlay]="false" />
+  }
+  @if (!isLoading) {
+    <!-- VARIABLES / MODEL TAB -->
+    @if (activeTab === 'Variables' || activeTab === 'Model') {
+      <section class="pivot-section">
+        @if ((activeTab === 'Variables' ? processedData : modelData).length > 0) {
+          <div class="accordion-controls">
+            <button class="expand-all" (click)="expandAll()">Expand All</button>
+            <button class="collapse-all" (click)="collapseAll()">
+              Collapse All
+            </button>
+          </div>
+
+          @for (v of (activeTab === 'Variables' ? processedData : modelData); track v; let i = $index) {
+            <div class="accordion pivot-card">
+              <div class="accordion-header" (click)="toggleAccordion(v.name)">
+                <p>{{ v.name }}</p>
+                <span
+                  class="accordion-icon"
+                  [class.open]="isAccordionOpen(v.name)"
+                >
+                  ▾
+                </span>
+              </div>
+
+              <div
+                class="accordion-body fade"
+                [class.open]="isAccordionOpen(v.name)"
+              >
+                <div class="table-wrapper">
+                  <table class="data-table pivot-table">
+                    <thead>
+                      <tr>
+                        <th>Metric</th>
+                        @for (ds of v.columns; track ds) {
+                          <th>{{ ds }}</th>
+                        }
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (r of v.rows; track r) {
+                        <tr>
+                          <td class="metric-cell">{{ r.metric }}</td>
+                          @for (ds of v.columns; track ds) {
+                            <td>{{ r.values[ds] }}</td>
+                          }
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          }
+        }
+        @else {
+          <p>No data available.</p>
+        }
+      </section>
+    }
+
+    <!-- BOX PLOTS TAB -->
+    @if (activeTab === 'Boxplots' && showBoxPlots) {
+      <section class="boxplots-section">
+        @if (nonNominalVariables.length > 1) {
+          <div class="mini-tabs">
+            @for (v of nonNominalVariables; track v; let i = $index) {
+              <button
+                [class.active]="activeBoxPlotIndex === i"
+                (click)="activeBoxPlotIndex = i"
+              >
+                {{ v?.name || v?.label || v?.code }}
+              </button>
+            }
+          </div>
+        }
+        <div class="chart-container fade">
+          <app-chart-renderer
+            [charts]="chartsForBoxPlot[activeBoxPlotIndex] || []"
+          ></app-chart-renderer>
+        </div>
+      </section>
+    }
+  }
+
+  <!-- Hidden charts for PDF export -->
+  <div class="hidden-charts-for-export">
+    @for (v of nonNominalVariables; track v; let i = $index) {
+      <app-chart-renderer
+        class="invisible"
+        [charts]="chartsForBoxPlot[i]"
+      ></app-chart-renderer>
+    }
+  </div>
+</div>
+
+@if (isExporting) {
+  <div class="pdf-overlay">
+      <app-spinner text="Generating PDF..." color="#007d7d" size="72px" [overlay]="false" />
+  </div>
+}
+
+<div class="modal-footer">
+  <button class="btn-download" (click)="exportAllDescriptiveToPDF()">
+    Export PDF
+  </button>
+</div>

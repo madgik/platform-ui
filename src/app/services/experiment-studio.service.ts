@@ -579,7 +579,7 @@ export class ExperimentStudioService {
   convertToD3Hierarchy(data: DataModel): {
     hierarchy: D3HierarchyNode;
     allVariables: D3HierarchyNode[];
-    allDatasets: string[];
+    allDatasets: any[];
   } {
     const convertVariables = (vars: Variable[] = []): D3HierarchyNode[] =>
       vars.map((v) => ({
@@ -617,10 +617,25 @@ export class ExperimentStudioService {
     };
 
     const allVariables = extractFlat(hierarchy);
+
+    const datasetSource: any = (data as any).datasets;
+    let allDatasets: any[] = [];
+    if (Array.isArray(datasetSource)) {
+      allDatasets = datasetSource;
+    } else if (datasetSource && typeof datasetSource === 'object') {
+      if (Array.isArray(datasetSource.enumerations)) {
+        allDatasets = datasetSource.enumerations;
+      } else if (Array.isArray(datasetSource.values)) {
+        allDatasets = datasetSource.values;
+      } else if (Array.isArray(datasetSource.items)) {
+        allDatasets = datasetSource.items;
+      }
+    }
+
     return {
       hierarchy,
       allVariables,
-      allDatasets: data.datasets ?? [],
+      allDatasets,
     };
   }
 

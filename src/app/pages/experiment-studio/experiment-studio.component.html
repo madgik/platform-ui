@@ -1,55 +1,55 @@
 <div class="experiment-studio-page full-bleed">
-  <div class="studio-inner">
-    @if (errorMessage) {
-    <div
-      class="global-error-banner"
-      role="alert"
-      aria-live="assertive"
-      aria-atomic="true"
-    >
-      <div class="banner-content">
-        <i class="fas fa-exclamation-triangle"></i>
-        <span>{{ errorMessage }}</span>
-      </div>
-      <button type="button" class="banner-close" (click)="dismissError()">
-        &times;
+  @if (errorMessage) {
+  <div
+    class="global-error-banner"
+    role="alert"
+    aria-live="assertive"
+    aria-atomic="true"
+  >
+    <div class="banner-content">
+      <i class="fas fa-exclamation-triangle"></i>
+      <span>{{ errorMessage }}</span>
+    </div>
+    <button type="button" class="banner-close" (click)="dismissError()">
+      &times;
+    </button>
+  </div>
+  }
+
+  <header class="studio-header">
+    <div>
+      <h1 class="studio-title">Experiment Studio</h1>
+      <p class="studio-subtitle">
+        Select your variables, configure an algorithm and explore the results.
+      </p>
+    </div>
+
+    <div class="studio-header-actions">
+      <button
+        class="studio-header-btn"
+        type="button"
+        (click)="onBackToDashboard()"
+        [disabled]="isRunning()"
+      >
+        <i class="fas fa-arrow-left"></i>
+        <span>Back to Dashboard</span>
       </button>
     </div>
-    }
+  </header>
 
-    <header class="studio-header">
-      <div>
-        <h1 class="studio-title">Experiment Studio</h1>
-        <p class="studio-subtitle">
-          Select your variables, configure an algorithm and explore the results.
-        </p>
-      </div>
+    <!-- TOP: Variables -->
+    <section class="studio-section studio-section--variables">
+      <app-variables-panel></app-variables-panel>
+    </section>
+    <section class="studio-section studio-section--variables">
+      <app-statistic-analysis-panel></app-statistic-analysis-panel>
+    </section>
 
-      <div class="studio-header-actions">
-        <button
-          class="studio-header-btn"
-          type="button"
-          (click)="onBackToDashboard()"
-          [disabled]="isRunning()"
-        >
-          <i class="fas fa-arrow-left"></i>
-          <span>Back to Dashboard</span>
-        </button>
-      </div>
-    </header>
+    <!-- BOTTOM: Algorithm -->
+    <section class="studio-section studio-section--algorithm">
+      <app-algorithm-panel></app-algorithm-panel>
+    </section>
 
-    <main class="studio-main">
-      <!-- TOP: Variables -->
-      <section class="studio-section studio-section--variables">
-        <app-variables-panel></app-variables-panel>
-      </section>
-
-      <!-- BOTTOM: Algorithm -->
-      <section class="studio-section studio-section--algorithm">
-        <app-algorithm-panel></app-algorithm-panel>
-      </section>
-    </main>
-  </div>
 
   @if (isRunning()) {
   <div class="global-overlay-loader">
