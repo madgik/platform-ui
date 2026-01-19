@@ -3,13 +3,15 @@ import { ExperimentsDashboardComponent } from './pages/experiments-dashboard/exp
 import { AccountPageComponent } from './pages/account-page/account-page.component';
 import { ExperimentStudioComponent } from './pages/experiment-studio/experiment-studio.component';
 import { AuthGuard } from './guards/auth.guard';
+import { TermsGuard } from './guards/terms.guard';
 import { NgModule } from "@angular/core";
+import { TermsPageComponent } from './pages/terms-page/terms-page.component';
 
 export const appRoutes: Routes = [
   {
     path: 'experiments-dashboard',
     component: ExperimentsDashboardComponent,
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, TermsGuard],
   },
   {
     path: '',
@@ -17,14 +19,19 @@ export const appRoutes: Routes = [
     pathMatch: 'full'
   },
   {
+    path: 'terms',
+    component: TermsPageComponent,
+    canActivate: [AuthGuard],
+  },
+  {
     path: 'account',
     component: AccountPageComponent,
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, TermsGuard],
   },
   {
     path: 'experiment-studio',
     component: ExperimentStudioComponent,
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, TermsGuard],
   },
   { path: '**', redirectTo: 'experiment-studio' }
 ];
