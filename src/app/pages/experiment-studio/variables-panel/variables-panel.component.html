@@ -54,7 +54,9 @@
 
       <div class="histogam-placeholder">
         <section class="panel-block distribution-graph">
-          <p class="distribution-graph-header">Distribution Graph</p>
+          <p class="distribution-graph-header">
+            {{ groupSummary() ? 'Group Description' : 'Distribution Graph' }}
+          </p>
 
           @if (isLoadingHistogram()) {
           <div class="distribution-loader">
@@ -67,6 +69,36 @@
           } @else if (!selectedNode) {
           <div class="message-container info">
             <p>Please select a variable to view its distribution.</p>
+          </div>
+          } @else if (groupSummary()) {
+          <div class="group-summary">
+            <div class="group-summary-header">
+              <p class="group-summary-path">
+                <span class="group-summary-label">Path</span>
+                <span class="group-summary-value">
+                  @for (node of groupSummary()?.pathNodes; track node.code; let i = $index) {
+                  <span class="group-summary-separator" [class.is-hidden]="i === 0">></span>
+                  <button type="button" class="group-summary-link group-summary-path-link" (click)="onGroupSummaryClick(node)">
+                    {{ node.label }}
+                  </button>
+                  }
+                </span>
+              </p>
+              <p class="group-summary-count-row">
+                <span class="group-summary-label">Number of groups in</span>
+                <span class="group-summary-value">{{ selectedNode?.label }}</span>
+                <span class="group-summary-count">{{ groupSummary()?.groupCount }}</span>
+              </p>
+            </div>
+            <ul class="group-summary-list">
+              @for (group of groupSummary()?.groupNodes; track group.code) {
+              <li>
+                <button type="button" class="group-summary-link group-summary-list-link" (click)="onGroupSummaryClick(group)">
+                  {{ group.label }}
+                </button>
+              </li>
+              }
+            </ul>
           </div>
           } @else if (distributionData()) {
           <app-distribution-graph

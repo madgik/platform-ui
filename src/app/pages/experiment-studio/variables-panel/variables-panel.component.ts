@@ -43,6 +43,11 @@ export class VariablesPanelComponent implements OnDestroy {
   filteredVariables: WritableSignal<any[]> = signal([]);
   filteredGroups: WritableSignal<any[]> = signal([]);
   distributionData = signal<any | null>(null);
+  groupSummary = signal<{
+    pathNodes: Array<{ code: string; label: string }>;
+    groupCount: number;
+    groupNodes: Array<{ code: string; label: string }>;
+  } | null>(null);
   d3Data: any;
   selectedDataModel = this.experimentStudioService.selectedDataModel;
   selectedNode: any;
@@ -180,10 +185,9 @@ export class VariablesPanelComponent implements OnDestroy {
 
       if (this.selectedDataModel()) {
         this.loadVisualizationData();
-        this.queueHistogramRequest([], 'Initial');
-        setTimeout(() => {
-          this.fetchFederationHistogram();
-        });
+        if (this.d3Data) {
+          this.onSelectedNodeChange(this.d3Data);
+        }
       }
     }
   }
@@ -251,10 +255,13 @@ export class VariablesPanelComponent implements OnDestroy {
     this.filteredVariables.set([]);
     this.filteredGroups.set([]);
     this.distributionData.set(null);
+    this.groupSummary.set(null);
 
     // reload new model data
     this.loadVisualizationData();
-    this.fetchFederationHistogram();
+    if (this.d3Data) {
+      this.onSelectedNodeChange(this.d3Data);
+    }
   }
 
   // search bar functions
@@ -301,6 +308,7 @@ export class VariablesPanelComponent implements OnDestroy {
     this.selectedNode = { ...node };
     this.errorMessage.set(null);
     this.distributionData.set(null); // clear previous histogram
+    this.groupSummary.set(null);
 
     if (!node) {
       this.isLoadingHistogram.set(false);
@@ -308,7 +316,19 @@ export class VariablesPanelComponent implements OnDestroy {
       return;
     }
 
-    const codes = node.children ? this.getAllLeafNodes(node).map((c: any) => c.code) : [node.code];
+    if (node.children && node.children.length > 0) {
+      const groupNodes = this.getGroupNodes(node);
+      const pathNodes = this.getPathNodes(node);
+      this.isLoadingHistogram.set(false);
+      this.groupSummary.set({
+        pathNodes,
+        groupCount: groupNodes.length,
+        groupNodes,
+      });
+      return;
+    }
+
+    const codes = [node.code];
     this.queueHistogramRequest(codes, node.label);
   }
 
@@ -380,6 +400,59 @@ export class VariablesPanelComponent implements OnDestroy {
     this.errorMessage.set(null);
     this.distributionData.set(null);
     this.histogramRequest$.next({ codes, label });
+  }
+
+  private getPathNodes(node: any): Array<{ code: string; label: string }> {
+    const code = node?.code;
+    if (!code) {
+      const fallbackLabel = String(node?.label ?? '');
+      return fallbackLabel ? [{ code: String(code ?? ''), label: fallbackLabel }] : [];
+    }
+    const pathNodes: Array<{ code: string; label: string }> = [];
+    const found = this.collectPathNodes(this.d3Data, code, pathNodes);
+    if (!found) {
+      return [{ code: String(code), label: String(node?.label ?? code) }];
+    }
+    return pathNodes;
+  }
+
+  private collectPathNodes(
+    current: any,
+    code: string,
+    path: Array<{ code: string; label: string }>
+  ): boolean {
+    if (!current) return false;
+    const label = String(current?.label ?? current?.name ?? current?.code ?? '');
+    const currentCode = String(current?.code ?? '');
+    if (label) {
+      path.push({ code: currentCode, label });
+    }
+    if (current?.code === code) return true;
+    for (const child of current.children ?? []) {
+      if (this.collectPathNodes(child, code, path)) return true;
+    }
+    path.pop();
+    return false;
+  }
+
+  private getGroupNodes(node: any): Array<{ code: string; label: string }> {
+    const children = Array.isArray(node?.children) ? node.children : [];
+    const groups = children.filter((child: any) => child?.children && child.children.length > 0);
+    const items = groups.length > 0 ? groups : children;
+    return items
+      .map((child: any) => ({
+        code: String(child?.code ?? ''),
+        label: String(child?.label ?? child?.name ?? child?.code ?? ''),
+      }))
+      .filter((child: { code: string; label: string }) => child.label && child.code);
+  }
+
+  onGroupSummaryClick(node: { code: string }): void {
+    if (!node?.code) return;
+    const target = this.findNodeByCode(this.d3Data, node.code);
+    if (!target) return;
+    this.highlightNode = target;
+    this.onSelectedNodeChange(target);
   }
 
   /**

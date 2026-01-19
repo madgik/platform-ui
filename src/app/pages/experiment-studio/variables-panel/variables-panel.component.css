@@ -152,6 +152,126 @@
   padding-bottom: 8px;
 }
 
+/* Group summary for selected nodes with children */
+.group-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 6px 6px;
+}
+
+.group-summary-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.95rem;
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.group-summary-header p {
+  margin: 0;
+}
+
+.group-summary-label {
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.group-summary-value {
+  font-weight: 700;
+  color: #0f172a;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.group-summary-count-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.group-summary-count {
+  background: rgba(2, 109, 109, 0.12);
+  color: #026d6d;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.group-summary-path {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.group-summary-separator {
+  margin: 0 2px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.group-summary-separator.is-hidden {
+  display: none;
+}
+
+.group-summary-link {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  color: #026d6d;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.group-summary-path-link {
+  color: #0f172a;
+  text-decoration-thickness: 2px;
+}
+
+.group-summary-path-link:hover {
+  color: #026d6d;
+}
+
+.group-summary-list-link {
+  text-decoration: none;
+}
+
+.group-summary-list-link:hover {
+  text-decoration: underline;
+}
+
+.group-summary-link:hover {
+  color: #0a857f;
+}
+
+.group-summary-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 6px 12px;
+  color: #0f172a;
+  font-size: 0.92rem;
+}
+
+.group-summary-list li {
+  background: rgba(2, 109, 109, 0.08);
+  border: 1px solid rgba(2, 109, 109, 0.18);
+  border-radius: 10px;
+  padding: 6px 8px;
+}
+
 /* ---------- MESSAGES (no variable / error) ---------- */
 
 .message-container {
