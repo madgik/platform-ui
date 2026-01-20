@@ -1,8 +1,6 @@
 import { ChartBuilderService } from './../../visualisations/charts/chart-builder.service';
 import { Component, Input, signal, computed, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { AutoRendererComponent } from '../../visualisations/auto-renderer/auto-renderer.component';
 import { ChartRendererComponent } from '../../visualisations/charts/charts-renderer/charts-renderer.component';
 import { EChartsOption } from 'echarts';

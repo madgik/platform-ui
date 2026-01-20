@@ -11,6 +11,7 @@ import { AlgorithmConfig } from '../../../models/algorithm-definition.model';
 import { PdfExportService } from '../../../services/export-results-pdf.service';
 import { AlgorithmDescriptionModalComponent } from './algorithm-description-modal/algorithm-description-modal.component';
 import { ErrorService } from '../../../services/error.service';
+import { AuthService } from '../../../services/auth.service';
 
 
 @Component({
@@ -31,6 +32,7 @@ import { ErrorService } from '../../../services/error.service';
 export class AlgorithmPanelComponent {
   pdfExport = inject(PdfExportService);
   private errorService = inject(ErrorService);
+  private authService = inject(AuthService);
   Object = Object;
   experimentStudioService = inject(ExperimentStudioService);
   sessionStorage = inject(SessionStorageService);
@@ -558,16 +560,51 @@ export class AlgorithmPanelComponent {
   }
 
   onExportResult(section: HTMLElement) {
-    const algoName =
+    const result = this.result();
+    if (!section || !result) {
+      console.warn('No result or element to export');
+      return;
+    }
+
+    const info = this.experimentInfo();
+    const algoKey =
       this.lastUsedAlgorithm ||
+      this.experimentStudioService.lastUsedAlgorithm() ||
       this.experimentStudioService.selectedAlgorithm()?.name ||
       'experiment';
 
+    const algoLabel =
+      this.experimentStudioService.selectedAlgorithm()?.label ||
+      this.experimentStudioService.selectedAlgorithm()?.name ||
+      algoKey;
+
+    const currentUser = this.authService.currentUser;
+    const createdBy =
+      currentUser?.fullname || currentUser?.username || currentUser?.email || null;
+
     const filename =
       this.experimentStudioService.getExperimentNameOrDefault(
-        `results_${algoName}`
+        `results_${algoKey}`
       );
 
-    this.pdfExport.exportElementAsPdf(section, filename);
+    this.pdfExport.exportExperimentPdf({
+      filename,
+      details: {
+        experimentName: info.experimentName,
+        createdBy,
+        createdAt: new Date(),
+        algorithm: algoLabel,
+        params: info.algorithmConfigs,
+        preprocessing: 'none',
+        domain: this.experimentStudioService.selectedDataModel()?.code ?? null,
+        datasets: info.datasets ?? [],
+        variables: (info.variables ?? []).map((v: any) => v.label || v.name || v.code),
+        covariates: (info.covariates ?? []).map((c: any) => c.label || c.name || c.code),
+        filters: (info.filters ?? []).map((f: any) => f.label || f.name || f.code),
+      },
+      algorithmKey: algoKey,
+      result,
+      chartContainer: section,
+    });
   }
 }

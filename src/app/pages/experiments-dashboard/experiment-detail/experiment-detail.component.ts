@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { input, computed, effect, signal } from '@angular/core';
 import { ExperimentsDashboardService } from '../../../services/experiments-dashboard.service';
 import { Experiment } from '../../../models/experiments-dashboard.model';
+import { BackendExperimentWithResult } from '../../../models/backend-experiment.model';
 import { AlgorithmResultComponent } from '../../experiment-studio/algorithm-panel/algorithm-result/algorithm-result.component';
 import { getOutputSchema } from '../../../core/algorithm-mappers';
 import { SpinnerComponent } from '../../shared/spinner/spinner.component';
@@ -27,6 +28,7 @@ export class ExperimentDetailsComponent {
   @ViewChild('resultsCard') resultsCardRef?: ElementRef<HTMLElement>;
 
   private resultSignal = signal<any | null>(null);
+  private fullExperimentSignal = signal<BackendExperimentWithResult | null>(null);
   private loading = signal(false);
   private error = signal<string | null>(null);
 
@@ -121,6 +123,7 @@ export class ExperimentDetailsComponent {
 
     this.dashboardService.getExperimentResult(uuid).subscribe({
       next: (res) => {
+        this.fullExperimentSignal.set(res ?? null);
         const normalized = res?.result ?? res;
         this.resultSignal.set(normalized);
         this.loading.set(false);
@@ -153,6 +156,7 @@ export class ExperimentDetailsComponent {
   onExportPdf(): void {
     const element = this.resultsCardRef?.nativeElement;
     const result = this.experimentResult();
+    const fullExperiment = this.fullExperimentSignal();
 
     if (!element || !result) {
       console.warn('No result or element to export');
@@ -162,7 +166,25 @@ export class ExperimentDetailsComponent {
     const baseName = this.selectedExperiment()?.name?.trim() || 'experiment results';
     const filename = baseName.replace(/\s+/g, '_');
 
-    this.pdfExport.exportElementAsPdf(element, filename);
+    this.pdfExport.exportExperimentPdf({
+      filename,
+      details: {
+        experimentName: baseName,
+        createdBy: this.selectedExperiment()?.author ?? null,
+        createdAt: this.selectedExperiment()?.dateCreated ?? null,
+        algorithm: fullExperiment?.algorithm?.name ?? this.experimentalAlgorithmName(),
+        params: fullExperiment?.algorithm?.parameters ?? null,
+        preprocessing: 'none',
+        domain: this.selectedExperiment()?.domain ?? null,
+        datasets: this.selectedExperiment()?.datasets ?? [],
+        variables: this.variablesWithLabels().map((v) => v.label),
+        covariates: this.covariatesWithLabels().map((c) => c.label),
+        filters: this.filtersWithLabels().map((f) => f.label),
+      },
+      algorithmKey: fullExperiment?.algorithm?.name ?? this.experimentalAlgorithmName(),
+      result,
+      chartContainer: element,
+    });
   }
 
   runExperiment() {
