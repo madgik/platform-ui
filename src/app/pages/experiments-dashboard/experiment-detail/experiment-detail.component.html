@@ -29,13 +29,53 @@
         </span>
       </div>
 
-      <h1 class="experiment-title">
-        {{ selectedExperiment()?.name }}
-      </h1>
+      <div class="experiment-title-row">
+        @if (!isEditingName()) {
+        <h1 class="experiment-title">
+          {{ selectedExperiment()?.name }}
+        </h1>
+        <button
+          type="button"
+          class="title-edit-btn"
+          (click)="startNameEdit()"
+          title="Edit experiment name"
+        >
+          <i class="far fa-edit"></i>
+        </button>
+        } @else {
+        <div class="title-edit-group">
+          <input
+            class="title-edit-input"
+            [value]="nameDraft()"
+            (input)="nameDraft.set($any($event.target).value)"
+            [disabled]="nameSaving()"
+          />
+          <button
+            type="button"
+            class="title-edit-action"
+            (click)="saveNameEdit()"
+            [disabled]="nameSaving()"
+          >
+            Save
+          </button>
+          <button
+            type="button"
+            class="title-edit-action cancel"
+            (click)="cancelNameEdit()"
+            [disabled]="nameSaving()"
+          >
+            Cancel
+          </button>
+        </div>
+        }
+      </div>
+      @if (nameError()) {
+      <p class="name-error">{{ nameError() }}</p>
+      }
 
-      <p class="experiment-description">
-        {{ selectedExperiment()?.description || "No description provided." }}
-      </p>
+<!--      <p class="experiment-description">-->
+<!--        {{ selectedExperiment()?.description || "No description provided." }}-->
+<!--      </p>-->
 
       <div class="meta-grid">
         <div class="meta-item">
@@ -64,11 +104,6 @@
         <button type="button" class="ghost-btn" (click)="runExperiment()">
           <i class="fas fa-play-circle"></i>
           <span>Run again</span>
-        </button>
-
-        <button type="button" class="ghost-btn" (click)="editExperiment()">
-          <i class="far fa-edit"></i>
-          <span>Edit in studio</span>
         </button>
 
         <button

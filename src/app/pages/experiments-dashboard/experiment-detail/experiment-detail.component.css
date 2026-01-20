@@ -57,6 +57,78 @@
   color: #020617;
 }
 
+.experiment-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.title-edit-btn {
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  background: #ffffff;
+  color: #0f172a;
+  border-radius: 999px;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease,
+    box-shadow 0.12s ease,
+    transform 0.12s ease;
+}
+
+.title-edit-btn:hover {
+  background: #e0f2fe;
+  border-color: #0284c7;
+  box-shadow: 0 6px 12px rgba(15, 23, 42, 0.12);
+  transform: translateY(-1px);
+}
+
+.title-edit-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.title-edit-input {
+  min-width: 220px;
+  border: 1px solid #cbd5f5;
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-size: 0.95rem;
+  color: #0f172a;
+  background: #ffffff;
+}
+
+.title-edit-action {
+  border-radius: 999px;
+  border: 1px solid rgba(2, 122, 122, 0.5);
+  background: #e6f7f7;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  color: #0f172a;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.title-edit-action.cancel {
+  border-color: rgba(148, 163, 184, 0.6);
+  background: #f8fafc;
+}
+
+.title-edit-action:disabled,
+.title-edit-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.name-error {
+  margin: 0 0 8px;
+  font-size: 0.8rem;
+  color: #b91c1c;
+}
+
 .experiment-description {
   margin: 0 0 10px;
   font-size: 0.9rem;

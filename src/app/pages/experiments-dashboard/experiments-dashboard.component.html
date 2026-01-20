@@ -80,8 +80,8 @@
       <app-experiment-details
         [selectedExperiment]="selectedExperiment()"
         (run)="onRunExperiment($event)"
-        (edit)="onEditExperiment($event)"
         (deleteExperiment)="onDeleteRequested()"
+        (nameUpdated)="onNameUpdated($event)"
       >
       </app-experiment-details>
       } @else if (experimentsForCompare().length < 2) {

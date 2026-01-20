@@ -72,6 +72,22 @@ export class ExperimentsDashboardService {
       );
   }
 
+  updateExperimentName(experimentId: string, name: string) {
+    return this.http
+      .patch<BackendExperiment>(`${this.apiUrl}/${experimentId}`, { name })
+      .pipe(
+        tap((updated) => {
+          this.experiments.update((current) =>
+            current.map((exp) =>
+              exp.id === experimentId
+                ? { ...exp, name: updated.name }
+                : exp
+            )
+          );
+        })
+      );
+  }
+
   deleteExperiment(experimentId: string): void {
     if (!experimentId) return;
 

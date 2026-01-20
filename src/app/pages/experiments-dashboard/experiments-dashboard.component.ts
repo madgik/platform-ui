@@ -180,16 +180,22 @@ export class ExperimentsDashboardComponent implements OnInit, OnDestroy {
   }
 
   onRunExperiment(expId: string) {
-    this.router.navigate(
-      ['/experiment-studio'],
-      { state: { experimentId: expId, mode: 'run-again' } }
-    );
+    this.router.navigate(['/experiment-studio'], {
+      queryParams: { experimentId: expId, mode: 'edit' }
+    });
   }
 
   onEditExperiment(expId: string) {
     this.router.navigate(['/experiment-studio'], {
       queryParams: { experimentId: expId, mode: 'edit' }
     });
+  }
+
+  onNameUpdated(update: { id: string; name: string }) {
+    const current = this.selectedExperiment();
+    if (current?.id === update.id) {
+      this.selectedExperiment.set({ ...current, name: update.name });
+    }
   }
 
   goToNewExperiment() {

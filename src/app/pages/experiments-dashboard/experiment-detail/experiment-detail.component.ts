@@ -22,8 +22,8 @@ export class ExperimentDetailsComponent {
   selectedExperiment = input<Experiment | null>(null);
 
   @Output() run = new EventEmitter<string>();
-  @Output() edit = new EventEmitter<string>();
   @Output() deleteExperiment = new EventEmitter<void>();
+  @Output() nameUpdated = new EventEmitter<{ id: string; name: string }>();
 
   @ViewChild('resultsCard') resultsCardRef?: ElementRef<HTMLElement>;
 
@@ -39,6 +39,10 @@ export class ExperimentDetailsComponent {
 
   readonly copyToastVisible = signal<boolean>(false);
   readonly copyToastMessage = signal<string>('Link copied to clipboard');
+  readonly isEditingName = signal<boolean>(false);
+  readonly nameDraft = signal<string>('');
+  readonly nameSaving = signal<boolean>(false);
+  readonly nameError = signal<string | null>(null);
 
   private codeToLabelSignal = signal<Record<string, string>>({});
 
@@ -87,6 +91,16 @@ export class ExperimentDetailsComponent {
       () => {
         const domain = this.selectedExperiment()?.domain ?? null;
         this.loadLabels(domain);
+      },
+      { allowSignalWrites: true }
+    );
+
+    effect(
+      () => {
+        const exp = this.selectedExperiment();
+        if (!this.isEditingName() && exp?.name) {
+          this.nameDraft.set(exp.name);
+        }
       },
       { allowSignalWrites: true }
     );
@@ -193,10 +207,51 @@ export class ExperimentDetailsComponent {
     this.run.emit(id);
   }
 
-  editExperiment() {
-    const id = this.selectedExperiment()?.id;
-    if (!id) return;
-    this.edit.emit(id);
+  startNameEdit() {
+    const exp = this.selectedExperiment();
+    this.nameDraft.set(exp?.name ?? '');
+    this.nameError.set(null);
+    this.isEditingName.set(true);
+  }
+
+  cancelNameEdit() {
+    const exp = this.selectedExperiment();
+    this.nameDraft.set(exp?.name ?? '');
+    this.nameError.set(null);
+    this.isEditingName.set(false);
+  }
+
+  saveNameEdit() {
+    const exp = this.selectedExperiment();
+    if (!exp) return;
+
+    const trimmed = this.nameDraft().trim();
+    if (!trimmed) {
+      this.nameError.set('Name cannot be empty.');
+      return;
+    }
+
+    if (trimmed === exp.name) {
+      this.isEditingName.set(false);
+      this.nameError.set(null);
+      return;
+    }
+
+    this.nameSaving.set(true);
+    this.nameError.set(null);
+
+    this.dashboardService.updateExperimentName(exp.id, trimmed).subscribe({
+      next: () => {
+        this.nameSaving.set(false);
+        this.isEditingName.set(false);
+        this.nameUpdated.emit({ id: exp.id, name: trimmed });
+      },
+      error: (err) => {
+        console.error('Failed to update experiment name', err);
+        this.nameSaving.set(false);
+        this.nameError.set('Failed to update name.');
+      },
+    });
   }
 
   onToggleShare(): void {
