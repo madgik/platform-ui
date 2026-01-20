@@ -1,11 +1,22 @@
 .search-container {
   position: relative;
-  width: fit-content;
-  margin: 0 0 0 8px;
+  width: 100%;
+  margin: 0;
   font-family: "Roboto", sans-serif;
   display: inline-block;
   z-index: 2000;
   overflow: visible;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.search-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #0f172a;
 }
 
 /* Main pill */
@@ -15,11 +26,12 @@
   gap: 4px;
   border-radius: 999px;
   border: 1px solid #d1e4ea;
-  padding: 4px 6px;
+  padding: 6px 8px;
   background: #ffffff;
-  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 3px 8px rgba(15, 23, 42, 0.08);
   transition: border-color 0.16s ease, box-shadow 0.16s ease,
     transform 0.12s ease;
+  width: 100%;
 }
 
 .search-input-container:focus-within {
@@ -33,12 +45,13 @@
 #search-bar {
   flex: 1;
   padding: 4px 6px;
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   border: none;
   outline: none;
-  height: 28px;
+  height: 30px;
   color: #0f172a;
   background: transparent;
+  min-width: 180px;
 }
 
 /* Clear button */

@@ -3,10 +3,10 @@
 .variables-panel-shell {
   width: 100%;
   box-sizing: border-box;
-  background: rgb(234, 248, 243);
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
-  padding: 8px 12px 12px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -36,10 +36,10 @@
 
 .selectors-row {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
-  gap: 14px;
-  padding: 6px 4px 10px;
+  gap: 12px;
+  padding: 4px 4px 8px;
   border-bottom: 1px solid rgba(226, 232, 240, 0.9);
 }
 
@@ -51,8 +51,8 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  min-width: 260px;
-  flex: 1 1 260px;
+  min-width: 240px;
+  flex: 1 1 auto;
   margin-left: 0;
 }
 
@@ -69,15 +69,10 @@
 /* Left: bubble chart “canvas” */
 .bubble-chart-section {
   min-height: 470px;
-  background: radial-gradient(
-    circle at top left,
-    #dbf6ff 0,
-    #e0fbf5 55%,
-    #f4fbff 100%
-  );
-  border-radius: 14px;
-  border: 1px solid rgba(148, 163, 184, 0.35);
-  padding: 6px;
+  background: transparent;
+  border-radius: 0;
+  border: none;
+  padding: 0;
   box-sizing: border-box;
   overflow: hidden;
 }
@@ -336,6 +331,10 @@
 /* ---------- RESPONSIVE ---------- */
 
 @media (max-width: 1200px) {
+  .selectors-row {
+    flex-wrap: wrap;
+  }
+
   .variables-main {
     grid-template-columns: minmax(0, 1fr);
   }

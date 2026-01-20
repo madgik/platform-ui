@@ -178,12 +178,11 @@ export function createZoomableCirclePacking(
     .attr('height', height)
     .style('display', 'block')
     .style('margin', '0')
-    .style('background', 'hsl(152,70%,88%)')
     .style('cursor', 'pointer')
     .attr(
       'style',
       `min-width: 100%; height: auto; display: block; margin: 0 -14px;
-       background: hsl(152,70%,88%); cursor: pointer;`
+       background: transparent; cursor: pointer;`
     );
 
   const defs = svg.append('defs');

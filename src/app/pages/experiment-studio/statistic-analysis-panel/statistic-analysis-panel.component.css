@@ -7,8 +7,8 @@
   width: min(960px, 92vw);
   max-height: 85vh;
   overflow: hidden;
-  background: #ffffff;
-  border-radius: 18px;
+  background: #f6fafb;
+  border-radius: 20px;
   box-shadow:
     0 18px 45px rgba(15, 23, 42, 0.25),
     0 1px 3px rgba(15, 23, 42, 0.18);
@@ -19,6 +19,14 @@
   flex-direction: column;
 }
 
+.modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: #f6fafb;
+  border-radius: 0 0 20px 20px;
+}
+
 /* Header */
 .modal-header {
   display: flex;
@@ -27,8 +35,8 @@
   padding: 14px 20px;
   background: linear-gradient(90deg, #026d6d, #3ac6b8);
   color: #ffffff;
-  border-top-left-radius: 18px;
-  border-top-right-radius: 18px;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
 }
 
 .modal-header p {
@@ -42,18 +50,20 @@
   display: flex;
   justify-content: center;
   gap: 8px;
-  padding: 10px 0;
-  background: #f3f5f9;
-  border-bottom: 1px solid #e5e7eb;
+  padding: 10px 16px;
+  background: #eef5f6;
+  border-bottom: none;
+  border-radius: 0;
+  margin: 0;
 }
 
 .modal-tabs button {
-  border: 1px solid #026d6d;
+  border: 1px solid rgba(2, 109, 109, 0.35);
   border-radius: 999px;
-  padding: 6px 16px;
+  padding: 6px 18px;
   background: #ffffff;
   color: #026d6d;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 13px;
   cursor: pointer;
   text-transform: none;
@@ -67,7 +77,7 @@
 
 .modal-tabs button.active,
 .modal-tabs button:hover {
-  background: linear-gradient(135deg, #026d6d, #3ac6b8);
+  background: linear-gradient(135deg, #026d6d, #2fbcb0);
   color: #ffffff;
   border-color: #026d6d;
   transform: translateY(-1px);
@@ -75,18 +85,25 @@
 
 /* Body */
 .modal-body {
-  padding: 16px 18px 10px;
-  background: #f3f5f9;
+  padding: 16px 18px 14px;
+  background: #f6fafb;
   max-height: calc(85vh - 150px);
   overflow-y: auto;
+  border-radius: 0;
+  margin: 0;
+  border-bottom: none;
 }
 
 /* Empty state ("No data available.") */
 .modal-body > p {
-  margin: 40px 0;
+  margin: 24px 0;
   text-align: center;
   font-size: 14px;
-  color: #6b7280;
+  color: #4b5563;
+  padding: 16px;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px dashed rgba(148, 163, 184, 0.4);
 }
 
 /*  Expand / Collapse buttons  */
@@ -95,37 +112,77 @@
   justify-content: flex-end;
   gap: 8px;
   margin: 8px 0 14px 0;
+  flex-wrap: wrap;
 }
 
-.expand-all,
-.collapse-all {
-  background: linear-gradient(135deg, #026d6d, #3ac6b8);
-  color: #ffffff;
-  border: none;
-  padding: 6px 14px;
+.toolbar-segmented {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgba(2, 109, 109, 0.35);
   border-radius: 999px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.toolbar-seg {
+  border: none;
+  background: transparent;
+  color: #0f766e;
+  padding: 6px 12px;
   cursor: pointer;
-  font-weight: 500;
-  font-size: 13px;
-  letter-spacing: 0.3px;
+  font-weight: 600;
+  font-size: 12.5px;
+  letter-spacing: 0.2px;
   transition:
     background 0.15s ease-in-out,
-    box-shadow 0.15s ease-in-out,
-    transform 0.08s ease-in-out;
-  box-shadow: 0 1px 3px rgba(6, 95, 70, 0.35);
+    color 0.15s ease-in-out;
 }
 
-.expand-all:hover,
-.collapse-all:hover {
-  background: linear-gradient(135deg, #015557, #31ac9f);
-  box-shadow: 0 3px 8px rgba(6, 95, 70, 0.45);
+.toolbar-seg + .toolbar-seg {
+  border-left: 1px solid rgba(2, 109, 109, 0.2);
+}
+
+.toolbar-seg:hover {
+  background: rgba(2, 109, 109, 0.08);
+  color: #0f172a;
+}
+
+.toolbar-icon-btn i {
+  font-size: 0.95em;
+}
+
+.toolbar-icon-btn {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(2, 109, 109, 0.35);
+  background: linear-gradient(135deg, #026d6d, #3ac6b8);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(6, 95, 70, 0.25);
+  gap: 6px;
+  font-weight: 600;
+  font-size: 12.5px;
+  letter-spacing: 0.2px;
+  transition:
+    transform 0.08s ease-in-out,
+    box-shadow 0.15s ease-in-out,
+    filter 0.15s ease-in-out;
+}
+
+.toolbar-icon-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow: 0 8px 18px rgba(6, 95, 70, 0.35);
 }
 
 /* Accordion cards (per variable) */
 .accordion {
   background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
   margin-bottom: 14px;
   overflow: hidden;
   transition: box-shadow 0.3s ease;
@@ -275,48 +332,8 @@
   min-height: 360px;
 }
 
-/* Footer (Export / Close) */
-.modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  padding: 10px 20px 14px;
-  background: #ffffff;
-  border-top: 1px solid #e5e7eb;
-}
-
-/* Export PDF */
-.btn-download {
-  border-radius: 999px;
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  border: none;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  background: linear-gradient(90deg, #026d6d, #3ac6b8);
-  color: #ffffff;
-  box-shadow: 0 6px 16px rgba(6, 95, 70, 0.35);
-  transition:
-    background 0.15s ease-in-out,
-    box-shadow 0.15s ease-in-out,
-    transform 0.08s ease-in-out;
-}
-
-.btn-download:hover {
-  background: linear-gradient(90deg, #015557, #31ac9f);
-  box-shadow: 0 8px 18px rgba(6, 95, 70, 0.45);
-}
-
-/* Disabled export state */
-.btn-download[disabled] {
-  opacity: 0.6;
-  cursor: not-allowed;
-  box-shadow: none;
-  transform: none;
+.toolbar-btn i {
+  font-size: 0.95em;
 }
 
 /* PDF export helpers */
@@ -379,6 +396,10 @@ body.pdf-exporting,
     border-radius: 14px;
   }
 
+  .modal-content {
+    border-radius: 0 0 14px 14px;
+  }
+
   .modal-header {
     padding: 10px 14px;
   }
@@ -403,11 +424,7 @@ body.pdf-exporting,
     font-size: 12px;
   }
 
-  .modal-footer {
-    padding: 8px 12px 10px;
-  }
-
-  .btn-download {
+  .toolbar-seg {
     padding: 6px 12px;
     font-size: 13px;
   }

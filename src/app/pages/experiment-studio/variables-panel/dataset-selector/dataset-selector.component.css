@@ -1,9 +1,25 @@
 .dataset-selector {
   position: relative;
   display: inline-flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
   font-family: "Roboto", system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", sans-serif;
+}
+
+.control-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #0f172a;
+}
+
+.dataset-control {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
 }
 
 /* Main button */
@@ -11,15 +27,15 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 10px 14px;
+  padding: 8px 14px;
   border-radius: 999px;
   border: 1px solid #d1e4ea;
   background: #ffffff;
   cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 500;
+  font-size: 0.88rem;
+  font-weight: 600;
   color: #0f172a;
-  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 3px 8px rgba(15, 23, 42, 0.08);
   transition: background 0.16s ease, box-shadow 0.16s ease,
     border-color 0.16s ease, transform 0.12s ease;
 }

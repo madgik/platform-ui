@@ -1,10 +1,13 @@
 <div class="dataset-selector">
-  <button class="dataset-btn" (click)="toggleDropdown()">
-    <span class="dataset-btn-label">Select Datasets</span>
-  </button>
+  <label class="control-label">Datasets</label>
+  <div class="dataset-control">
+    <button class="dataset-btn" (click)="toggleDropdown()">
+      <span class="dataset-btn-label">Select datasets</span>
+    </button>
 
-  <!-- Counter badge -->
-  <span class="dataset-counter">{{ selectedDatasets.size }}</span>
+    <!-- Counter badge -->
+    <span class="dataset-counter">{{ selectedDatasets.size }}</span>
+  </div>
 
   <!-- Dropdown menu -->
   @if (isDropdownOpen) {
