@@ -20,15 +20,17 @@ function splitText(text: string, max = 13): string[] {
 function createLabelGroup(group: d3.Selection<SVGGElement, any, any, any>, d: any) {
   group.selectAll('*').remove();
 
-  const padX = 3, padY = 5;
-
   const text = group
     .append('text')
     .attr('class', 'label')
     .attr('text-anchor', 'middle')
-    .style('font-size', '9px')
-    .style('font-weight', '500')
-    .style('fill', '#222');
+    .style('font-size', '10px')
+    .style('font-weight', '600')
+    .style('fill', '#1d1d1d')
+    .style('paint-order', 'stroke')
+    .style('stroke', 'rgba(255,255,255,0.9)')
+    .style('stroke-width', 2)
+    .style('stroke-linejoin', 'round');
 
   text.selectAll('tspan')
     .data(splitText(d.data.label || ''))
@@ -41,36 +43,6 @@ function createLabelGroup(group: d3.Selection<SVGGElement, any, any, any>, d: an
     .text((l: string) => l);
 
   if (!d.children) return;
-
-  // Turns text bbox for background rect
-  const tempSvg = d3.select('body')
-    .append('svg')
-    .attr('width', 0)
-    .attr('height', 0)
-    .style('position', 'absolute')
-    .style('visibility', 'hidden');
-
-  const tempText = tempSvg.append('text')
-    .style('font-size', '10px')
-    .style('font-weight', '500')
-    .text(d.data.label || '');
-
-  const bbox = tempText.node()?.getBBox();
-  tempSvg.remove();
-  if (!bbox) return;
-
-  group
-    .insert('rect', 'text')
-    .attr('class', 'label-bg')
-    .attr('x', -bbox.width / 2 - padX)
-    .attr('y', -bbox.height / 2 - padY)
-    .attr('width', bbox.width + padX * 2)
-    .attr('height', bbox.height + padY * 2)
-    .attr('rx', 3)
-    .style('fill', 'white')
-    .style('stroke', 'rgba(0, 0, 0, 0.2)')
-    .style('stroke-width', 0.8)
-    .style('opacity', 0.9);
 }
 
 // Get code/id from nodes
@@ -214,6 +186,19 @@ export function createZoomableCirclePacking(
        background: hsl(152,70%,88%); cursor: pointer;`
     );
 
+  const defs = svg.append('defs');
+  defs.append('filter')
+    .attr('id', 'node-glow')
+    .attr('x', '-50%')
+    .attr('y', '-50%')
+    .attr('width', '200%')
+    .attr('height', '200%')
+    .append('feDropShadow')
+    .attr('dx', 0)
+    .attr('dy', 0)
+    .attr('stdDeviation', 2.5)
+    .attr('flood-color', 'rgba(0,0,0,0.35)');
+
   // Nodes
   const node = svg.append('g')
     .selectAll('circle')
@@ -221,6 +206,9 @@ export function createZoomableCirclePacking(
     .join('circle')
     .attr('class', (d: any) => (d.children ? 'group' : 'leaf'))
     .attr('fill', (d: any) => (d.children ? color(d.depth) : colorForLeaf(d, sets)))
+    .attr('fill-opacity', (d: any) => (d.children ? 0.6 : 1))
+    .attr('stroke', (d: any) => (d.children ? 'rgba(0,0,0,0.08)' : 'rgba(0,0,0,0.12)'))
+    .attr('stroke-width', (d: any) => (d.children ? 1 : 0.6))
     .on('click', (event: MouseEvent, d: any) => {
       event.stopPropagation();
       if (!d.children) {
@@ -232,14 +220,17 @@ export function createZoomableCirclePacking(
       zoom(event, d);
     })
     .on('mouseover', function (event, d) {
-      d3.select(this).attr('stroke', '#000');
+      d3.select(this)
+        .attr('stroke', '#000')
+        .attr('stroke-width', 1.6)
+        .attr('filter', 'url(#node-glow)');
       showTooltip(event, d);
     })
     .on('mousemove', function (event) {
       moveTooltip(event);
     })
     .on('mouseout', function () {
-      d3.select(this).attr('stroke', null);
+      updateSelection();
       hideTooltip();
     });
 
@@ -274,8 +265,8 @@ export function createZoomableCirclePacking(
       )
       .each(function (d: any) {
         const el = d3.select(this as SVGGElement);
-        if (d.parent === focus) {
-          el.style('display', 'inline').style('fill-opacity', 1);
+        if (d.parent === focus && shouldShowLabel(d, k)) {
+          el.style('display', 'inline').style('fill-opacity', 0.92);
           createLabelGroup(el, d);
         } else el.style('display', 'none');
       });
@@ -288,8 +279,18 @@ export function createZoomableCirclePacking(
         if (d.children) return color(d.depth);
         return colorForLeaf(d, sets);
       })
-      .attr('stroke', (d: any) => (d === selectedDataNode ? 'black' : 'none'))
-      .attr('stroke-width', (d: any) => (d === selectedDataNode ? 2 : 0));
+      .attr('fill-opacity', (d: any) => (d.children ? 0.6 : 1))
+      .attr('stroke', (d: any) => {
+        if (d === selectedDataNode) return '#000';
+        if (d.children) return 'rgba(0,0,0,0.08)';
+        return 'rgba(0,0,0,0.12)';
+      })
+      .attr('stroke-width', (d: any) => {
+        if (d === selectedDataNode) return 2;
+        if (d.children) return 1;
+        return 0.6;
+      })
+      .attr('filter', (d: any) => (d === selectedDataNode ? 'url(#node-glow)' : 'none'));
   }
 
   function zoom(event: MouseEvent, d: any) {
@@ -322,8 +323,8 @@ export function createZoomableCirclePacking(
 
     labelNodes.each(function (nd: any) {
       const el = d3.select(this as SVGGElement);
-      if (nd.parent === group) {
-        el.style('display', 'inline').style('fill-opacity', 0.5);
+      if (nd.parent === group && shouldShowLabel(nd, width / zoomTarget[2])) {
+        el.style('display', 'inline').style('fill-opacity', 0.6);
         createLabelGroup(el, nd);
       } else el.style('display', 'none').style('fill-opacity', 0);
     });
@@ -350,11 +351,11 @@ export function createZoomableCirclePacking(
 
         labelNodes.each(function (nd: any) {
           const el = d3.select(this as SVGGElement);
-          if (nd.parent === group) {
+          if (nd.parent === group && shouldShowLabel(nd, width / zoomTarget[2])) {
             el.style('display', 'inline')
               .transition()
               .duration(250)
-              .style('fill-opacity', 1);
+              .style('fill-opacity', 0.92);
           } else el.style('display', 'none').style('fill-opacity', 0);
         });
       });
@@ -399,6 +400,16 @@ export function createZoomableCirclePacking(
         }
       }
     });
+  }
+
+  function shouldShowLabel(d: any, k: number): boolean {
+    if (!d.children) return false;
+    const radius = d.r * k;
+    if (radius < 16) return false;
+    const lines = splitText(d.data.label || '');
+    const maxLine = lines.reduce((acc, l) => Math.max(acc, l.length), 0);
+    const approxTextWidth = maxLine * 6;
+    return approxTextWidth <= radius * 2.1;
   }
 
   return { zoomToNode, refreshColors };
