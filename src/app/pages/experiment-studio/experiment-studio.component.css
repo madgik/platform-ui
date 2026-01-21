@@ -20,12 +20,21 @@
   color: #0f172a;
   box-sizing: border-box;
   margin-top: 1%;
+  overflow-x: hidden;
+}
+
+:host {
+  --studio-card-bg: rgba(255, 255, 255, 0.92);
+  --studio-card-border: rgba(148, 163, 184, 0.45);
+  --studio-card-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+  --studio-card-header-bg: rgba(241, 245, 249, 0.85);
+  --studio-card-header-border: rgba(226, 232, 240, 0.9);
 }
 
 /* Inner wrapper */
 .studio-inner {
-  max-width: 100%;
   margin: 0 auto;
+  width: 100%;
 }
 
 .global-error-banner {
@@ -75,80 +84,66 @@
 }
 
 /* Header */
-.studio-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  gap: 24px;
-}
-
-.studio-title {
-  margin: 0;
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #0b1420;
-}
-
-.studio-subtitle {
-  margin: 0;
-  font-size: 0.95rem;
-  color: #64748b;
-}
-
-.studio-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.studio-header-btn {
+.studio-float-back {
+  position: sticky;
+  top: 28px;
+  align-self: flex-end;
+  margin-top: 20px;
+  z-index: 3;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   border: none;
   outline: none;
   cursor: pointer;
   border-radius: 999px;
   padding: 8px 14px;
-  font-size: 0.85rem;
-  font-weight: 500;
+  font-size: 0.8rem;
+  font-weight: 600;
   color: #0f172a;
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.15);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.18);
   transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
 }
 
-.studio-header-btn i {
-  font-size: 0.8rem;
+.studio-float-back i {
+  font-size: 0.78rem;
 }
 
-.studio-header-btn:hover {
+.studio-float-back:hover {
   transform: translateY(-1px);
   box-shadow: 0 14px 30px rgba(15, 23, 42, 0.25);
   opacity: 0.96;
+}
+
+.studio-float-back:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  box-shadow: none;
 }
 
 /* Main vertical layout */
 .studio-main {
   display: flex;
   flex-direction: column;
+  gap: 14px;
 }
 
 /* Section wrapper around panels */
 .studio-section {
   max-width: 100%;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 /* Light frame */
 .studio-section--variables,
+.studio-section--statistics,
 .studio-section--algorithm {
-  padding: 2px 4px;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.10);
+  padding: 6px 8px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.16);
   transition: background 0.18s ease, box-shadow 0.18s ease;
-  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.2);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.14);
 }
 
 /* Global full-page overlay loader */
@@ -185,24 +180,18 @@
     max-width: 100%;
   }
 
-  .studio-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .studio-header-actions {
-    align-self: stretch;
-    justify-content: flex-end;
+  .studio-float-back {
+    align-self: flex-start;
   }
 
   .studio-main {
-    gap: 16px;
+    gap: 12px;
   }
 
   .studio-section--variables,
+  .studio-section--statistics,
   .studio-section--algorithm {
     border-radius: 16px;
-    padding: 4px 2px;
+    padding: 6px 4px;
   }
 }

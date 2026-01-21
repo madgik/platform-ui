@@ -83,7 +83,7 @@ export function createZoomableCirclePacking(
     selectedCovariates?: any[];
     selectedFilters?: any[];
   }
-): { zoomToNode: (d: any) => void; refreshColors: (opts?: any) => void } {
+): { zoomToNode: (d: any) => void; refreshColors: (opts?: any) => void; destroy?: () => void } {
 
   // local snapshots, decouple references of the experiment studio service signals
   let sets = {
@@ -411,5 +411,5 @@ export function createZoomableCirclePacking(
     return approxTextWidth <= radius * 2.1;
   }
 
-  return { zoomToNode, refreshColors };
+  return { zoomToNode, refreshColors, destroy: () => { } };
 }

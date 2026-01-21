@@ -3,23 +3,28 @@
 .parameters-section {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.35rem;
 }
 
 .parameters-header {
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   color: #026d6d;
-  margin-bottom: 2px;
+  margin: -10px -12px 10px;
   font-weight: 600;
   letter-spacing: 0.01em;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--studio-card-header-border, rgba(226, 232, 240, 0.9));
+  background: var(--studio-card-header-bg, rgba(241, 245, 249, 0.85));
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
 }
 
 /* Main layout: three equal columns */
 .parameters-content {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.75rem;
-  padding: 1.1rem 0.25rem 0.75rem;
+  gap: 0.8rem;
+  padding: 0.6rem 0.15rem 0.4rem;
 }
 /* ===== COLUMN / SECTION ===== */
 
@@ -35,11 +40,11 @@
 .panel-controls {
   display: flex;
   align-items: center;
-  justify-content: left;
-  gap: 0.75rem;
+  justify-content: space-between;
+  gap: 0.6rem;
   flex-wrap: nowrap;
   width: 100%;
-  margin-left: 3%;
+  margin-left: 0;
 }
 
 /* ===== BUTTONS & COUNTERS ===== */
@@ -59,7 +64,7 @@
   border: none;
   padding: 0.45rem 0.9rem;
   border-radius: 999px;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
@@ -111,7 +116,7 @@
   border-radius: 999px;
   background: #00a6c0;
   color: #f9fafb;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
   display: flex;
   justify-content: center;
@@ -133,7 +138,7 @@
   font-size: 0.9rem;
   box-shadow: 0 3px 8px rgba(248, 113, 113, 0.45);
   transition: transform 0.2s ease, background 0.2s ease;
-  margin-left: 7%;
+  margin-left: 0;
 }
 
 .bin-btn:hover {
@@ -149,8 +154,8 @@
 .panel-container {
   position: relative;
   border-radius: 10px;
-  min-height: 7.5rem;
-  padding: 4px 6px;
+  min-height: 9rem;
+  padding: 6px 8px;
   box-sizing: border-box;
   background: #ffffff;
   border: 1px solid rgba(226, 232, 240, 0.9);
@@ -160,8 +165,8 @@
 
 .panel {
   width: 100%;
-  min-height: 9.5rem;
-  max-height: 10.5rem;
+  min-height: 8.5rem;
+  max-height: 9.5rem;
   overflow-y: auto;
   position: relative;
 }
@@ -201,7 +206,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.3rem 0;
+  padding: 0.35rem 0;
   border-bottom: 1px solid rgba(226, 232, 240, 0.85);
   transition: background-color 0.15s ease, transform 0.15s ease;
   cursor: pointer;
@@ -225,7 +230,7 @@
 
 .variable-name {
   font-weight: 500;
-  font-size: 0.88rem;
+  font-size: 0.9rem;
   margin: 0;
   color: #0f172a;
   white-space: nowrap;
@@ -234,7 +239,7 @@
 }
 
 .variable-type {
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   color: #6b7280;
 }
 
@@ -283,8 +288,8 @@
 
 .cog-btn {
   position: absolute;
-  bottom: -14px;
-  right: -3%;
+  bottom: -16px;
+  right: 6px;
   background: linear-gradient(135deg, #00b8a8, #70dbd2af);
   color: #fff;
   border: none;

@@ -9,7 +9,7 @@
 }
 
 .control-label {
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -32,7 +32,7 @@
   border: 1px solid #d1e4ea;
   background: #ffffff;
   cursor: pointer;
-  font-size: 0.88rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: #0f172a;
   box-shadow: 0 3px 8px rgba(15, 23, 42, 0.08);
@@ -69,7 +69,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
   line-height: 1;
   box-shadow: 0 3px 8px rgba(15, 23, 42, 0.25);
@@ -107,7 +107,7 @@
 
 .dataset-dropdown-menu li {
   padding: 0;
-  font-size: 0.85rem;
+  font-size: 0.86rem;
 }
 
 .dataset-dropdown-menu li + li {

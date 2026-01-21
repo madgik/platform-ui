@@ -1,4 +1,12 @@
 /* Container */
+.stats-panel-shell {
+  background: var(--studio-card-bg, rgba(255, 255, 255, 0.92));
+  border: 1px solid var(--studio-card-border, rgba(148, 163, 184, 0.45));
+  border-radius: 16px;
+  box-shadow: var(--studio-card-shadow, 0 8px 18px rgba(15, 23, 42, 0.08));
+  overflow: hidden;
+}
+
 .modal-container {
   position: fixed;
   top: 50%;
@@ -23,8 +31,8 @@
   display: flex;
   flex-direction: column;
   gap: 0;
-  background: #f6fafb;
-  border-radius: 0 0 20px 20px;
+  background: var(--studio-card-bg, #f6fafb);
+  border-radius: 0 0 16px 16px;
 }
 
 /* Header */
@@ -32,17 +40,18 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 20px;
+  padding: 10px 16px;
   background: linear-gradient(90deg, #026d6d, #3ac6b8);
   color: #ffffff;
-  border-top-left-radius: 20px;
-  border-top-right-radius: 20px;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
 }
 
 .modal-header p {
   margin: 0;
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 0.95rem;
+  font-weight: 700;
 }
 
 /* Tabs (Variables / Model / Boxplots) */
@@ -50,21 +59,22 @@
   display: flex;
   justify-content: center;
   gap: 8px;
-  padding: 10px 16px;
-  background: #eef5f6;
+  padding: 8px 16px;
+  background: var(--studio-card-header-bg, #eef5f6);
   border-bottom: none;
   border-radius: 0;
   margin: 0;
+  border-bottom: 1px solid var(--studio-card-header-border, rgba(226, 232, 240, 0.9));
 }
 
 .modal-tabs button {
   border: 1px solid rgba(2, 109, 109, 0.35);
   border-radius: 999px;
-  padding: 6px 18px;
+  padding: 6px 14px;
   background: #ffffff;
   color: #026d6d;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 0.78rem;
   cursor: pointer;
   text-transform: none;
   letter-spacing: 0.02em;
@@ -85,8 +95,8 @@
 
 /* Body */
 .modal-body {
-  padding: 16px 18px 14px;
-  background: #f6fafb;
+  padding: 12px 14px 14px;
+  background: var(--studio-card-bg, #f6fafb);
   max-height: calc(85vh - 150px);
   overflow-y: auto;
   border-radius: 0;
@@ -96,21 +106,21 @@
 
 /* Empty state ("No data available.") */
 .modal-body > p {
-  margin: 24px 0;
+  margin: 18px 0;
   text-align: center;
-  font-size: 14px;
+  font-size: 0.8rem;
   color: #4b5563;
-  padding: 16px;
+  padding: 14px;
   background: #ffffff;
-  border-radius: 12px;
-  border: 1px dashed rgba(148, 163, 184, 0.4);
+  border-radius: 10px;
+  border: 1px dashed var(--studio-card-border, rgba(148, 163, 184, 0.4));
 }
 
 /*  Expand / Collapse buttons  */
 .accordion-controls {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 6px;
   margin: 8px 0 14px 0;
   flex-wrap: wrap;
 }
@@ -180,10 +190,11 @@
 
 /* Accordion cards (per variable) */
 .accordion {
-  background: #ffffff;
+  background: var(--studio-card-bg, #ffffff);
   border-radius: 14px;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
-  margin-bottom: 14px;
+  box-shadow: var(--studio-card-shadow, 0 4px 12px rgba(15, 23, 42, 0.08));
+  margin-bottom: 12px;
+  border: 1px solid var(--studio-card-border, rgba(148, 163, 184, 0.45));
   overflow: hidden;
   transition: box-shadow 0.3s ease;
 }
@@ -194,15 +205,16 @@
 
 /* Accordion header */
 .accordion-header {
-  background: linear-gradient(90deg, #026d6d, #3ac6b8);
-  color: #ffffff;
+  background: var(--studio-card-header-bg, rgba(241, 245, 249, 0.85));
+  color: #026d6d;
   padding: 8px 14px;
   border-radius: 12px 12px 0 0;
+  border-bottom: 1px solid var(--studio-card-header-border, rgba(226, 232, 240, 0.9));
   cursor: pointer;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 14px;
+  font-size: 0.85rem;
   font-weight: 600;
   user-select: none;
 }
@@ -213,7 +225,7 @@
 
 .accordion-icon {
   font-size: 12px;
-  opacity: 0.9;
+  opacity: 0.75;
 }
 
 /* Smooth expand */
@@ -249,11 +261,11 @@
 }
 
 .data-table th {
-  background: #026d6d;
-  color: #ffffff;
+  background: rgba(2, 109, 109, 0.12);
+  color: #026d6d;
   text-align: center;
   padding: 8px 12px;
-  font-size: 13px;
+  font-size: 0.8rem;
   font-weight: 600;
   letter-spacing: 0.2px;
 }
@@ -261,20 +273,20 @@
 .data-table td {
   text-align: center;
   padding: 8px 12px;
-  font-size: 13px;
+  font-size: 0.8rem;
   color: #374151;
-  border-bottom: 1px solid #e6f4f5;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9);
 }
 
 .data-table tbody tr:nth-child(odd) {
-  background-color: #f9fdfd;
+  background-color: rgba(241, 245, 249, 0.5);
 }
 .data-table tbody tr:nth-child(even) {
-  background-color: #f2fafb;
+  background-color: #ffffff;
 }
 
 .data-table tbody tr:hover {
-  background-color: #e5f7f8;
+  background-color: rgba(2, 109, 109, 0.06);
   transition: background-color 0.2s ease;
 }
 
@@ -292,7 +304,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.1rem;
+  gap: 0.9rem;
 }
 
 /* mini-tabs */
@@ -305,12 +317,12 @@
 
 .mini-tabs button {
   border-radius: 999px;
-  border: 1px solid #026d6d33;
-  background: #e8f9fb;
+  border: 1px solid rgba(2, 109, 109, 0.25);
+  background: #ffffff;
   padding: 6px 12px;
   color: #026d6d;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 0.78rem;
   transition:
     background 0.15s ease-in-out,
     color 0.15s ease-in-out,
@@ -330,6 +342,11 @@
   width: 90%;
   max-width: 700px;
   min-height: 360px;
+  background: var(--studio-card-bg, #ffffff);
+  border: 1px solid var(--studio-card-border, rgba(148, 163, 184, 0.45));
+  border-radius: 14px;
+  padding: 10px 12px;
+  box-shadow: var(--studio-card-shadow, 0 8px 18px rgba(15, 23, 42, 0.08));
 }
 
 .toolbar-btn i {
