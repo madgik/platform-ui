@@ -26,8 +26,8 @@
 .dataset-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
+  gap: 8px;
+  padding: 8px 12px;
   border-radius: 999px;
   border: 1px solid #d1e4ea;
   background: #ffffff;
@@ -38,6 +38,8 @@
   box-shadow: 0 3px 8px rgba(15, 23, 42, 0.08);
   transition: background 0.16s ease, box-shadow 0.16s ease,
     border-color 0.16s ease, transform 0.12s ease;
+  min-width: 210px;
+  justify-content: space-between;
 }
 
 .dataset-btn:hover {
@@ -56,23 +58,21 @@
   white-space: nowrap;
 }
 
-/* Counter badge (top right of button) */
-.dataset-counter {
-  position: absolute;
-  top: -6px;
-  right: -8px;
+/* Count pill inside button */
+.dataset-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
   background-color: #028080;
   color: #ffffff;
-  border-radius: 999px;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   font-size: 0.72rem;
   font-weight: 700;
   line-height: 1;
-  box-shadow: 0 3px 8px rgba(15, 23, 42, 0.25);
+  box-shadow: 0 3px 8px rgba(15, 23, 42, 0.2);
 }
 
 /* Dropdown menu */
@@ -153,6 +153,7 @@
   .dataset-btn {
     padding: 6px 12px;
     font-size: 0.85rem;
+    min-width: 180px;
   }
 
   .dataset-dropdown-menu {
