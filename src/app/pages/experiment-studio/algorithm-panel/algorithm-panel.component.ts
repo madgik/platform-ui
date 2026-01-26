@@ -52,6 +52,23 @@ export class AlgorithmPanelComponent {
   readonly experimentName = this.experimentStudioService.experimentName;
   readonly experimentDescription = this.experimentStudioService.experimentDescription;
   readonly selectedAlgorithm = this.experimentStudioService.selectedAlgorithm;
+  readonly enumMaps = computed(() => this.experimentStudioService.getCategoricalEnumMaps());
+  readonly yVar = computed(() => this.experimentStudioService.selectedVariables()[0]?.code ?? null);
+  readonly xVar = computed(() => this.experimentStudioService.selectedCovariates()[0]?.code ?? null);
+  readonly labelMap = computed(() => {
+    const map: Record<string, string> = {};
+    const items = [
+      ...this.experimentStudioService.selectedVariables(),
+      ...this.experimentStudioService.selectedCovariates(),
+      ...this.experimentStudioService.selectedFilters(),
+    ];
+    items.forEach((item) => {
+      if (item?.code && item?.label) {
+        map[item.code] = item.label;
+      }
+    });
+    return map;
+  });
 
   readonly lastUsedSchema = signal<any[]>([]);
   readonly availableAlgorithmCategories = computed(() => {

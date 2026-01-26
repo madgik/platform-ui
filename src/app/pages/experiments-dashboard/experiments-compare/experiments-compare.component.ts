@@ -7,6 +7,7 @@ import { ExperimentsDashboardService } from '../../../services/experiments-dashb
 import { AlgorithmResultComponent } from '../../experiment-studio/algorithm-panel/algorithm-result/algorithm-result.component';
 import { getOutputSchema } from '../../../core/algorithm-mappers';
 import { ExperimentLabelService } from '../../../services/experiment-label.service';
+import { EnumMaps } from '../../../core/algorithm-result-enum-mapper';
 
 interface CompareResultState {
   loading: boolean;
@@ -49,6 +50,7 @@ export class ExperimentsCompareComponent {
 
   // Labels: code -> label
   private codeToLabelSignal = signal<Record<string, string>>({});
+  private enumMapsByDomain = signal<Record<string, EnumMaps>>({});
 
   readonly experimentsWithState = computed<CompareItem[]>(() => {
     const exps = this.experiments();
@@ -90,6 +92,7 @@ export class ExperimentsCompareComponent {
         // same domain assumption -> load labels once
         const domain = exps[0]?.domain ?? null;
         this.loadLabels(domain);
+        this.loadEnumMaps(domain);
       },
       { allowSignalWrites: true }
     );
@@ -106,6 +109,16 @@ export class ExperimentsCompareComponent {
 
     const map = await this.labelService.getLabelMap(domain);
     this.codeToLabelSignal.set(map);
+  }
+
+  private async loadEnumMaps(domain: string | null) {
+    if (!domain) return;
+
+    const cached = this.enumMapsByDomain()[domain];
+    if (cached) return;
+
+    const maps = await this.labelService.getEnumMaps(domain);
+    this.enumMapsByDomain.update((current) => ({ ...current, [domain]: maps }));
   }
 
 
@@ -187,6 +200,27 @@ export class ExperimentsCompareComponent {
 
   getFiltersWithLabels(exp: Experiment) {
     return this.withLabels((exp as any).filters);
+  }
+
+  getEnumMapsFor(exp: Experiment): EnumMaps {
+    const domain = exp?.domain ?? '';
+    return this.enumMapsByDomain()[domain] ?? {};
+  }
+
+  getLabelMapFor(exp: Experiment): Record<string, string> {
+    return this.codeToLabelSignal();
+  }
+
+  getYVarFor(exp: Experiment): string | null {
+    const vars = (exp as any)?.variables;
+    if (Array.isArray(vars)) return vars[0] ?? null;
+    return null;
+  }
+
+  getXVarFor(exp: Experiment): string | null {
+    const vars = (exp as any)?.covariates;
+    if (Array.isArray(vars)) return vars[0] ?? null;
+    return null;
   }
 
 }

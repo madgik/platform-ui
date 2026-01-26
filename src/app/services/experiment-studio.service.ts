@@ -4,6 +4,7 @@ import { Observable, Subject, catchError, filter, interval, map, of, switchMap, 
 import { SessionStorageService } from './session-storage.service';
 import { D3HierarchyNode, DataModel, Group, Variable } from '../models/data-model.interface';
 import { mapRawAlgorithmToAlgorithmConfig } from '../core/algorithm-mappers';
+import { EnumMaps } from '../core/algorithm-result-enum-mapper';
 import { RawAlgorithmDefinition } from '../models/backend-algorithms.model';
 import { BackendFilter } from '../models/filters.model';
 import { AlgorithmConfig } from '../models/algorithm-definition.model';
@@ -29,6 +30,39 @@ export class ExperimentStudioService {
   readonly selectedVariables = computed(() => this.selectedVariablesSignal());
   readonly selectedCovariates = computed(() => this.selectedCovariatesSignal());
   readonly selectedFilters = computed(() => this.selectedFiltersSignal());
+
+  getCategoricalEnumMaps(): EnumMaps {
+    const items = [
+      ...this.selectedVariables(),
+      ...this.selectedCovariates(),
+      ...this.selectedFilters(),
+    ];
+
+    const maps: EnumMaps = {};
+
+    items.forEach((item) => {
+      const enums = Array.isArray(item?.enumerations) ? item.enumerations : [];
+      if (!enums.length) return;
+
+      const code = String(item?.code ?? '');
+      if (!code) return;
+
+      const enumMap: Record<string, string> = {};
+      enums.forEach((e: any) => {
+        const raw = e?.code ?? e?.label ?? e?.name;
+        if (raw === null || raw === undefined) return;
+        const key = String(raw);
+        const label = e?.label ?? e?.name ?? String(raw);
+        enumMap[key] = label;
+      });
+
+      if (Object.keys(enumMap).length > 0) {
+        maps[code] = enumMap;
+      }
+    });
+
+    return maps;
+  }
 
   private selectedDatasetsSignal = signal<string[]>([]);
   private transientUrl = '/services/experiments/transient';

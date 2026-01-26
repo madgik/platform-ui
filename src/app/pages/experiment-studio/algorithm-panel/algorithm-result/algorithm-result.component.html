@@ -2,7 +2,7 @@
 
   <!-- Custom structured renderer -->
   @if (isRenderable()) {
-    <app-auto-renderer [value]="result" [algorithm]="algorithm"/>
+    <app-auto-renderer [value]="mappedResult()" [algorithm]="algorithm"/>
   }
 
   <!-- Charts -->

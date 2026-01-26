@@ -10,6 +10,7 @@ import { SpinnerComponent } from '../../shared/spinner/spinner.component';
 import { PdfExportService } from '../../../services/export-results-pdf.service';
 import { Router } from '@angular/router';
 import { ExperimentLabelService } from '../../../services/experiment-label.service';
+import { EnumMaps } from '../../../core/algorithm-result-enum-mapper';
 
 @Component({
   selector: 'app-experiment-details',
@@ -45,6 +46,21 @@ export class ExperimentDetailsComponent {
   readonly nameError = signal<string | null>(null);
 
   private codeToLabelSignal = signal<Record<string, string>>({});
+  private enumMapsSignal = signal<EnumMaps>({});
+  readonly enumMaps = this.enumMapsSignal.asReadonly();
+  readonly labelMap = this.codeToLabelSignal.asReadonly();
+  readonly yVar = computed(() => {
+    const algo = this.fullExperimentSignal()?.algorithm;
+    const y = (algo as any)?.inputdata?.y;
+    if (Array.isArray(y)) return y[0] ?? null;
+    return y ?? null;
+  });
+  readonly xVar = computed(() => {
+    const algo = this.fullExperimentSignal()?.algorithm;
+    const x = (algo as any)?.inputdata?.x;
+    if (Array.isArray(x)) return x[0] ?? null;
+    return x ?? null;
+  });
 
   readonly experimentalAlgorithmName = computed(
     () => this.selectedExperiment()?.algorithmName ?? ''
@@ -91,6 +107,7 @@ export class ExperimentDetailsComponent {
       () => {
         const domain = this.selectedExperiment()?.domain ?? null;
         this.loadLabels(domain);
+        this.loadEnumMaps(domain);
       },
       { allowSignalWrites: true }
     );
@@ -107,6 +124,7 @@ export class ExperimentDetailsComponent {
   }
 
   private loadedDomain = signal<string | null>(null);
+  private loadedEnumDomain = signal<string | null>(null);
 
   private async loadLabels(domain: string | null) {
     if (!domain) {
@@ -120,6 +138,20 @@ export class ExperimentDetailsComponent {
     const map = await this.labelService.getLabelMap(domain);
     this.codeToLabelSignal.set(map);
     this.loadedDomain.set(domain);
+  }
+
+  private async loadEnumMaps(domain: string | null) {
+    if (!domain) {
+      this.enumMapsSignal.set({});
+      this.loadedEnumDomain.set(null);
+      return;
+    }
+
+    if (this.loadedEnumDomain() === domain && Object.keys(this.enumMapsSignal()).length > 0) return;
+
+    const maps = await this.labelService.getEnumMaps(domain);
+    this.enumMapsSignal.set(maps);
+    this.loadedEnumDomain.set(domain);
   }
 
   private showCopyToast(message = 'Link copied to clipboard') {

@@ -179,6 +179,10 @@
               [result]="item.state.result"
               [schema]="getOutputSchemaFor(item.exp)"
               [algorithm]="item.exp.algorithmName"
+              [enumMaps]="getEnumMapsFor(item.exp)"
+              [yVar]="getYVarFor(item.exp)"
+              [xVar]="getXVarFor(item.exp)"
+              [labelMap]="getLabelMapFor(item.exp)"
             ></app-algorithm-result>
             } @else {
             <p class="muted-text">No results available.</p>

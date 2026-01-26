@@ -25,6 +25,10 @@ Angular 18 standalone application for running experiments, configuring algorithm
 - `npm run watch` – development build in watch mode.
 - `npm test` – unit tests via Karma.
 
+## Result code → label mappings
+
+See `src/app/core/algorithm-result-enum-mapper.md` for detailed mapping behavior.
+
 ## Backend Endpoints (expected)
 - `GET /services/activeUser` – current user/session.
 - `GET /services/algorithms` – algorithm catalog.

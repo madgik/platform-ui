@@ -476,6 +476,35 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
             ? result.f_pvalue
             : [];
 
+    // Object-map layout: sum_sq/df/etc as { term: value }
+    if (!terms.length && result.sum_sq && typeof result.sum_sq === 'object' && !Array.isArray(result.sum_sq)) {
+      const keySet = new Set<string>([
+        ...Object.keys(result.sum_sq || {}),
+        ...Object.keys(result.df || {}),
+        ...Object.keys(result.f_stat || {}),
+        ...Object.keys(result.f_value || {}),
+        ...Object.keys(result.p_value || {}),
+        ...Object.keys(result.pvalue || {}),
+        ...Object.keys(result.f_pvalue || {}),
+      ]);
+      const objTerms = Array.from(keySet);
+      const rows: any[][] = objTerms.map((label) => [
+        label,
+        formatDecimal((result.df || {})[label]),
+        formatDecimal((result.sum_sq || {})[label]),
+        formatDecimal((result.ms || {})[label]),
+        formatDecimal((result.f_stat || result.f_value || {})[label]),
+        formatDecimal((result.p_value || result.pvalue || result.f_pvalue || {})[label]),
+      ]);
+
+      return [
+        {
+          title: 'Two-Way ANOVA Results',
+          columns: ['Source', 'DF', 'SS', 'MS', 'F', 'P value'],
+          rows,
+        },
+      ];
+    }
 
     if (!terms.length) return [];
 

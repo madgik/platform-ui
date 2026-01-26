@@ -5,6 +5,7 @@ import { AutoRendererComponent } from '../../visualisations/auto-renderer/auto-r
 import { ChartRendererComponent } from '../../visualisations/charts/charts-renderer/charts-renderer.component';
 import { EChartsOption } from 'echarts';
 import { NgxEchartsModule } from 'ngx-echarts';
+import { EnumMaps, LabelMap, mapAlgorithmResultEnums } from '../../../../core/algorithm-result-enum-mapper';
 
 @Component({
   selector: 'app-algorithm-result',
@@ -20,6 +21,10 @@ export class AlgorithmResultComponent {
   @Input() result: any = null;
   @Input() schema: any[] = [];
   @Input() algorithm!: string;
+  @Input() enumMaps: EnumMaps | null = null;
+  @Input() yVar: string | null = null;
+  @Input() xVar: string | null = null;
+  @Input() labelMap: LabelMap | null = null;
 
   constructor(private chartBuilder: ChartBuilderService) { }
 
@@ -27,16 +32,23 @@ export class AlgorithmResultComponent {
     return !!this.result && !!this.algorithm;
   });
 
+  mappedResult = computed(() =>
+    mapAlgorithmResultEnums(this.algorithm, this.result, this.enumMaps, {
+      y: this.yVar,
+      x: this.xVar,
+    }, this.labelMap)
+  );
+
   chartOptions = computed<EChartsOption[]>(() =>
     this.chartBuilder.getChartsForAlgorithm(
       this.algorithm,
-      this.result
+      this.mappedResult()
     )
   );
 
   renderedCharts = computed(() => {
     if (!this.result || !this.algorithm) return [];
-    return this.chartBuilder.getChartsForAlgorithm(this.algorithm, this.result);
+    return this.chartBuilder.getChartsForAlgorithm(this.algorithm, this.mappedResult());
   });
 
   getMatrixRows(data: any): any[][] {
