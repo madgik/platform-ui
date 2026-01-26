@@ -3,7 +3,7 @@ import { Experiment } from '../models/experiments-dashboard.model';
 import { HttpClient } from '@angular/common/http';
 import { BackendExperiment, BackendExperimentWithResult } from '../models/backend-experiment.model';
 import { mapBackendToFrontend } from '../pages/experiments-dashboard/experiments-dashboard.mapper';
-import { tap } from 'rxjs';
+import { map, tap } from 'rxjs';
 import { ErrorService } from './error.service';
 
 @Injectable({
@@ -45,6 +45,25 @@ export class ExperimentsDashboardService {
   // For edit / hydrate (metadata)
   getExperiment(uuid: string) {
     return this.http.get<BackendExperiment>(`${this.apiUrl}/${uuid}`);
+  }
+
+  fetchExperimentById(uuid: string) {
+    return this.http
+      .get<BackendExperiment>(`${this.apiUrl}/${uuid}`)
+      .pipe(map(mapBackendToFrontend));
+  }
+
+  upsertExperiment(experiment: Experiment): void {
+    if (!experiment?.id) return;
+    this.experiments.update((current) => {
+      const idx = current.findIndex((exp) => exp.id === experiment.id);
+      if (idx === -1) {
+        return [experiment, ...current];
+      }
+      const next = [...current];
+      next[idx] = { ...current[idx], ...experiment };
+      return next;
+    });
   }
 
   // For compare / results view

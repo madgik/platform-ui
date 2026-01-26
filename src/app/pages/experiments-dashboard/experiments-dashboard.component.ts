@@ -37,6 +37,7 @@ export class ExperimentsDashboardComponent implements OnInit, OnDestroy {
   compareIds = signal<string[]>([]);
   compareMode = signal(false);
   private sharedExperimentId = signal<string | null>(null);
+  private sharedFetchInFlight = signal<string | null>(null);
 
   // Greeting name: default "researcher"
   greetingName = signal<string>('researcher');
@@ -79,11 +80,29 @@ export class ExperimentsDashboardComponent implements OnInit, OnDestroy {
       const targetId = this.sharedExperimentId();
       const list = this.experimentsService.experiments();
 
-      if (!targetId || !list.length) return;
+      if (!targetId) return;
 
       const found = list.find(e => e.id === targetId);
       if (!found) {
-        console.warn('[SharedLink] Experiment not found for id', targetId);
+        if (this.sharedFetchInFlight() === targetId) return;
+
+        this.sharedFetchInFlight.set(targetId);
+        this.experimentsService.fetchExperimentById(targetId).subscribe({
+          next: (exp) => {
+            this.experimentsService.upsertExperiment(exp);
+            this.selectedExperiment.set(exp);
+            this.compareMode.set(false);
+            this.compareIds.set([]);
+            this.sharedExperimentId.set(null);
+            this.sharedFetchInFlight.set(null);
+          },
+          error: (err) => {
+            console.warn('[SharedLink] Experiment not found for id', targetId, err);
+            this.errorService.setError('Shared experiment not found or inaccessible.');
+            this.sharedExperimentId.set(null);
+            this.sharedFetchInFlight.set(null);
+          }
+        });
         return;
       }
 

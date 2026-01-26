@@ -2,13 +2,19 @@
   <div class="account-card">
     <header class="account-header">
       <div class="title-group">
-        <h1>My Account</h1>
+        <h1>Profile and account details</h1>
         <p class="subtitle">Manage your profile and account details</p>
       </div>
-      <button class="sign-out-btn" (click)="signOut()">
-        <i class="fas fa-sign-out-alt"></i>
-        <span>Sign Out</span>
-      </button>
+      <div class="header-actions">
+        <button class="back-btn" type="button" (click)="goBack()">
+          <i class="fas fa-arrow-left"></i>
+          <span>Back</span>
+        </button>
+        <button class="sign-out-btn" (click)="signOut()">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Sign Out</span>
+        </button>
+      </div>
     </header>
 
     <section class="account-main">

@@ -30,7 +30,7 @@ export class ExperimentsListComponent {
   ) { }
 
   // toggle
-  readonly onlyMine = signal(false);
+  readonly onlyMine = signal(true);
 
   // pagination
   readonly pageSize = 5;

@@ -108,6 +108,7 @@ export class ExperimentsCompareComponent {
     this.codeToLabelSignal.set(map);
   }
 
+
   onLayoutChange(value: number) {
     const cols: 2 | 3 = value === 3 ? 3 : 2;
     this.selectedLayout = cols;
@@ -187,4 +188,5 @@ export class ExperimentsCompareComponent {
   getFiltersWithLabels(exp: Experiment) {
     return this.withLabels((exp as any).filters);
   }
+
 }

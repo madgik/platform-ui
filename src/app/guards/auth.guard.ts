@@ -16,7 +16,7 @@ export class AuthGuard implements CanActivate {
       tap((authState) => {
         if (authState.status !== 'authenticated') {
           // Always send users to dashboard after auth to avoid unintended routes
-          this.authService.login();
+          this.authService.login(state.url);
         }
       }),
       map((authState) => authState.status === 'authenticated')

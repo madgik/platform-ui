@@ -96,12 +96,22 @@ export class AuthService {
   }
 
   private consumeRedirect(): void {
-    const redirectUrl = '/experiments-dashboard';
+    const stored = localStorage.getItem(this.redirectUrlKey);
+    if (!stored) {
+      return;
+    }
+
     localStorage.removeItem(this.redirectUrlKey);
-    this.router.navigateByUrl(redirectUrl).catch((error) => {
+
+    if (stored.startsWith('http')) {
+      window.location.href = stored;
+      return;
+    }
+
+    this.router.navigateByUrl(stored).catch((error) => {
       console.error('Navigation to stored redirect failed:', error);
       // hard fallback: force location change
-      window.location.href = redirectUrl;
+      window.location.href = stored;
     });
   }
 

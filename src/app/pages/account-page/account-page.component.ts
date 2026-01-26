@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { AuthService } from "../../services/auth.service";
@@ -20,7 +20,8 @@ export class AccountPageComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   constructor(
-    public authService: AuthService
+    public authService: AuthService,
+    private location: Location
   ) { }
 
   ngOnInit(): void {
@@ -45,5 +46,9 @@ export class AccountPageComponent implements OnInit, OnDestroy {
 
   signOut(): void {
     this.authService.logout();
+  }
+
+  goBack(): void {
+    this.location.back();
   }
 }

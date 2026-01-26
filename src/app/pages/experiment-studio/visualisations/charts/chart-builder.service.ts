@@ -38,7 +38,7 @@ export class ChartBuilderService {
         covariates.find(c => c.code === raw) ||
         filters.find(f => f.code === raw);
 
-      return match?.name || raw;
+      return match?.name || match?.label || raw;
     };
 
     if (input?.anova_table) {

@@ -45,12 +45,20 @@ export function createHistogram(
   tempLabel.remove();
 
   const baseMargins = { top: 40, right: 30, bottom: 60, left: 50 };
+  const labelCharsPerLine = 10;
+  const maxLabelLength = bins.reduce((max, b) => Math.max(max, String(b).length), 0);
+  const estimatedLines = Math.max(1, Math.ceil(maxLabelLength / labelCharsPerLine));
+  const needsRotate = bins.length > 8 || maxLabelLength > labelCharsPerLine;
+  const bottomMargin = Math.max(
+    70,
+    baseMargins.bottom + estimatedLines * 16 + (needsRotate ? 22 : 8)
+  );
 
   // Left margin = base + label width + small padding
   const margin = {
     top: baseMargins.top,
     right: baseMargins.right,
-    bottom: 85,
+    bottom: bottomMargin,
     left: baseMargins.left + yLabelBBox.width + 16
   };
 
@@ -98,6 +106,51 @@ export function createHistogram(
     return d3.format('.2f')(d);
   }
 
+  function wrapTickText(
+    textSelection: d3.Selection<SVGTextElement, any, SVGGElement, unknown>,
+    maxChars: number
+  ) {
+    textSelection.each(function () {
+      const text = d3.select(this);
+      const raw = text.text();
+      if (!raw) return;
+
+      const words = raw.split(/\s+/).filter(Boolean);
+      const lines: string[] = [];
+
+      if (words.length <= 1) {
+        const chunks = raw.match(new RegExp(`.{1,${maxChars}}`, 'g'));
+        if (chunks) {
+          lines.push(...chunks);
+        } else {
+          lines.push(raw);
+        }
+      } else {
+        let line: string[] = [];
+        words.forEach((word) => {
+          const next = [...line, word].join(' ');
+          if (next.length > maxChars && line.length) {
+            lines.push(line.join(' '));
+            line = [word];
+          } else {
+            line.push(word);
+          }
+        });
+        if (line.length) lines.push(line.join(' '));
+      }
+
+      if (lines.length <= 1) return;
+
+      text.text(null);
+      lines.slice(0, 3).forEach((line, i) => {
+        text.append('tspan')
+          .attr('x', 0)
+          .attr('dy', i === 0 ? '0.35em' : '1.1em')
+          .text(line);
+      });
+    });
+  }
+
   // X axis
   const xAxis = d3
     .axisBottom(xScale)
@@ -106,14 +159,21 @@ export function createHistogram(
       return isNaN(num) ? d : smartFormat(num);
     });
 
-  chart
+  const xAxisGroup = chart
     .append('g')
     .attr('transform', `translate(0, ${innerHeight})`)
-    .call(xAxis)
-    .selectAll('text')
-    .attr('transform', 'rotate(-45)')
+    .call(xAxis);
+
+  const tickText = xAxisGroup
+    .selectAll<SVGTextElement, any>('text')
     .attr('font-size', '13px')
-    .style('text-anchor', 'end');
+    .style('text-anchor', needsRotate ? 'end' : 'middle');
+
+  if (needsRotate) {
+    tickText.attr('transform', 'rotate(-35)');
+  }
+
+  wrapTickText(tickText, labelCharsPerLine);
 
   // Y axis
   const yAxis = d3
@@ -126,7 +186,8 @@ export function createHistogram(
   // Axis labels
 
   // X label: a bit closer to the ticks
-  const xLabelOffset = 52; // distance from x-axis to label
+  const xLabelOffset =
+    (needsRotate ? 68 : 40) + Math.max(0, estimatedLines - 1) * 12;
 
   chart
     .append('text')
