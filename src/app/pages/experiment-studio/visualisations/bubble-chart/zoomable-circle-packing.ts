@@ -59,16 +59,35 @@ const toCodeSet = (arr: any[] | undefined | null): Set<string> =>
       .filter((v): v is string => !!v)
   );
 
+type BubbleColorConfig = {
+  variable: string;
+  covariate: string;
+  filter: string;
+  selected: string;
+  groupStart: string;
+  groupEnd: string;
+};
+
+const defaultColors: BubbleColorConfig = {
+  variable: '#37c0ae',
+  covariate: '#c88d00',
+  filter: '#44bf00',
+  selected: '#27d6d1',
+  groupStart: '#bcefdc',
+  groupEnd: '#4255a8',
+};
+
 // Calculate leaf color
 const colorForLeaf = (
   d: any,
-  sets: { vars: Set<string>; covs: Set<string>; filters: Set<string> }
+  sets: { vars: Set<string>; covs: Set<string>; filters: Set<string> },
+  colors: BubbleColorConfig
 ): string => {
   const code = codeOf(d.data);
   if (!code) return 'white';
-  if (sets.vars.has(code)) return '#37c0aeff'; // variable
-  if (sets.covs.has(code)) return '#c88d00'; // covariate
-  if (sets.filters.has(code)) return '#44bf00'; // filter
+  if (sets.vars.has(code)) return colors.variable; // variable
+  if (sets.covs.has(code)) return colors.covariate; // covariate
+  if (sets.filters.has(code)) return colors.filter; // filter
   return 'white';
 };
 
@@ -82,6 +101,7 @@ export function createZoomableCirclePacking(
     selectedVariables?: any[];
     selectedCovariates?: any[];
     selectedFilters?: any[];
+    colors?: Partial<BubbleColorConfig>;
   }
 ): { zoomToNode: (d: any) => void; refreshColors: (opts?: any) => void; destroy?: () => void } {
 
@@ -92,10 +112,12 @@ export function createZoomableCirclePacking(
     filters: toCodeSet(options?.selectedFilters),
   };
 
+  let colors: BubbleColorConfig = { ...defaultColors, ...(options?.colors ?? {}) };
+
   const width = 700, height = 728;
-  const color = d3.scaleLinear<string>()
+  let groupColor = d3.scaleLinear<string>()
     .domain([0, 5])
-    .range(['hsl(152,80%,80%)', 'hsla(224, 51%, 43%, 1.00)'])
+    .range([colors.groupStart, colors.groupEnd])
     .interpolate(d3.interpolateHcl);
 
   if (!container) {
@@ -204,7 +226,7 @@ export function createZoomableCirclePacking(
     .data(root.descendants().slice(1))
     .join('circle')
     .attr('class', (d: any) => (d.children ? 'group' : 'leaf'))
-    .attr('fill', (d: any) => (d.children ? color(d.depth) : colorForLeaf(d, sets)))
+    .attr('fill', (d: any) => (d.children ? groupColor(d.depth) : colorForLeaf(d, sets, colors)))
     .attr('fill-opacity', (d: any) => (d.children ? 0.6 : 1))
     .attr('stroke', (d: any) => (d.children ? 'rgba(0,0,0,0.08)' : 'rgba(0,0,0,0.12)'))
     .attr('stroke-width', (d: any) => (d.children ? 1 : 0.6))
@@ -274,9 +296,9 @@ export function createZoomableCirclePacking(
   function updateSelection() {
     node.transition().duration(200)
       .attr('fill', (d: any) => {
-        if (d === selectedDataNode) return 'hsla(182,80%,56%,1)';
-        if (d.children) return color(d.depth);
-        return colorForLeaf(d, sets);
+        if (d === selectedDataNode) return colors.selected;
+        if (d.children) return groupColor(d.depth);
+        return colorForLeaf(d, sets, colors);
       })
       .attr('fill-opacity', (d: any) => (d.children ? 0.6 : 1))
       .attr('stroke', (d: any) => {
@@ -369,7 +391,14 @@ export function createZoomableCirclePacking(
     selectedVariables?: any[];
     selectedCovariates?: any[];
     selectedFilters?: any[];
+    colors?: Partial<BubbleColorConfig>;
   }) {
+    colors = { ...colors, ...(newOptions?.colors ?? {}) };
+    groupColor = d3.scaleLinear<string>()
+      .domain([0, 5])
+      .range([colors.groupStart, colors.groupEnd])
+      .interpolate(d3.interpolateHcl);
+
     // Updates global snapshot
     sets = {
       vars: new Set(
@@ -393,12 +422,15 @@ export function createZoomableCirclePacking(
     node.each(function (d: any) {
       const circle = d3.select(this);
       if (!d.children) {
-        const newFill = colorForLeaf(d, sets);
+        const newFill = colorForLeaf(d, sets, colors);
         if (circle.attr('fill') !== newFill) {
           circle.attr('fill', newFill);
         }
+      } else {
+        circle.attr('fill', groupColor(d.depth));
       }
     });
+    updateSelection();
   }
 
   function shouldShowLabel(d: any, k: number): boolean {

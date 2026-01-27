@@ -57,6 +57,40 @@ circle.selected {
   aspect-ratio: 1 / 1; /* square */
 }
 
+#chart-canvas {
+  width: 100%;
+  height: auto;
+}
+
+.bubble-color-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  align-items: center;
+  margin: 6px 0 10px;
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+}
+
+.bubble-color-controls label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #2a2a2a;
+}
+
+.bubble-color-controls input[type="color"] {
+  width: 28px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
 
 /* Label styling for D3 nodes */
 .label {

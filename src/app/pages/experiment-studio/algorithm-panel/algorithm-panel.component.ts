@@ -550,7 +550,46 @@ export class AlgorithmPanelComponent {
     event.stopPropagation();
     this.tooltipVisible = true;
     this.tooltipData = algorithm;
-    this.tooltipPosition = { x: event.clientX + 15, y: event.clientY + 15 };
+    const offset = 12;
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    const target = event.currentTarget as HTMLElement | null;
+    const rect = target?.getBoundingClientRect();
+    const panel = target?.closest('.algorithm-panel') as HTMLElement | null;
+    const panelRect = panel?.getBoundingClientRect();
+
+    let x = (panelRect?.right ?? event.clientX) + offset;
+    let y = rect?.top ?? event.clientY;
+
+    this.tooltipPosition = {
+      x: Math.max(offset, Math.min(x, viewportWidth - offset)),
+      y: Math.max(offset, Math.min(y, viewportHeight - offset)),
+    };
+
+    // Measure actual tooltip size to keep it aligned with the hovered row.
+    setTimeout(() => {
+      const tooltipEl = document.querySelector('.tooltip') as HTMLElement | null;
+      if (!tooltipEl) return;
+
+      const tooltipWidth = tooltipEl.offsetWidth || 300;
+      const tooltipHeight = tooltipEl.offsetHeight || Math.floor(viewportHeight * 0.6);
+
+      let measuredX = (panelRect?.right ?? event.clientX) + offset;
+      if (measuredX + tooltipWidth > viewportWidth - offset) {
+        measuredX = viewportWidth - tooltipWidth - offset;
+      }
+
+      let measuredY = rect?.top ?? event.clientY;
+      if (measuredY + tooltipHeight > viewportHeight - offset) {
+        measuredY = (rect?.bottom ?? event.clientY) - tooltipHeight;
+      }
+
+      this.tooltipPosition = {
+        x: Math.max(offset, measuredX),
+        y: Math.max(offset, measuredY),
+      };
+    }, 0);
 
     if (algorithm.isDisabled) {
       this.tooltipData = {

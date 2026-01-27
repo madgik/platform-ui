@@ -36,7 +36,7 @@ export class HeaderComponent implements OnInit {
 
   goHome(event?: Event): void {
     event?.preventDefault();
-    this.router.navigate(['/experiment-studio']);
+    this.router.navigate(['/experiments-dashboard']);
   }
 
   logout(): void {

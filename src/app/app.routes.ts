@@ -15,7 +15,7 @@ export const appRoutes: Routes = [
   },
   {
     path: '',
-    redirectTo: 'experiment-studio',
+    redirectTo: 'experiments-dashboard',
     pathMatch: 'full'
   },
   {
@@ -33,7 +33,7 @@ export const appRoutes: Routes = [
     component: ExperimentStudioComponent,
     canActivate: [AuthGuard, TermsGuard],
   },
-  { path: '**', redirectTo: 'experiment-studio' }
+  { path: '**', redirectTo: 'experiments-dashboard' }
 ];
 
 @NgModule({

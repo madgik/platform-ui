@@ -71,16 +71,11 @@ export class AuthService {
   }
 
   logout(): void {
-    this.http.post('/services/logout', {}).pipe(
-      catchError((error) => {
-        console.error('Error during backend logout:', error);
-        return of(null);
-      })
-    ).subscribe(() => {
-      localStorage.removeItem(this.redirectUrlKey);
-      this.authStateSubject.next({ status: 'unauthenticated' });
-      this.router.navigate(['/experiments-dashboard']).then(() => window.location.reload());
-    });
+    localStorage.removeItem(this.redirectUrlKey);
+    this.authStateSubject.next({ status: 'unauthenticated' });
+
+    // Use a full-page redirect so the backend/IdP can clear SSO cookies.
+    window.location.href = '/services/logout';
   }
 
   isLoggedIn(): boolean {

@@ -1,15 +1,33 @@
 <div id="chart">
   @if (!error) {
+  <div class="bubble-color-controls">
+    <label>
+      Variables
+      <input type="color" [(ngModel)]="colors.variable" (input)="onColorChange()" />
+    </label>
+    <label>
+      Covariates
+      <input type="color" [(ngModel)]="colors.covariate" (input)="onColorChange()" />
+    </label>
+    <label>
+      Filters
+      <input type="color" [(ngModel)]="colors.filter" (input)="onColorChange()" />
+    </label>
+    <label>
+      Selected
+      <input type="color" [(ngModel)]="colors.selected" (input)="onColorChange()" />
+    </label>
+    <label>
+      Group Start
+      <input type="color" [(ngModel)]="colors.groupStart" (input)="onColorChange()" />
+    </label>
+    <label>
+      Group End
+      <input type="color" [(ngModel)]="colors.groupEnd" (input)="onColorChange()" />
+    </label>
+  </div>
 
-  <svg>
-    @for (node of d3Data.children; track node) {
-    <g (click)="onNodeClick(node)">
-      <circle [attr.cx]="node.x" [attr.cy]="node.y" [attr.r]="node.r"></circle>
-      <text>{{ node.name }}</text>
-    </g>
-    }
-  </svg>
-  <div></div>
+  <div id="chart-canvas"></div>
   } @else {
   <div class="error-message">
     {{ error }}
