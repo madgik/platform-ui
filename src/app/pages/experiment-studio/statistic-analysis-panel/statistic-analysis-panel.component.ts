@@ -257,6 +257,26 @@ export class StatisticAnalysisPanelComponent implements OnChanges {
     return Number.isFinite(n) ? n.toFixed(2) : String(v);
   }
 
+  private fmtCount(v: any): string {
+    if (v === null || v === undefined) return 'N/A';
+    if (typeof v === 'number' && Number.isFinite(v)) return String(Math.round(v));
+    const n = Number(v);
+    return Number.isFinite(n) ? String(Math.round(n)) : String(v);
+  }
+
+  private getEnumLabelMap(variable: any): Map<string, string> {
+    const enums = Array.isArray(variable?.enumerations) ? variable.enumerations : [];
+    const map = new Map<string, string>();
+    enums.forEach((e: any) => {
+      const raw = e?.code ?? e?.label ?? e?.name;
+      if (raw === null || raw === undefined) return;
+      const key = String(raw);
+      const label = String(e?.label ?? e?.name ?? raw);
+      map.set(key, label);
+    });
+    return map;
+  }
+
   // pivot variable_based or model_based
   private pivotByDataset(
     items: any[],
@@ -280,25 +300,68 @@ export class StatisticAnalysisPanelComponent implements OnChanges {
     for (const [varCode, arr] of Object.entries(byVar)) {
       const matched = variableList.find(v => v.code === varCode);
       const varName = matched?.name ?? matched?.label ?? varCode;
+      const enumMap = this.getEnumLabelMap(matched);
 
       const byDataset: Record<string, any> = {};
       for (const entry of arr) byDataset[entry.dataset] = entry.data || {};
 
-      const rows = this.METRIC_ORDER.map(m => {
-        const values: Record<string, string> = {};
-        for (const ds of datasetOrder) {
-          const raw =
-            m.key === 'num_datapoints' ? byDataset[ds]?.num_dtps :
-              m.key === 'num_missing' ? byDataset[ds]?.num_na :
-                m.key === 'num_total' ? byDataset[ds]?.num_total :
-                  m.key === 'std' ? byDataset[ds]?.std :
-                    m.key === 'q2' ? byDataset[ds]?.q2 :
-                      byDataset[ds]?.[m.key];
+      const countsKeys = new Set<string>();
+      for (const ds of datasetOrder) {
+        const counts = byDataset[ds]?.counts ?? {};
+        Object.keys(counts).forEach((key) => countsKeys.add(String(key)));
+      }
 
-          values[ds] = this.fmt(raw);
-        }
-        return { metric: m.label, values };
-      });
+      let rows: Array<{ metric: string; values: Record<string, string> }> = [];
+
+      if (countsKeys.size > 0) {
+        const baseMetrics = [
+          { key: 'num_datapoints', label: 'Datapoints' },
+          { key: 'num_missing', label: 'Missing' },
+          { key: 'num_total', label: 'Total' },
+        ];
+
+        rows = baseMetrics.map((m) => {
+          const values: Record<string, string> = {};
+          for (const ds of datasetOrder) {
+            const raw =
+              m.key === 'num_datapoints' ? byDataset[ds]?.num_dtps :
+                m.key === 'num_missing' ? byDataset[ds]?.num_na :
+                  byDataset[ds]?.num_total;
+            values[ds] = this.fmt(raw);
+          }
+          return { metric: m.label, values };
+        });
+
+        const orderedKeys = Array.from(enumMap.keys()).filter((key) => countsKeys.has(key));
+        const remainingKeys = Array.from(countsKeys).filter((key) => !enumMap.has(key));
+        const countOrder = orderedKeys.concat(remainingKeys);
+
+        countOrder.forEach((key) => {
+          const label = enumMap.get(key) ?? key;
+          const values: Record<string, string> = {};
+          for (const ds of datasetOrder) {
+            const raw = byDataset[ds]?.counts?.[key];
+            values[ds] = this.fmtCount(raw);
+          }
+          rows.push({ metric: label, values });
+        });
+      } else {
+        rows = this.METRIC_ORDER.map(m => {
+          const values: Record<string, string> = {};
+          for (const ds of datasetOrder) {
+            const raw =
+              m.key === 'num_datapoints' ? byDataset[ds]?.num_dtps :
+                m.key === 'num_missing' ? byDataset[ds]?.num_na :
+                  m.key === 'num_total' ? byDataset[ds]?.num_total :
+                    m.key === 'std' ? byDataset[ds]?.std :
+                      m.key === 'q2' ? byDataset[ds]?.q2 :
+                        byDataset[ds]?.[m.key];
+
+            values[ds] = this.fmt(raw);
+          }
+          return { metric: m.label, values };
+        });
+      }
 
       result.push({ name: varName, columns: datasetOrder, rows });
     }
