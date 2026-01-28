@@ -16,31 +16,68 @@
   </div>
   }
 
-  <div class="studio-inner studio-main">
-    <button
-      class="studio-float-back"
-      type="button"
-      (click)="onBackToDashboard()"
-      [disabled]="isRunning()"
-      aria-label="Back to Dashboard"
-    >
-      <i class="fas fa-arrow-left"></i>
-      <span>Dashboard</span>
-    </button>
+  <div class="studio-inner studio-layout">
+    <nav class="studio-sidenav" aria-label="Studio sections">
+      <div class="studio-flow-header">
+        <div class="studio-flow-title">Setup progress</div>
+        <div class="studio-flow-meta">Step 1 / 6</div>
+        <div class="studio-flow-bar">
+          <span class="studio-flow-bar-fill" style="width: 16%;"></span>
+        </div>
+      </div>
 
-    <!-- TOP: Variables -->
-    <section class="studio-section studio-section--variables">
-      <app-variables-panel></app-variables-panel>
-    </section>
+      <a href="/experiment-studio#variables-top" class="studio-step current">
+        <span class="studio-step-dot"></span>
+        <span class="studio-step-label">Datasets Selection</span>
+      </a>
+      <a href="/experiment-studio#data-model-visualization" class="studio-step upcoming">
+        <span class="studio-step-dot"></span>
+        <span class="studio-step-label">Pathology Visualization</span>
+      </a>
+      <a href="/experiment-studio#distribution-graph" class="studio-step upcoming">
+        <span class="studio-step-dot"></span>
+        <span class="studio-step-label">Distribution Graph</span>
+      </a>
+      <a href="/experiment-studio#parameters-listing" class="studio-step upcoming">
+        <span class="studio-step-dot"></span>
+        <span class="studio-step-label">Parameters</span>
+      </a>
+      <a href="/experiment-studio#statistics-section" class="studio-step upcoming">
+        <span class="studio-step-dot"></span>
+        <span class="studio-step-label">Statistics</span>
+      </a>
+      <a href="/experiment-studio#algorithm-section" class="studio-step upcoming">
+        <span class="studio-step-dot"></span>
+        <span class="studio-step-label">Algorithm</span>
+      </a>
+    </nav>
 
-    <section class="studio-section studio-section--statistics">
-      <app-statistic-analysis-panel></app-statistic-analysis-panel>
-    </section>
+    <div class="studio-main">
+      <button
+        class="studio-float-back"
+        type="button"
+        (click)="onBackToDashboard()"
+        [disabled]="isRunning()"
+        aria-label="Back to Dashboard"
+      >
+        <i class="fas fa-arrow-left"></i>
+        <span>Dashboard</span>
+      </button>
 
-    <!-- BOTTOM: Algorithm -->
-    <section class="studio-section studio-section--algorithm">
-      <app-algorithm-panel></app-algorithm-panel>
-    </section>
+      <!-- TOP: Variables -->
+      <section class="studio-section studio-section--variables">
+        <app-variables-panel></app-variables-panel>
+      </section>
+
+      <section class="studio-section studio-section--statistics" id="statistics-section">
+        <app-statistic-analysis-panel></app-statistic-analysis-panel>
+      </section>
+
+      <!-- BOTTOM: Algorithm -->
+      <section class="studio-section studio-section--algorithm" id="algorithm-section">
+        <app-algorithm-panel></app-algorithm-panel>
+      </section>
+    </div>
   </div>
 
 

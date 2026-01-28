@@ -1,7 +1,7 @@
 import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { VariablesPanelComponent } from './variables-panel/variables-panel.component';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ExperimentStudioService } from '../../services/experiment-studio.service';
 import { AlgorithmPanelComponent } from './algorithm-panel/algorithm-panel.component';
@@ -21,7 +21,8 @@ import { Subject, takeUntil } from 'rxjs';
     AlgorithmPanelComponent,
     FormsModule,
     SpinnerComponent,
-    StatisticAnalysisPanelComponent
+    StatisticAnalysisPanelComponent,
+    RouterLink
   ],
   templateUrl: './experiment-studio.component.html',
   styleUrls: ['./experiment-studio.component.css'],

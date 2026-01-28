@@ -1,9 +1,9 @@
-<div class="variables-panel-shell">
+<div class="variables-panel-shell" id="variables-top">
   <div class="panel-header">
     <p>Variables and Covariates</p>
   </div>
 
-  <div class="selectors-row">
+  <div class="selectors-row" id="dataset-selection">
   <app-data-model-selector
     [crossSectionalModels]="crossSectionalModels"
     [longitudinalModels]="longitudinalModels"
@@ -25,10 +25,10 @@
   </div>
   </div>
 
-  <!-- Main area: Bubble + Right column -->
+  <!-- Main area -->
   <div class="variables-main">
-    <!-- Bubble Chart -->
-    <div class="bubble-chart-section">
+    <!-- Data model visualization -->
+    <section class="bubble-chart-section" id="data-model-visualization">
       <div class="bubble-actions">
         <button
           class="bubble-action bubble-action--variable"
@@ -69,108 +69,107 @@
       >
       </app-bubble-chart>
       }
-    </div>
+    </section>
 
-    <!-- Right column: parameters + distribution -->
-    <div class="right-column">
-      <div class="histogam-placeholder">
-        <section class="panel-block distribution-graph" #distributionExport>
-          <p class="distribution-graph-header">
-            {{ groupHistogramData() ? 'Group Description' : 'Distribution Graph' }}
-          </p>
+    <!-- Distribution graph -->
+    <section class="histogam-placeholder" id="distribution-graph">
+      <div class="panel-block distribution-graph" #distributionExport>
+        <p class="distribution-graph-header">
+          {{ groupHistogramData() ? 'Group Description' : 'Distribution Graph' }}
+        </p>
 
-          @if (isLoadingHistogram()) {
-          <div class="distribution-loader">
-            <app-spinner text="Loading Histogram" [overlay]="false" />
-          </div>
-          } @else if (errorMessage()) {
-          <div class="message-container error">
-            <p>{{ errorMessage() }}</p>
-          </div>
-          } @else if (!selectedNode) {
-          <div class="message-container info">
-            <p>Please select a variable to view its distribution.</p>
-          </div>
-          } @else if (groupHistogramData()) {
-          <div class="group-summary">
-            <div class="group-summary-header">
-              <p class="group-summary-path">
-                <span class="group-summary-label">Path</span>
-                <span class="group-summary-value">
-                  @for (node of groupHistogramMeta()?.pathNodes; track node.code; let i = $index) {
-                  <span class="group-summary-separator" [class.is-hidden]="i === 0">></span>
-                  <button type="button" class="group-summary-link group-summary-path-link" (click)="onGroupSummaryClick(node)">
-                    {{ node.label }}
-                  </button>
-                  }
-                </span>
-              </p>
-              <p class="group-summary-count-row">
-                <span class="group-summary-label">
-                  {{ groupHistogramMeta()?.hasGroups ? 'Number of groups in' : 'Number of variables in' }}
-                </span>
-                <span class="group-summary-value">{{ selectedNode?.label }}</span>
-                <span class="group-summary-count">{{ groupHistogramMeta()?.groupCount }}</span>
-              </p>
-            </div>
-          </div>
-          <app-distribution-graph
-            [data]="groupHistogramData()"
-          ></app-distribution-graph>
-          } @else if (distributionData()) {
-          <div class="group-summary">
-            <div class="group-summary-header">
-              <p class="group-summary-path">
-                <span class="group-summary-label">Path</span>
-                <span class="group-summary-value">
-                  @for (node of getPathNodes(selectedNode); track node.code; let i = $index) {
-                  <span class="group-summary-separator" [class.is-hidden]="i === 0">></span>
-                  <button type="button" class="group-summary-link group-summary-path-link" (click)="onGroupSummaryClick(node)">
-                    {{ node.label }}
-                  </button>
-                  }
-                </span>
-              </p>
-              @if (selectedNode?.description) {
-              <p class="group-summary-empty">
-                {{ selectedNode?.description }}
-              </p>
-              }
-            </div>
-          </div>
-          <app-distribution-graph
-            [data]="distributionData()"
-          ></app-distribution-graph>
-          }
-        </section>
-
-        <!-- Floating Button -->
-        <button
-          class="floating-button"
-          aria-label="Export distribution PDF"
-          title="Export PDF"
-          [disabled]="isExportDisabled() || isExporting()"
-          (click)="exportDistributionPdf()"
-        >
-          <i class="far fa-file-pdf"></i>
-        </button>
-
-        @if (isExporting()) {
-        <div class="pdf-export-overlay">
-          <app-spinner text="Generating PDF..." [overlay]="false" />
+        @if (isLoadingHistogram()) {
+        <div class="distribution-loader">
+          <app-spinner text="Loading Histogram" [overlay]="false" />
         </div>
+        } @else if (errorMessage()) {
+        <div class="message-container error">
+          <p>{{ errorMessage() }}</p>
+        </div>
+        } @else if (!selectedNode) {
+        <div class="message-container info">
+          <p>Please select a variable to view its distribution.</p>
+        </div>
+        } @else if (groupHistogramData()) {
+        <div class="group-summary">
+          <div class="group-summary-header">
+            <p class="group-summary-path">
+              <span class="group-summary-label">Path</span>
+              <span class="group-summary-value">
+                @for (node of groupHistogramMeta()?.pathNodes; track node.code; let i = $index) {
+                <span class="group-summary-separator" [class.is-hidden]="i === 0">></span>
+                <button type="button" class="group-summary-link group-summary-path-link" (click)="onGroupSummaryClick(node)">
+                  {{ node.label }}
+                </button>
+                }
+              </span>
+            </p>
+            <p class="group-summary-count-row">
+              <span class="group-summary-label">
+                {{ groupHistogramMeta()?.hasGroups ? 'Number of groups in' : 'Number of variables in' }}
+              </span>
+              <span class="group-summary-value">{{ selectedNode?.label }}</span>
+              <span class="group-summary-count">{{ groupHistogramMeta()?.groupCount }}</span>
+            </p>
+          </div>
+        </div>
+        <app-distribution-graph
+          [data]="groupHistogramData()"
+        ></app-distribution-graph>
+        } @else if (distributionData()) {
+        <div class="group-summary">
+          <div class="group-summary-header">
+            <p class="group-summary-path">
+              <span class="group-summary-label">Path</span>
+              <span class="group-summary-value">
+                @for (node of getPathNodes(selectedNode); track node.code; let i = $index) {
+                <span class="group-summary-separator" [class.is-hidden]="i === 0">></span>
+                <button type="button" class="group-summary-link group-summary-path-link" (click)="onGroupSummaryClick(node)">
+                  {{ node.label }}
+                </button>
+                }
+              </span>
+            </p>
+            @if (selectedNode?.description) {
+            <p class="group-summary-empty">
+              {{ selectedNode?.description }}
+            </p>
+            }
+          </div>
+        </div>
+        <app-distribution-graph
+          [data]="distributionData()"
+        ></app-distribution-graph>
         }
-
       </div>
 
-      <section class="panel-block variable-filter-container">
-        <app-variable-filter-selection
-          #variableFilterSelection
-          [selectedNode]="selectedNode"
-          (filtersChange)="onFilterChange($event)"
-          (variableClicked)="onVariableClicked($event)"
-        ></app-variable-filter-selection>
-      </section>
-    </div>
+      <!-- Floating Button -->
+      <button
+        class="floating-button"
+        aria-label="Export distribution PDF"
+        title="Export PDF"
+        [disabled]="isExportDisabled() || isExporting()"
+        (click)="exportDistributionPdf()"
+      >
+        <i class="far fa-file-pdf"></i>
+      </button>
+
+      @if (isExporting()) {
+      <div class="pdf-export-overlay">
+        <app-spinner text="Generating PDF..." [overlay]="false" />
+      </div>
+      }
+
+    </section>
+
+    <!-- Parameters listing -->
+    <section class="panel-block variable-filter-container" id="parameters-listing">
+      <app-variable-filter-selection
+        #variableFilterSelection
+        [selectedNode]="selectedNode"
+        (filtersChange)="onFilterChange($event)"
+        (variableClicked)="onVariableClicked($event)"
+      ></app-variable-filter-selection>
+    </section>
   </div>
 </div>

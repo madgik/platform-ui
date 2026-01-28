@@ -83,6 +83,7 @@
   box-shadow: var(--studio-card-shadow, 0 10px 22px rgba(15, 23, 42, 0.08));
   box-sizing: border-box;
   overflow: hidden;
+  scroll-margin-top: 90px;
 }
 
 .bubble-actions {
@@ -148,14 +149,6 @@
 }
 
 /* Right column: parameters + distribution */
-.right-column {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  width: 100%;
-  min-width: 0;
-}
-
 /* Common block styling */
 .panel-block {
   background: var(--studio-card-bg, rgba(255, 255, 255, 0.92));
@@ -298,6 +291,13 @@
   justify-content: center;
   z-index: 9;
   backdrop-filter: blur(1px);
+}
+
+#distribution-graph,
+#parameters-listing,
+#variables-top,
+#dataset-selection {
+  scroll-margin-top: 90px;
 }
 
 /* Group summary for selected nodes with children */
