@@ -1,4 +1,4 @@
-<div class="experiment-studio-page full-bleed">
+<div class="experiment-studio-page full-bleed" id="studio-top">
   @if (errorMessage) {
   <div
     class="global-error-banner"
@@ -18,66 +18,109 @@
 
   <div class="studio-inner studio-layout">
     <nav class="studio-sidenav" aria-label="Studio navigation">
+      <div class="studio-rail-context">
+        <div class="studio-rail-context-title">Experiment Studio</div>
+        <a class="studio-rail-context-link" href="/experiments-dashboard">
+          <i class="fas fa-arrow-left"></i>
+          Back to dashboard
+        </a>
+      </div>
+
       <div class="studio-rail-header">
         <div class="studio-rail-title">Navigation</div>
-        <div class="studio-rail-meta">Current model: {{ currentModelLabel }}</div>
       </div>
 
-      <div class="studio-rail-section">
-        <div class="studio-rail-section-title">Setup</div>
-        <a href="/experiment-studio#variables-top" class="studio-rail-item is-active" aria-current="page">
-          <span class="studio-rail-icon"><i class="fas fa-database"></i></span>
-          <span class="studio-rail-label">Datasets Selection</span>
-        </a>
-        <a href="/experiment-studio#data-model-visualization" class="studio-rail-item">
-          <span class="studio-rail-icon"><i class="fas fa-microscope"></i></span>
-          <span class="studio-rail-label">Pathology Visualization</span>
-        </a>
-      </div>
-
-      <div class="studio-rail-section">
-        <div class="studio-rail-section-title">
-          Modeling <span class="studio-rail-optional">(optional)</span>
+      <div class="studio-rail-scroll">
+        <div class="studio-rail-section">
+          <div
+            class="studio-rail-section-title"
+            [class.is-active]="activeSection === 'variables-top' || activeSection === 'data-model-visualization'"
+          >
+            Setup
+          </div>
+          <a
+            href="/experiment-studio#studio-top"
+            class="studio-rail-item"
+            [class.is-active]="activeSection === 'variables-top'"
+            [attr.aria-current]="activeSection === 'variables-top' ? 'page' : null"
+          >
+            <span class="studio-rail-icon"><i class="fas fa-database"></i></span>
+            <span class="studio-rail-label">Datasets Selection</span>
+          </a>
+          <a
+            href="/experiment-studio#data-model-visualization"
+            class="studio-rail-item"
+            [class.is-active]="activeSection === 'data-model-visualization'"
+            [attr.aria-current]="activeSection === 'data-model-visualization' ? 'page' : null"
+          >
+            <span class="studio-rail-icon"><i class="fas fa-microscope"></i></span>
+            <span class="studio-rail-label">Pathology Visualization</span>
+          </a>
         </div>
-        <a href="/experiment-studio#variables-top" class="studio-rail-item">
-          <span class="studio-rail-icon"><i class="fas fa-sliders-h"></i></span>
-          <span class="studio-rail-label">Variables &amp; Covariates</span>
-        </a>
-        <a href="/experiment-studio#distribution-graph" class="studio-rail-item">
-          <span class="studio-rail-icon"><i class="fas fa-chart-area"></i></span>
-          <span class="studio-rail-label">Distribution Graph</span>
-        </a>
-        <a href="/experiment-studio#parameters-listing" class="studio-rail-item">
-          <span class="studio-rail-icon"><i class="fas fa-sliders"></i></span>
-          <span class="studio-rail-label">Parameters</span>
-        </a>
+
+        <div class="studio-rail-section">
+          <div
+            class="studio-rail-section-title"
+            [class.is-active]="activeSection === 'distribution-graph' || activeSection === 'parameters-listing'"
+          >
+            Modeling
+          </div>
+          <a
+            href="/experiment-studio#distribution-graph"
+            class="studio-rail-item"
+            [class.is-active]="activeSection === 'distribution-graph'"
+            [attr.aria-current]="activeSection === 'distribution-graph' ? 'page' : null"
+          >
+            <span class="studio-rail-icon"><i class="fas fa-chart-area"></i></span>
+            <span class="studio-rail-label">Distribution Graph</span>
+          </a>
+          <a
+            href="/experiment-studio#parameters-listing"
+            class="studio-rail-item"
+            [class.is-active]="activeSection === 'parameters-listing'"
+            [attr.aria-current]="activeSection === 'parameters-listing' ? 'page' : null"
+          >
+            <span class="studio-rail-icon"><i class="fas fa-sliders"></i></span>
+            <span class="studio-rail-label">Parameters</span>
+          </a>
+        </div>
+
+        <div class="studio-rail-section">
+          <div
+            class="studio-rail-section-title"
+            [class.is-active]="activeSection === 'statistics-section' || activeSection === 'algorithm-section'"
+          >
+            Analysis
+          </div>
+          <a
+            href="/experiment-studio#statistics-section"
+            class="studio-rail-item"
+            [class.is-active]="activeSection === 'statistics-section'"
+            [attr.aria-current]="activeSection === 'statistics-section' ? 'page' : null"
+          >
+            <span class="studio-rail-icon"><i class="fas fa-chart-line"></i></span>
+            <span class="studio-rail-label">Statistics</span>
+          </a>
+          <a
+            href="/experiment-studio#algorithm-section"
+            class="studio-rail-item"
+            [class.is-active]="activeSection === 'algorithm-section'"
+            [attr.aria-current]="activeSection === 'algorithm-section' ? 'page' : null"
+          >
+            <span class="studio-rail-icon"><i class="fas fa-cogs"></i></span>
+            <span class="studio-rail-label">Algorithm</span>
+          </a>
+        </div>
       </div>
 
-      <div class="studio-rail-section">
-        <div class="studio-rail-section-title">Analysis</div>
-        <a href="/experiment-studio#statistics-section" class="studio-rail-item">
-          <span class="studio-rail-icon"><i class="fas fa-sigma"></i></span>
-          <span class="studio-rail-label">Statistics</span>
-        </a>
-        <a href="/experiment-studio#algorithm-section" class="studio-rail-item">
-          <span class="studio-rail-icon"><i class="fas fa-cogs"></i></span>
-          <span class="studio-rail-label">Algorithm</span>
-        </a>
+      <div class="studio-rail-footer">
+        <div class="studio-rail-footer-title">Support</div>
+        <a class="studio-rail-footer-link" href="/account">Help</a>
+        <a class="studio-rail-footer-link" href="/account">Feedback</a>
       </div>
     </nav>
 
     <div class="studio-main">
-      <button
-        class="studio-float-back"
-        type="button"
-        (click)="onBackToDashboard()"
-        [disabled]="isRunning()"
-        aria-label="Back to Dashboard"
-      >
-        <i class="fas fa-arrow-left"></i>
-        <span>Dashboard</span>
-      </button>
-
       <!-- TOP: Variables -->
       <section class="studio-section studio-section--variables">
         <app-variables-panel></app-variables-panel>

@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { VariablesPanelComponent } from './variables-panel/variables-panel.component';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -27,7 +27,7 @@ import { Subject, takeUntil } from 'rxjs';
   templateUrl: './experiment-studio.component.html',
   styleUrls: ['./experiment-studio.component.css'],
 })
-export class ExperimentStudioComponent implements OnInit, OnDestroy {
+export class ExperimentStudioComponent implements OnInit, OnDestroy, AfterViewInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -41,6 +41,8 @@ export class ExperimentStudioComponent implements OnInit, OnDestroy {
   readonly isRunning = this.expStudioService.isRunning;
   private destroy$ = new Subject<void>();
   errorMessage = '';
+  activeSection = 'variables-top';
+  private sectionObserver?: IntersectionObserver;
 
   ngOnInit(): void {
     // Reset any lingering global errors when arriving on the studio
@@ -64,19 +66,62 @@ export class ExperimentStudioComponent implements OnInit, OnDestroy {
     });
   }
 
+  ngAfterViewInit(): void {
+    this.setupSectionObserver();
+  }
+
   ngOnDestroy(): void {
+    this.sectionObserver?.disconnect();
     this.destroy$.next();
     this.destroy$.complete();
   }
 
-  get currentModelLabel(): string {
-    return this.expStudioService.selectedDataModel()?.label ?? '—';
-  }
 
 
   dismissError(): void {
     this.errorService.clearError();
     this.errorMessage = '';
+  }
+
+  private setupSectionObserver(): void {
+    const sectionIds = [
+      'variables-top',
+      'data-model-visualization',
+      'distribution-graph',
+      'parameters-listing',
+      'statistics-section',
+      'algorithm-section',
+    ];
+
+    const targets = sectionIds
+      .map((id) => document.getElementById(id))
+      .filter((el): el is HTMLElement => !!el);
+
+    if (!targets.length) return;
+
+    this.sectionObserver = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.filter((entry) => entry.isIntersecting);
+        if (!visible.length) return;
+
+        const inView = visible
+          .map((entry) => ({
+            id: entry.target.id,
+            top: entry.boundingClientRect.top,
+          }))
+          .sort((a, b) => a.top - b.top);
+
+        const firstBelowTop = inView.find((entry) => entry.top >= 0);
+        this.activeSection = (firstBelowTop ?? inView[0]).id;
+      },
+      {
+        root: null,
+        threshold: [0.1, 0.2, 0.4],
+        rootMargin: '0px 0px -60% 0px',
+      }
+    );
+
+    targets.forEach((el) => this.sectionObserver?.observe(el));
   }
 
   // Clean create mode. resets all of the studio's state

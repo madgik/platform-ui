@@ -1,16 +1,17 @@
 .main-footer {
-  background-color: #f1f1f1;
-  padding: 10px;
+  background-color: transparent;
+  padding: 6px 10px 12px;
   text-align: center;
-  color: #333;
+  color: #64748b;
 }
 
 .footer-link {
-  color: #1d4ed8;
+  color: #94a3b8;
   text-decoration: none;
-  font-size: 13px;
+  font-size: 11px;
 }
 
 .footer-link:hover {
   text-decoration: underline;
+  color: #64748b;
 }

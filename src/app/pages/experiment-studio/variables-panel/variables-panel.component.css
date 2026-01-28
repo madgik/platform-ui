@@ -40,7 +40,7 @@
 
 .selectors-row {
   display: grid;
-  grid-template-columns: minmax(180px, 240px) minmax(180px, 240px) minmax(240px, 1fr);
+  grid-template-columns: minmax(180px, 220px) minmax(180px, 220px) minmax(320px, 1fr);
   align-items: end;
   gap: 14px;
   padding: 8px 12px 12px;
@@ -60,6 +60,7 @@
   min-width: 240px;
   flex: 1 1 auto;
   margin-left: 0;
+  width: 100%;
 }
 
 /* ---------- MAIN LAYOUT: bubble + right column ---------- */
@@ -75,7 +76,7 @@
 /* Left: bubble chart “canvas” */
 .bubble-chart-section {
   position: relative;
-  min-height: 470px;
+  min-height: 320px;
   background: var(--studio-card-bg, rgba(255, 255, 255, 0.78));
   border-radius: 14px;
   border: 1px solid var(--studio-card-border, rgba(148, 163, 184, 0.4));
@@ -493,7 +494,7 @@
   }
 
   .bubble-chart-section {
-    min-height: 420px;
+    min-height: 280px;
   }
 
 }
@@ -514,7 +515,7 @@
   }
 
   .bubble-chart-section {
-    min-height: 360px;
+    min-height: 250px;
   }
 
   .bubble-actions {
