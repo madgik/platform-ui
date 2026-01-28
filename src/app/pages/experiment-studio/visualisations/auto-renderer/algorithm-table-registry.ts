@@ -44,35 +44,89 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
   },
 
   linear_regression: (result) => {
+    if (!result) return [];
+
     const coefTable = result?.coefficients;
     const infoTable = result?.model_info;
 
-    if (!coefTable || !infoTable) return [];
+    // (A) Object-style coefficients + model_info
+    if (coefTable && infoTable && typeof coefTable === 'object' && !Array.isArray(coefTable)) {
+      const coefRows = Object.entries(coefTable).map(([variable, stats]: [string, any]) => [
+        variable,
+        formatDecimal(stats?.coefficient),
+        formatDecimal(stats?.std_err),
+        formatDecimal(stats?.z_score),
+        formatDecimal(stats?.p_value),
+        formatDecimal(stats?.ci_lower),
+        formatDecimal(stats?.ci_upper),
+      ]);
 
-    const coefRows = Object.entries(coefTable).map(([variable, stats]: [string, any]) => [
-      variable,
-      stats.coefficient,
-      stats.std_err,
-      stats.z_score,
-      stats.p_value,
-      stats.ci_lower,
-      stats.ci_upper,
-    ]);
+      const infoRows = Object.entries(infoTable).map(([key, value]) => [key, formatDecimal(value)]);
 
-    const infoRows = Object.entries(infoTable).map(([key, value]) => [key, value]);
+      return [
+        {
+          title: 'Coefficients',
+          columns: ['Independent variables', 'Coefficients', 'Std.Err.', 'z-scores', 'P(>|z|)', 'Lower 95% c.i.', 'Upper 95% c.i.'],
+          rows: coefRows,
+        },
+        {
+          title: 'Model Info',
+          columns: ['Name', 'Value'],
+          rows: infoRows,
+        },
+      ];
+    }
 
-    return [
-      {
-        title: 'Coefficients',
-        columns: ['Independent variables', 'Coefficients', 'Std.Err.', 'z-scores', 'P(>|z|)', 'Lower 95% c.i.', 'Upper 95% c.i.'],
-        rows: coefRows,
-      },
-      {
-        title: 'Model Info',
-        columns: ['Name', 'Value'],
-        rows: infoRows,
-      },
-    ];
+    // (B) Array-style coefficients (backend format)
+    const indepVars: any[] = Array.isArray(result?.indep_vars) ? result.indep_vars : [];
+    const coefficients: any[] = Array.isArray(result?.coefficients) ? result.coefficients : [];
+    const stdErr: any[] = Array.isArray(result?.std_err) ? result.std_err : [];
+    const tStats: any[] = Array.isArray(result?.t_stats) ? result.t_stats : [];
+    const pValues: any[] = Array.isArray(result?.pvalues) ? result.pvalues : [];
+    const lowerCi: any[] = Array.isArray(result?.lower_ci) ? result.lower_ci : [];
+    const upperCi: any[] = Array.isArray(result?.upper_ci) ? result.upper_ci : [];
+
+    if (indepVars.length && coefficients.length) {
+      const coefRows = indepVars.map((variable, idx) => [
+        variable,
+        formatDecimal(coefficients[idx]),
+        formatDecimal(stdErr[idx]),
+        formatDecimal(tStats[idx]),
+        formatDecimal(pValues[idx]),
+        formatDecimal(lowerCi[idx]),
+        formatDecimal(upperCi[idx]),
+      ]);
+
+      const infoKeys: Array<[string, string]> = [
+        ['n_obs', 'Observations'],
+        ['df_model', 'Degrees of Freedom (Model)'],
+        ['df_resid', 'Degrees of Freedom (Residual)'],
+        ['r_squared', 'R² Score'],
+        ['r_squared_adjusted', 'Adjusted R²'],
+        ['f_stat', 'F-statistic'],
+        ['f_pvalue', 'p-value (F-stat)'],
+        ['rse', 'Residual Std. Error'],
+      ];
+
+      const infoRows = infoKeys
+        .filter(([key]) => result?.[key] !== undefined)
+        .map(([key, label]) => [label, formatDecimal(result[key])]);
+
+      return [
+        {
+          title: 'Coefficients',
+          columns: ['Independent variables', 'Coefficients', 'Std.Err.', 't-stats', 'P(>|t|)', 'Lower 95% c.i.', 'Upper 95% c.i.'],
+          rows: coefRows,
+        },
+        {
+          title: 'Model Summary',
+          columns: ['Name', 'Value'],
+          rows: infoRows,
+        },
+      ];
+    }
+
+    return [];
   },
 
   linear_regression_cv: (result) => {

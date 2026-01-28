@@ -184,6 +184,60 @@
   display: flex;
 }
 
+/* ---------- FLOATING EXPORT BUTTON ---------- */
+
+.floating-button {
+  position: absolute;
+  right: 12px;
+  bottom: 14px;
+  background: linear-gradient(135deg, #008a87, #62c1b6);
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  width: 40px;
+  height: 40px;
+  font-size: 1.1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.3);
+  cursor: pointer;
+  z-index: 10;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
+}
+
+.floating-button:hover {
+  background: #ffffff;
+  color: #007a77;
+  transform: translateY(-1px) scale(1.03);
+  box-shadow: 0 16px 30px rgba(15, 23, 42, 0.35);
+}
+
+.floating-button:disabled {
+  background: #d1d5db;
+  color: #6b7280;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.pdf-exporting .floating-button {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pdf-export-overlay {
+  position: absolute;
+  inset: 6px;
+  background: rgba(255, 255, 255, 0.75);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9;
+  backdrop-filter: blur(1px);
+}
+
 /* Group summary for selected nodes with children */
 .group-summary {
   display: flex;

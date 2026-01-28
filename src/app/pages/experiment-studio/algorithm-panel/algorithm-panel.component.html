@@ -68,10 +68,11 @@
       >
         <h5>{{ tooltipData?.label }}</h5>
         <p [innerHTML]="tooltipData?.description"></p>
-        @if (tooltipData?.requiredVariable) {
-        <p><strong>Variable:</strong> {{ tooltipData?.requiredVariable }}</p>
-        } @if (tooltipData?.covariate !== "") {
-        <p><strong>Covariate:</strong> {{ tooltipData?.covariate }}</p>
+        @if (getVariableRequirement()) {
+        <p><strong>Variable requirement:</strong> {{ getVariableRequirement() }}</p>
+        }
+        @if (getCovariateRequirement()) {
+        <p><strong>Covariate requirement:</strong> {{ getCovariateRequirement() }}</p>
         }
       </div>
       }
@@ -271,6 +272,106 @@
           {{ selectedAlgorithm()?.label }} Configuration
         </h5>
         <p class="config-description">{{ selectedAlgorithm()?.description }}</p>
+
+        @if (canToggleCrossValidation()) {
+        <div class="cross-validation-toggle">
+          <label class="checkbox-wrapper">
+            <input
+              type="checkbox"
+              [checked]="crossValidationEnabled()"
+              (change)="toggleCrossValidation($event)"
+            />
+            <span>Enable cross-validation</span>
+          </label>
+          <div class="cross-validation-hint">
+            Optional. Enable to run the cross-validation variant (default: 5 folds).
+          </div>
+        </div>
+        }
+
+        @if (isCrossValidationOnly()) {
+        <div class="cross-validation-toggle">
+          <div class="cross-validation-hint">
+            Cross-validation is enabled for this algorithm.
+          </div>
+        </div>
+        }
+
+        @if (canToggleTransformation()) {
+        <div class="transformation-toggle">
+          <label class="checkbox-wrapper">
+            <input
+              type="checkbox"
+              [checked]="transformationEnabled()"
+              (change)="toggleTransformation($event)"
+            />
+            <span>Enable data transformations</span>
+          </label>
+          <div class="transformation-hint">
+            Optional. Pick a single transformation per variable.
+          </div>
+
+          @if (!selectedVariables.length) {
+          <div class="transformation-empty">
+            Select variables to configure transformations.
+          </div>
+          } @else {
+          <div class="transformation-grid" [class.disabled]="!transformationEnabled()">
+            <div class="transformation-header">Variable</div>
+            <div class="transformation-header">None</div>
+            <div class="transformation-header">Standardize</div>
+            <div class="transformation-header">Center</div>
+            <div class="transformation-header">Exp</div>
+
+            @for (v of selectedVariables; track v.code) {
+            <div class="transformation-cell transformation-label">
+              {{ v.label || v.name || v.code }}
+            </div>
+            <div class="transformation-cell">
+              <input
+                type="radio"
+                [name]="'transform-' + v.code"
+                [value]="'none'"
+                [checked]="getTransformationAssignment(v.code) === 'none'"
+                (change)="setTransformationAssignment(v.code, 'none')"
+                [disabled]="!transformationEnabled()"
+              />
+            </div>
+            <div class="transformation-cell">
+              <input
+                type="radio"
+                [name]="'transform-' + v.code"
+                [value]="'standardize'"
+                [checked]="getTransformationAssignment(v.code) === 'standardize'"
+                (change)="setTransformationAssignment(v.code, 'standardize')"
+                [disabled]="!transformationEnabled()"
+              />
+            </div>
+            <div class="transformation-cell">
+              <input
+                type="radio"
+                [name]="'transform-' + v.code"
+                [value]="'center'"
+                [checked]="getTransformationAssignment(v.code) === 'center'"
+                (change)="setTransformationAssignment(v.code, 'center')"
+                [disabled]="!transformationEnabled()"
+              />
+            </div>
+            <div class="transformation-cell">
+              <input
+                type="radio"
+                [name]="'transform-' + v.code"
+                [value]="'exp'"
+                [checked]="getTransformationAssignment(v.code) === 'exp'"
+                (change)="setTransformationAssignment(v.code, 'exp')"
+                [disabled]="!transformationEnabled()"
+              />
+            </div>
+            }
+          </div>
+          }
+        </div>
+        }
 
         @if (errorMsg()) {
         <div class="backend-error-banner">

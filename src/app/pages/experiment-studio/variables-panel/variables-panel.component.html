@@ -53,9 +53,9 @@
       </section>
 
       <div class="histogam-placeholder">
-        <section class="panel-block distribution-graph">
+        <section class="panel-block distribution-graph" #distributionExport>
           <p class="distribution-graph-header">
-            {{ groupSummary() ? 'Group Description' : 'Distribution Graph' }}
+            {{ groupHistogramData() ? 'Group Description' : 'Distribution Graph' }}
           </p>
 
           @if (isLoadingHistogram()) {
@@ -70,13 +70,13 @@
           <div class="message-container info">
             <p>Please select a variable to view its distribution.</p>
           </div>
-          } @else if (groupSummary()) {
+          } @else if (groupHistogramData()) {
           <div class="group-summary">
             <div class="group-summary-header">
               <p class="group-summary-path">
                 <span class="group-summary-label">Path</span>
                 <span class="group-summary-value">
-                  @for (node of groupSummary()?.pathNodes; track node.code; let i = $index) {
+                  @for (node of groupHistogramMeta()?.pathNodes; track node.code; let i = $index) {
                   <span class="group-summary-separator" [class.is-hidden]="i === 0">></span>
                   <button type="button" class="group-summary-link group-summary-path-link" (click)="onGroupSummaryClick(node)">
                     {{ node.label }}
@@ -86,33 +86,59 @@
               </p>
               <p class="group-summary-count-row">
                 <span class="group-summary-label">
-                  {{ groupSummary()?.hasGroups ? 'Number of groups in' : 'Number of variables in' }}
+                  {{ groupHistogramMeta()?.hasGroups ? 'Number of groups in' : 'Number of variables in' }}
                 </span>
                 <span class="group-summary-value">{{ selectedNode?.label }}</span>
-                <span class="group-summary-count">{{ groupSummary()?.groupCount }}</span>
+                <span class="group-summary-count">{{ groupHistogramMeta()?.groupCount }}</span>
               </p>
-              @if (!groupSummary()?.hasGroups) {
+            </div>
+          </div>
+          <app-distribution-graph
+            [data]="groupHistogramData()"
+          ></app-distribution-graph>
+          } @else if (distributionData()) {
+          <div class="group-summary">
+            <div class="group-summary-header">
+              <p class="group-summary-path">
+                <span class="group-summary-label">Path</span>
+                <span class="group-summary-value">
+                  @for (node of getPathNodes(selectedNode); track node.code; let i = $index) {
+                  <span class="group-summary-separator" [class.is-hidden]="i === 0">></span>
+                  <button type="button" class="group-summary-link group-summary-path-link" (click)="onGroupSummaryClick(node)">
+                    {{ node.label }}
+                  </button>
+                  }
+                </span>
+              </p>
+              @if (selectedNode?.description) {
               <p class="group-summary-empty">
-                There are no groups, only variables.
+                {{ selectedNode?.description }}
               </p>
               }
             </div>
-            <ul class="group-summary-list">
-              @for (group of groupSummary()?.groupNodes; track group.code) {
-              <li>
-                <button type="button" class="group-summary-link group-summary-list-link" (click)="onGroupSummaryClick(group)">
-                  {{ group.label }}
-                </button>
-              </li>
-              }
-            </ul>
           </div>
-          } @else if (distributionData()) {
           <app-distribution-graph
             [data]="distributionData()"
           ></app-distribution-graph>
           }
         </section>
+
+        <!-- Floating Button -->
+        <button
+          class="floating-button"
+          aria-label="Export distribution PDF"
+          title="Export PDF"
+          [disabled]="isExportDisabled() || isExporting()"
+          (click)="exportDistributionPdf()"
+        >
+          <i class="far fa-file-pdf"></i>
+        </button>
+
+        @if (isExporting()) {
+        <div class="pdf-export-overlay">
+          <app-spinner text="Generating PDF..." [overlay]="false" />
+        </div>
+        }
 
       </div>
     </div>

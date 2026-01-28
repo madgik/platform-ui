@@ -48,6 +48,10 @@ export const AlgorithmChartRegistry: Record<string, AlgorithmChartConfig> = {
     build: buildPCAHeatmapChart,
     inputPath: '',
   },
+  pca_with_transformation: {
+    build: buildPCAHeatmapChart,
+    inputPath: '',
+  },
   anova_oneway: {
     build: composeCharts(buildBarChart, buildMeanPlotChart),
     inputPath: '',
@@ -65,4 +69,3 @@ export const AlgorithmChartRegistry: Record<string, AlgorithmChartConfig> = {
     inputPath: '',
   },
 };
-

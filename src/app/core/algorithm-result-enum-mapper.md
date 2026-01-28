@@ -29,12 +29,20 @@ metadata enumerations and variable labels. The implementation lives in:
 
 ### anova (two-way)
 - `terms[]`: map variable codes → labels.
-- `sum_sq`, `df`, `f_stat`, `f_pvalue` keys: map variable codes → labels **when these fields are object maps**.
+- `sum_sq`, `df`, `ms`, `f_stat`, `f_value`, `p_value`, `pvalue`, `f_pvalue` keys: map variable codes → labels
+  **when these fields are object maps**.
 - Interaction terms (`var1:var2`) are mapped per-part and re-joined with `:`.
 
 ### multiple_histograms
 - `histogram[].bins`: map using **Y** variable enums.
 - `histogram[].grouping_enum`: map using **Y** variable enums (when present).
+
+### pearson_correlation
+- `correlations`: map variable codes → labels.
+  - Matrix shape: remap `variables[]` and row keys.
+  - Table shape: remap the first two columns (Variable 1 / Variable 2).
+- `p-values`, `p_values`, `ci_lo`, `ci_hi`, `low_confidence_intervals`, `high_confidence_intervals`:
+  remap matrix variables and row keys.
 
 ### linear_regression / linear_regression_cv / logistic_regression / logistic_regression_cv
 - `dependent_var`: map variable code → label.

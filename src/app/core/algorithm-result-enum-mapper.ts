@@ -255,6 +255,43 @@ function mapAnovaTerms(terms: any[], labelMap: LabelMap | null | undefined): any
   });
 }
 
+function mapMatrixVariables(matrix: any, labelMap: LabelMap | null | undefined): any {
+  if (!labelMap || !matrix || typeof matrix !== 'object' || Array.isArray(matrix)) return matrix;
+
+  const variables = Array.isArray(matrix?.['variables']) ? matrix['variables'] : [];
+  const mappedVariables = variables.map((variable: unknown) =>
+    typeof variable === 'string' ? (labelMap[variable] ?? variable) : variable
+  );
+
+  const next: Record<string, any> = {};
+  if (variables.length) {
+    next['variables'] = mappedVariables;
+  }
+
+  Object.keys(matrix).forEach((key) => {
+    if (key === 'variables') return;
+    const mappedKey = labelMap[key] ?? key;
+    next[mappedKey] = matrix[key];
+  });
+
+  return next;
+}
+
+function mapPearsonRows(rows: any[], labelMap: LabelMap | null | undefined): any[] {
+  if (!labelMap) return rows;
+  return rows.map((row) => {
+    if (!Array.isArray(row) || row.length < 2) return row;
+    const nextRow = [...row];
+    if (typeof nextRow[0] === 'string') {
+      nextRow[0] = labelMap[nextRow[0]] ?? nextRow[0];
+    }
+    if (typeof nextRow[1] === 'string') {
+      nextRow[1] = labelMap[nextRow[1]] ?? nextRow[1];
+    }
+    return nextRow;
+  });
+}
+
 export function mapAlgorithmResultEnums(
   algorithm: string | null | undefined,
   result: any,
@@ -336,6 +373,34 @@ export function mapAlgorithmResultEnums(
       if (mapped.f_pvalue && typeof mapped.f_pvalue === 'object' && !Array.isArray(mapped.f_pvalue)) {
         mapped.f_pvalue = mapTwoWayAnovaKeys(mapped.f_pvalue, labelMap);
       }
+      return mapped;
+    }
+    case 'pearson_correlation': {
+      if (!labelMap) return result;
+      const mapped: any = { ...result };
+      const correlations = mapped.correlations;
+      if (Array.isArray(correlations)) {
+        mapped.correlations = mapPearsonRows(correlations, labelMap);
+      } else if (correlations && typeof correlations === 'object') {
+        mapped.correlations = mapMatrixVariables(correlations, labelMap);
+      }
+
+      const matrixKeys = [
+        'p-values',
+        'p_values',
+        'pvalues',
+        'low_confidence_intervals',
+        'high_confidence_intervals',
+        'ci_lo',
+        'ci_hi',
+      ];
+      matrixKeys.forEach((key) => {
+        const value = mapped[key];
+        if (value && typeof value === 'object' && !Array.isArray(value)) {
+          mapped[key] = mapMatrixVariables(value, labelMap);
+        }
+      });
+
       return mapped;
     }
     default:

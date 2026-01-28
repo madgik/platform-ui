@@ -3,25 +3,27 @@ import { AlgorithmConfig } from '../models/algorithm-definition.model';
 
 // Lookup for categories
 const CATEGORY_MAPPING: Record<string, string> = {
-  "kmeans": "Machine Learning",
-  "svm_scikit": "Machine Learning",
-  "linear_regression": "Machine Learning",
-  "linear_regression_cv": "Cross-validation",
-  "logistic_regression": "Machine Learning",
-  "logistic_regression_cv": "Cross-validation",
-  "logistic_regression_cv_fedaverage": "Cross-validation",
-  "naive_bayes_gaussian_cv": "Cross-validation",
-  "naive_bayes_categorical_cv": "Cross-validation",
-  "pearson_correlation": "Statistical Methods",
-  "pca": "Statistical Methods",
-  // "pca_with_transformation": "Statistical Methods",
-  "ttest_onesample": "Statistical Methods",
-  "ttest_independent": "Statistical Methods",
-  "ttest_paired": "Statistical Methods",
-  "anova_oneway": "Statistical Methods",
-  "anova": "Statistical Methods",
-  // "multiple_histograms": "Statistical Methods",
-  // "descriptive_stats": "Statistical Methods",
+  "descriptive_stats": "Descriptive Statistics",
+  "multiple_histograms": "Descriptive Statistics",
+  "pearson_correlation": "Correlation",
+  "anova": "Statistical Tests",
+  "anova_oneway": "Statistical Tests",
+  "ttest_independent": "Statistical Tests",
+  "ttest_onesample": "Statistical Tests",
+  "ttest_paired": "Statistical Tests",
+  "linear_regression": "Regression",
+  "logistic_regression": "Regression",
+  "naive_bayes_categorical": "Classification",
+  "naive_bayes_gaussian": "Classification",
+  "svm_scikit": "Classification",
+  "kmeans": "Clustering",
+  "pca": "Dimensionality Reduction",
+  "pca_with_transformation": "Dimensionality Reduction",
+  "linear_regression_cv": "Regression",
+  "logistic_regression_cv": "Regression",
+  "logistic_regression_cv_fedaverage": "Regression",
+  "naive_bayes_gaussian_cv": "Classification",
+  "naive_bayes_categorical_cv": "Classification",
 };
 
 function guessVariableType(ioField?: { types?: string[] }): string {
@@ -331,6 +333,7 @@ export function getOutputSchema(algorithmName: string): any[] | undefined {
         }
       ];
     case 'pca':
+    case 'pca_with_transformation':
       return [
         { key: 'n_obs', label: 'Observations', type: 'number' },
         {

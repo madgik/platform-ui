@@ -4,7 +4,7 @@
   padding: 0;
   width: 100%;
   height: 100%; /* Set to use available height */
-  min-height: 400px; /* Ensure a minimum height */
+  min-height: 520px; /* Ensure a minimum height */
   box-sizing: border-box;
   overflow: visible;
 }
@@ -15,7 +15,7 @@
   justify-content: center;
   align-items: center;
   width: 100%;
-  height: auto; /* Dynamically adjust based on content */
+  height: 100%; /* Fill available vertical space */
   padding: 10px;
   background-color: #fff;
   border: 1px solid #ddd;

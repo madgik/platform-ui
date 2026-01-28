@@ -1,7 +1,7 @@
 import { BubbleChartComponent } from './../visualisations/bubble-chart/bubble-chart.component';
 import { ErrorService } from '../../../services/error.service';
 import { ExperimentStudioService } from '../../../services/experiment-studio.service';
-import { Component, signal, inject, Input, WritableSignal, OnDestroy } from '@angular/core';
+import { Component, signal, inject, Input, WritableSignal, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
@@ -13,6 +13,8 @@ import { VariableFilterSelectionComponent } from './variable-filter-selection/va
 import { DistributionGraphComponent } from './distribution-graph/distribution-graph.component';
 import { SpinnerComponent } from '../../shared/spinner/spinner.component';
 import { catchError, map, of, Subject, switchMap, takeUntil } from 'rxjs';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 @Component({
   selector: 'app-variables-panel',
@@ -35,6 +37,7 @@ import { catchError, map, of, Subject, switchMap, takeUntil } from 'rxjs';
 export class VariablesPanelComponent implements OnDestroy {
   @Input() defaultModel: DataModel | null = null;
   @Input() dataModelHierarchy: any;
+  @ViewChild('distributionExport') distributionExport?: ElementRef<HTMLElement>;
   highlightNode: any = null;
 
   experimentStudioService = inject(ExperimentStudioService);
@@ -43,10 +46,10 @@ export class VariablesPanelComponent implements OnDestroy {
   filteredVariables: WritableSignal<any[]> = signal([]);
   filteredGroups: WritableSignal<any[]> = signal([]);
   distributionData = signal<any | null>(null);
-  groupSummary = signal<{
+  groupHistogramData = signal<{ bins: string[]; counts: number[]; variableName: string } | null>(null);
+  groupHistogramMeta = signal<{
     pathNodes: Array<{ code: string; label: string }>;
     groupCount: number;
-    groupNodes: Array<{ code: string; label: string }>;
     hasGroups: boolean;
   } | null>(null);
   d3Data: any;
@@ -62,6 +65,7 @@ export class VariablesPanelComponent implements OnDestroy {
   groupVariables: any[] = [];
   isLoadingHistogram = signal(false);
   errorMessage = signal<string | null>(null);
+  isExporting = signal(false);
   refreshKey = signal(0);
   private destroy$ = new Subject<void>();
   private histogramRequest$ = new Subject<{ codes: string[]; label?: string }>();
@@ -256,7 +260,8 @@ export class VariablesPanelComponent implements OnDestroy {
     this.filteredVariables.set([]);
     this.filteredGroups.set([]);
     this.distributionData.set(null);
-    this.groupSummary.set(null);
+    this.groupHistogramData.set(null);
+    this.groupHistogramMeta.set(null);
 
     // reload new model data
     this.loadVisualizationData();
@@ -309,7 +314,8 @@ export class VariablesPanelComponent implements OnDestroy {
     this.selectedNode = { ...node };
     this.errorMessage.set(null);
     this.distributionData.set(null); // clear previous histogram
-    this.groupSummary.set(null);
+    this.groupHistogramData.set(null);
+    this.groupHistogramMeta.set(null);
 
     if (!node) {
       this.isLoadingHistogram.set(false);
@@ -318,13 +324,31 @@ export class VariablesPanelComponent implements OnDestroy {
     }
 
     if (node.children && node.children.length > 0) {
-      const { nodes: groupNodes, hasGroups } = this.getGroupNodes(node);
+      const children = Array.isArray(node.children) ? node.children : [];
+      const hasGroups = children.some((child: any) => child?.children?.length);
+      const items = hasGroups
+        ? children.filter((child: any) => child?.children?.length)
+        : children;
+
+      if (!items.length) {
+        this.isLoadingHistogram.set(false);
+        this.errorMessage.set('No groups found for this selection.');
+        return;
+      }
+
+      const bins = items.map((child: any) => String(child?.label ?? child?.name ?? child?.code ?? ''));
+      const counts = items.map((child: any) => this.countLeafNodes(child));
       const pathNodes = this.getPathNodes(node);
+
       this.isLoadingHistogram.set(false);
-      this.groupSummary.set({
+      this.groupHistogramData.set({
+        bins,
+        counts,
+        variableName: String(node?.label ?? 'Groups'),
+      });
+      this.groupHistogramMeta.set({
         pathNodes,
-        groupCount: groupNodes.length,
-        groupNodes,
+        groupCount: items.length,
         hasGroups,
       });
       return;
@@ -404,7 +428,7 @@ export class VariablesPanelComponent implements OnDestroy {
     this.histogramRequest$.next({ codes, label });
   }
 
-  private getPathNodes(node: any): Array<{ code: string; label: string }> {
+  getPathNodes(node: any): Array<{ code: string; label: string }> {
     const code = node?.code;
     if (!code) {
       const fallbackLabel = String(node?.label ?? '');
@@ -437,26 +461,174 @@ export class VariablesPanelComponent implements OnDestroy {
     return false;
   }
 
-  private getGroupNodes(node: any): { nodes: Array<{ code: string; label: string }>; hasGroups: boolean } {
-    const children = Array.isArray(node?.children) ? node.children : [];
-    const groups = children.filter((child: any) => child?.children && child.children.length > 0);
-    const hasGroups = groups.length > 0;
-    const items = hasGroups ? groups : children;
-    const nodes = items
-      .map((child: any) => ({
-        code: String(child?.code ?? ''),
-        label: String(child?.label ?? child?.name ?? child?.code ?? ''),
-      }))
-      .filter((child: { code: string; label: string }) => child.label && child.code);
-    return { nodes, hasGroups };
-  }
-
   onGroupSummaryClick(node: { code: string }): void {
     if (!node?.code) return;
     const target = this.findNodeByCode(this.d3Data, node.code);
     if (!target) return;
     this.highlightNode = target;
     this.onSelectedNodeChange(target);
+  }
+
+  isExportDisabled(): boolean {
+    if (this.isLoadingHistogram()) return true;
+    if (this.errorMessage()) return true;
+    if (!this.selectedNode) return true;
+    return !this.distributionData() && !this.groupHistogramData();
+  }
+
+  async exportDistributionPdf(): Promise<void> {
+    if (this.isExportDisabled()) return;
+    this.isExporting.set(true);
+    document.body.classList.add('pdf-exporting');
+    await new Promise(res => setTimeout(res, 50));
+
+    try {
+      const doc = new jsPDF('p', 'mm', 'a4');
+      const isGroupView = !!this.groupHistogramData();
+      const title = isGroupView ? 'Group Description' : 'Distribution Graph';
+      const nodeLabel = String(this.selectedNode?.label ?? this.distributionData()?.variableName ?? '');
+      const model = this.selectedDataModel();
+      const modelLabel = String(model?.label ?? model?.code ?? '');
+      const selectedDatasetCodes = this.experimentStudioService.selectedDatasets();
+      const datasetLabels = selectedDatasetCodes
+        .map(code => this.availableDatasets.find(d => d.code === code)?.label ?? code)
+        .filter(label => !!label);
+      const meta = this.groupHistogramMeta();
+      const variableDescription = String(this.selectedNode?.description ?? '');
+
+      doc.setFontSize(16);
+      doc.text(title, 12, 14);
+      if (nodeLabel) {
+        doc.setFontSize(11);
+        doc.text(nodeLabel, 12, 21);
+      }
+
+      let cursorY = nodeLabel ? 26 : 20;
+      if (modelLabel) {
+        doc.setFontSize(9);
+        doc.text(`Data model: ${modelLabel}`, 12, cursorY);
+        cursorY += 5;
+      }
+      if (!isGroupView && datasetLabels.length) {
+        doc.setFontSize(9);
+        const datasetLines = doc.splitTextToSize(`Datasets: ${datasetLabels.join(', ')}`, 180);
+        doc.text(datasetLines, 12, cursorY);
+        cursorY += datasetLines.length * 4 + 1;
+      }
+      if (!isGroupView && variableDescription) {
+        doc.setFontSize(9);
+        const descriptionLines = doc.splitTextToSize(`Description: ${variableDescription}`, 180);
+        doc.text(descriptionLines, 12, cursorY);
+        cursorY += descriptionLines.length * 4 + 1;
+      }
+      if (!isGroupView && meta?.pathNodes?.length) {
+        const pathText = meta.pathNodes.map((node) => node.label).join(' > ');
+        doc.setFontSize(9);
+        const pathLines = doc.splitTextToSize(`Path: ${pathText}`, 180);
+        doc.text(pathLines, 12, cursorY);
+        cursorY += pathLines.length * 4 + 2;
+      }
+      if (!isGroupView && meta) {
+        doc.setFontSize(9);
+        const countLabel = meta.hasGroups ? 'Number of groups in' : 'Number of variables in';
+        doc.text(`${countLabel} ${nodeLabel}: ${meta.groupCount}`, 12, cursorY);
+        cursorY += 6;
+      }
+
+      const exportTarget = this.distributionExport?.nativeElement;
+      if (!exportTarget) {
+        console.warn('Distribution export target not found.');
+        return;
+      }
+
+      const svgElement = exportTarget.querySelector('#histogram-chart svg') as SVGSVGElement | null;
+      let imgData: string | null = null;
+      let rawWidth = 0;
+      let rawHeight = 0;
+
+      if (svgElement) {
+        const cloned = svgElement.cloneNode(true) as SVGSVGElement;
+        if (!cloned.getAttribute('xmlns')) {
+          cloned.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+        }
+        const widthAttr = cloned.getAttribute('width');
+        const heightAttr = cloned.getAttribute('height');
+        rawWidth = widthAttr ? parseFloat(widthAttr) : svgElement.getBoundingClientRect().width;
+        rawHeight = heightAttr ? parseFloat(heightAttr) : svgElement.getBoundingClientRect().height;
+
+        const serializer = new XMLSerializer();
+        const svgData = serializer.serializeToString(cloned);
+        const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(svgBlob);
+
+        imgData = await new Promise<string | null>((resolve) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const width = rawWidth || img.width;
+            const height = rawHeight || img.height;
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+              ctx.fillStyle = '#ffffff';
+              ctx.fillRect(0, 0, width, height);
+              ctx.drawImage(img, 0, 0, width, height);
+              resolve(canvas.toDataURL('image/png'));
+            } else {
+              resolve(null);
+            }
+            URL.revokeObjectURL(url);
+          };
+          img.onerror = () => {
+            URL.revokeObjectURL(url);
+            resolve(null);
+          };
+          img.src = url;
+        });
+      }
+
+      if (!imgData) {
+        const canvas = await html2canvas(exportTarget, {
+          backgroundColor: '#ffffff',
+          scale: 1.25,
+          useCORS: true,
+          logging: false,
+        });
+        imgData = canvas.toDataURL('image/png');
+        rawWidth = canvas.width;
+        rawHeight = canvas.height;
+      }
+
+      const pageWidth = 210;
+      const margin = 12;
+      const maxWidth = pageWidth - margin * 2;
+      const imgHeight = rawWidth && rawHeight ? (rawHeight * maxWidth) / rawWidth : 120;
+      const startY = cursorY;
+      const maxHeight = 297 - startY - margin;
+
+      let renderWidth = maxWidth;
+      let renderHeight = imgHeight;
+      if (imgHeight > maxHeight) {
+        renderHeight = maxHeight;
+        renderWidth = rawWidth && rawHeight ? (rawWidth * renderHeight) / rawHeight : maxWidth;
+      }
+
+      doc.addImage(imgData, 'PNG', margin, startY, renderWidth, renderHeight);
+      doc.save(`${nodeLabel ? nodeLabel.replace(/[^\w\s-]/g, '').trim() : 'distribution'}_summary.pdf`);
+    } catch (err) {
+      console.error('Distribution PDF export failed:', err);
+    } finally {
+      document.body.classList.remove('pdf-exporting');
+      this.isExporting.set(false);
+    }
+  }
+
+  private countLeafNodes(node: any): number {
+    if (!node?.children || node.children.length === 0) {
+      return 1;
+    }
+    return node.children.reduce((total: number, child: any) => total + this.countLeafNodes(child), 0);
   }
 
   /**

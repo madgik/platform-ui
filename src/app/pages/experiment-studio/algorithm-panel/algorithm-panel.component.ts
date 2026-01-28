@@ -55,6 +55,33 @@ export class AlgorithmPanelComponent {
   readonly enumMaps = computed(() => this.experimentStudioService.getCategoricalEnumMaps());
   readonly yVar = computed(() => this.experimentStudioService.selectedVariables()[0]?.code ?? null);
   readonly xVar = computed(() => this.experimentStudioService.selectedCovariates()[0]?.code ?? null);
+  readonly crossValidationEnabled = signal(false);
+  private readonly crossValidationSelections: Record<string, boolean> = {};
+  readonly transformationEnabled = signal(false);
+  private readonly transformationSelectionsByAlgorithm: Record<string, Record<string, string>> = {};
+  readonly isCrossValidationOnly = computed(() => {
+    const algorithm = this.selectedAlgorithm();
+    if (!algorithm) return false;
+    return this.experimentStudioService.isCrossValidationOnly(algorithm.name);
+  });
+  readonly canToggleTransformation = computed(() => {
+    const algorithm = this.selectedAlgorithm();
+    if (!algorithm) return false;
+    const baseName = this.experimentStudioService.getTransformationBase(algorithm.name) ?? algorithm.name;
+    return !!this.experimentStudioService.getTransformationVariant(baseName);
+  });
+  readonly transformationTypes = ['standardize', 'center', 'exp'] as const;
+  transformationAssignments: Record<string, string> = {};
+  readonly canToggleCrossValidation = computed(() => {
+    const algorithm = this.selectedAlgorithm();
+    if (!algorithm) return false;
+    if (this.experimentStudioService.isCrossValidationOnly(algorithm.name)) return false;
+    const baseName = this.experimentStudioService.getCrossValidationBase(algorithm.name) ?? algorithm.name;
+    return (
+      !!this.experimentStudioService.getCrossValidationVariant(baseName) &&
+      !!this.experimentStudioService.backendAlgorithms()[baseName]
+    );
+  });
   readonly labelMap = computed(() => {
     const map: Record<string, string> = {};
     const items = [
@@ -113,6 +140,67 @@ export class AlgorithmPanelComponent {
   };
 
   constructor() {
+    effect(() => {
+      const algorithm = this.selectedAlgorithm();
+      if (!algorithm) {
+        this.crossValidationEnabled.set(false);
+        return;
+      }
+      if (this.experimentStudioService.isCrossValidationOnly(algorithm.name)) {
+        this.crossValidationEnabled.set(true);
+        return;
+      }
+      const baseName = this.experimentStudioService.getCrossValidationBase(algorithm.name) ?? algorithm.name;
+      const hasVariant = !!this.experimentStudioService.getCrossValidationVariant(baseName);
+      if (!hasVariant) {
+        this.crossValidationEnabled.set(false);
+        return;
+      }
+      const stored = this.crossValidationSelections[baseName];
+      const defaultValue = stored !== undefined
+        ? stored
+        : this.experimentStudioService.isCrossValidationAlgorithm(algorithm.name);
+      this.crossValidationEnabled.set(defaultValue);
+    });
+
+    effect(() => {
+      const algorithm = this.selectedAlgorithm();
+      const variables = this.experimentStudioService.selectedVariables();
+      if (!algorithm) {
+        this.transformationEnabled.set(false);
+        this.transformationAssignments = {};
+        return;
+      }
+
+      const baseName =
+        this.experimentStudioService.getTransformationBase(algorithm.name) ?? algorithm.name;
+      const hasVariant = !!this.experimentStudioService.getTransformationVariant(baseName);
+
+      if (!hasVariant) {
+        this.transformationEnabled.set(false);
+        this.transformationAssignments = {};
+        return;
+      }
+
+      const storedConfigs = this.experimentStudioService.algorithmConfigurations();
+      const storedData = storedConfigs?.[baseName]?.['data_transformation'];
+      const fromConfig = this.extractTransformationAssignments(storedData);
+      const previous = this.transformationSelectionsByAlgorithm[baseName] ?? {};
+
+      const next: Record<string, string> = {};
+      (variables ?? []).forEach((v) => {
+        const code = v?.code;
+        if (!code) return;
+        next[code] = fromConfig[code] ?? previous[code] ?? 'none';
+      });
+
+      this.transformationAssignments = next;
+      this.transformationSelectionsByAlgorithm[baseName] = { ...next };
+
+      const hasAny = Object.values(next).some(v => v && v !== 'none');
+      this.transformationEnabled.set(hasAny);
+    });
+
     effect(() => {
       const groups = this.experimentStudioService.availableGroupedAlgorithms();
       if (!groups) return;
@@ -232,7 +320,7 @@ export class AlgorithmPanelComponent {
     const yVar = this.experimentStudioService.selectedVariables()[0];
     const xVar = this.experimentStudioService.selectedCovariates()[0];
 
-    return schema.map(field => {
+    const enriched = schema.map(field => {
       let options = field.options ?? [];
 
       // Placeholder substitution for enums
@@ -262,6 +350,22 @@ export class AlgorithmPanelComponent {
       // Return enriched field
       return { ...field, label, desc, options };
     });
+
+    if (this.crossValidationEnabled() && this.canToggleCrossValidation()) {
+      const hasSplits = enriched.some((field) => field.key === 'n_splits');
+      if (!hasSplits) {
+        enriched.push({
+          key: 'n_splits',
+          label: 'Cross-validation folds (n_splits)',
+          desc: 'Number of folds to use for cross-validation.',
+          type: 'number',
+          min: 2,
+          default: 5,
+        });
+      }
+    }
+
+    return enriched;
   });
 
   readonly outputSchema = computed(() =>
@@ -449,17 +553,53 @@ export class AlgorithmPanelComponent {
       return;
     }
 
-    this.experimentStudioService.lastUsedAlgorithm.set(algo.name);
+    const isCvOnly = this.experimentStudioService.isCrossValidationOnly(algo.name);
+    const baseAlgorithmName = isCvOnly
+      ? algo.name
+      : this.experimentStudioService.getCrossValidationBase(algo.name) ??
+        this.experimentStudioService.getTransformationBase(algo.name) ??
+        algo.name;
+    const cvVariant =
+      this.experimentStudioService.getCrossValidationVariant(baseAlgorithmName);
+    const shouldIncludeSplits =
+      this.crossValidationEnabled() ||
+      this.experimentStudioService.isCrossValidationOnly(algo.name);
+    const useCrossValidation = shouldIncludeSplits && !!cvVariant;
+    const transformationVariant =
+      this.experimentStudioService.getTransformationVariant(baseAlgorithmName);
+    const useTransformation = this.transformationEnabled() && !!transformationVariant;
+    const effectiveAlgorithmName = useCrossValidation
+      ? cvVariant
+      : useTransformation
+        ? transformationVariant
+        : baseAlgorithmName;
+
+    const finalAlgorithmName = isCvOnly ? algo.name : effectiveAlgorithmName;
+
+    this.experimentStudioService.lastUsedAlgorithm.set(finalAlgorithmName);
     this.errorMsg.set(null);
 
     const configValues = this.configForm.getRawValue();
-    this.updateAlgorithmConfiguration(algo.name, '', configValues); // or:
+    if (!shouldIncludeSplits && configValues['n_splits'] !== undefined) {
+      delete configValues['n_splits'];
+    }
+    if (useTransformation) {
+      const payload = this.buildTransformationPayload();
+      configValues.data_transformation = payload;
+    } else if (configValues.data_transformation) {
+      delete configValues.data_transformation;
+    }
+    this.updateAlgorithmConfiguration(baseAlgorithmName, '', configValues); // or:
     this.experimentStudioService.algorithmConfigurations.set({
       ...this.experimentStudioService.algorithmConfigurations(),
-      [algo.name]: configValues
+      [baseAlgorithmName]: configValues,
+      ...(effectiveAlgorithmName !== baseAlgorithmName ? { [effectiveAlgorithmName]: configValues } : {})
     });
 
-    const result$ = this.experimentStudioService.runSelectedAlgorithm();
+    const result$ = this.experimentStudioService.runSelectedAlgorithm(
+      baseAlgorithmName,
+      finalAlgorithmName
+    );
     if (!result$) {
       this.errorService.setError('Unable to start the run. Check your selections.');
       return;
@@ -489,11 +629,11 @@ export class AlgorithmPanelComponent {
       this.experimentStudioService.setExperimentName(finalName);
       this.experimentStudioService.setLastSavedName(finalName);
 
-      const schema = getOutputSchema(algo?.name ?? '') ?? [];
+      const schema = getOutputSchema(finalAlgorithmName ?? '') ?? [];
       this.result.set({
         ...res?.result ?? { message: "No result returned" },
       });
-      this.lastUsedAlgorithm = algo.name;
+      this.lastUsedAlgorithm = finalAlgorithmName;
       this.lastUsedSchema.set(schema);
       this.selectedAlgorithm.set(null);
       this.experimentStudioService.setRunning(false);
@@ -536,6 +676,92 @@ export class AlgorithmPanelComponent {
 
     config[algorithmName][key] = value;
     this.experimentStudioService.algorithmConfigurations.set({ ...config });
+  }
+
+  toggleCrossValidation(event: Event) {
+    const target = event.target as HTMLInputElement | null;
+    const enabled = !!target?.checked;
+    const algorithm = this.selectedAlgorithm();
+    if (!algorithm) return;
+    const baseName = this.experimentStudioService.getCrossValidationBase(algorithm.name) ?? algorithm.name;
+    const variant = this.experimentStudioService.getCrossValidationVariant(baseName);
+    if (!variant) return;
+    this.crossValidationSelections[baseName] = enabled;
+    this.crossValidationEnabled.set(enabled);
+
+    if (!enabled) {
+      if (this.configForm?.contains('n_splits')) {
+        this.configForm.removeControl('n_splits');
+      }
+
+      const configs = this.experimentStudioService.algorithmConfigurations();
+      const baseConfig = { ...(configs[baseName] ?? {}) };
+      const variantConfig = { ...(configs[variant] ?? {}) };
+      if (baseConfig['n_splits'] !== undefined) delete baseConfig['n_splits'];
+      if (variantConfig['n_splits'] !== undefined) delete variantConfig['n_splits'];
+      this.experimentStudioService.algorithmConfigurations.set({
+        ...configs,
+        [baseName]: baseConfig,
+        [variant]: variantConfig,
+      });
+    }
+  }
+
+  toggleTransformation(event: Event) {
+    const target = event.target as HTMLInputElement | null;
+    const enabled = !!target?.checked;
+    const algorithm = this.selectedAlgorithm();
+    if (!algorithm) return;
+    const baseName = this.experimentStudioService.getTransformationBase(algorithm.name) ?? algorithm.name;
+    if (!this.experimentStudioService.getTransformationVariant(baseName)) return;
+    this.transformationEnabled.set(enabled);
+  }
+
+  setTransformationAssignment(variableCode: string, value: string) {
+    if (!variableCode) return;
+    this.transformationAssignments = {
+      ...this.transformationAssignments,
+      [variableCode]: value,
+    };
+
+    const algorithm = this.selectedAlgorithm();
+    if (!algorithm) return;
+    const baseName = this.experimentStudioService.getTransformationBase(algorithm.name) ?? algorithm.name;
+    this.transformationSelectionsByAlgorithm[baseName] = { ...this.transformationAssignments };
+  }
+
+  getTransformationAssignment(variableCode: string): string {
+    return this.transformationAssignments?.[variableCode] ?? 'none';
+  }
+
+  private extractTransformationAssignments(data: any): Record<string, string> {
+    if (!data || typeof data !== 'object') return {};
+    const result: Record<string, string> = {};
+    this.transformationTypes.forEach((type) => {
+      const values = Array.isArray(data[type]) ? data[type] : [];
+      values.forEach((code: any) => {
+        if (code === null || code === undefined) return;
+        result[String(code)] = type;
+      });
+    });
+    return result;
+  }
+
+  private buildTransformationPayload(): Record<string, string[]> {
+    const payload: Record<string, string[]> = {
+      standardize: [],
+      center: [],
+      exp: [],
+    };
+    Object.entries(this.transformationAssignments).forEach(([code, choice]) => {
+      if (!choice || choice === 'none') return;
+      if (!payload[choice]) payload[choice] = [];
+      payload[choice].push(code);
+    });
+    Object.keys(payload).forEach((key) => {
+      if (!payload[key].length) delete payload[key];
+    });
+    return payload;
   }
 
   isAlgorithmAvailable(algorithm: string): boolean {
@@ -601,6 +827,63 @@ export class AlgorithmPanelComponent {
 
   hideTooltip() {
     this.tooltipVisible = false;
+  }
+
+  hasText(value: any): boolean {
+    if (value === null || value === undefined) return false;
+    const text = String(value).trim();
+    return text.length > 0;
+  }
+
+  private normalizeBool(value: boolean | string | undefined | null): boolean | null {
+    if (value === undefined || value === null) return null;
+    if (typeof value === 'boolean') return value;
+    const normalized = String(value).trim().toLowerCase();
+    if (normalized === 'true') return true;
+    if (normalized === 'false') return false;
+    return null;
+  }
+
+  getRoleRequirement(field: any, label: string): string | null {
+    if (!field) return null;
+
+    const notBlank = this.normalizeBool(field.notblank) === true;
+    const multiple = this.normalizeBool(field.multiple);
+
+    let count = 'optional';
+    if (multiple === false) {
+      count = notBlank ? 'exactly 1' : '0–1';
+    } else if (notBlank) {
+      count = '1+';
+    }
+
+    const types = Array.isArray(field.types) && field.types.length
+      ? field.types.join(',')
+      : null;
+
+    const parts = [`${label}: ${count}`];
+    if (types) {
+      parts.push(`types: ${types}`);
+    }
+
+    return parts.join(' • ');
+  }
+
+  getVariableRequirement(): string | null {
+    const override = this.experimentStudioService.getAlgorithmRequirementOverrides(this.tooltipData);
+    if (override?.y) return override.y;
+    return this.getRoleRequirement(this.tooltipData?.inputdata?.y, 'Variable');
+  }
+
+  getCovariateRequirement(): string | null {
+    const override = this.experimentStudioService.getAlgorithmRequirementOverrides(this.tooltipData);
+    if (override?.x) {
+      if (/:\s*none$/i.test(override.x)) {
+        return null;
+      }
+      return override.x;
+    }
+    return this.getRoleRequirement(this.tooltipData?.inputdata?.x, 'Covariate');
   }
 
   isCategoryOpen(category: string): boolean {

@@ -95,6 +95,31 @@ export class ExperimentStudioService {
   // teardown for transient requests
   private destroy$ = new Subject<void>();
 
+  private readonly crossValidationVariants: Record<string, string> = {
+    linear_regression: 'linear_regression_cv',
+    logistic_regression: 'logistic_regression_cv',
+    naive_bayes_gaussian: 'naive_bayes_gaussian_cv',
+    naive_bayes_categorical: 'naive_bayes_categorical_cv',
+  };
+
+  private readonly crossValidationBases: Record<string, string> = Object.entries(
+    this.crossValidationVariants
+  ).reduce((acc, [base, cv]) => {
+    acc[cv] = base;
+    return acc;
+  }, {} as Record<string, string>);
+
+  private readonly transformationVariants: Record<string, string> = {
+    pca: 'pca_with_transformation',
+  };
+
+  private readonly transformationBases: Record<string, string> = Object.entries(
+    this.transformationVariants
+  ).reduce((acc, [base, variant]) => {
+    acc[variant] = base;
+    return acc;
+  }, {} as Record<string, string>);
+
 
   constructor() {
     this.loadBackendAlgorithms().subscribe();
@@ -345,12 +370,66 @@ export class ExperimentStudioService {
     );
   }
 
+  getCrossValidationVariant(baseName: string): string | null {
+    return this.crossValidationVariants[baseName] ?? null;
+  }
+
+  getCrossValidationBase(name: string): string | null {
+    if (this.crossValidationBases[name]) return this.crossValidationBases[name];
+    if (name.endsWith('_cv_fedaverage')) {
+      return name.replace('_cv_fedaverage', '');
+    }
+    if (name.endsWith('_cv')) {
+      return name.slice(0, -3);
+    }
+    return null;
+  }
+
+  isCrossValidationAlgorithm(name: string): boolean {
+    return (
+      name in this.crossValidationBases ||
+      name.endsWith('_cv') ||
+      name.endsWith('_cv_fedaverage')
+    );
+  }
+
+  isCrossValidationOnly(name: string): boolean {
+    if (!this.isCrossValidationAlgorithm(name)) return false;
+    const base = this.getCrossValidationBase(name);
+    return !!base && !this.backendAlgorithms()[base];
+  }
+
+  getTransformationVariant(baseName: string): string | null {
+    return this.transformationVariants[baseName] ?? null;
+  }
+
+  getTransformationBase(name: string): string | null {
+    if (this.transformationBases[name]) return this.transformationBases[name];
+    if (name.endsWith('_with_transformation')) {
+      return name.replace('_with_transformation', '');
+    }
+    return null;
+  }
+
+  isTransformationAlgorithm(name: string): boolean {
+    return (
+      name in this.transformationBases ||
+      name.endsWith('_with_transformation')
+    );
+  }
+
   availableGroupedAlgorithms = computed(() => {
     // Hide quick-preview algorithms from the selection list.
     const hidden = new Set(['multiple_histograms', 'descriptive_stats', 'logistic_regression_fedaverage_flower']);
 
     return Object.values(this.backendAlgorithms())
       .filter(algo => !hidden.has(algo.name))
+      .filter(algo => {
+        if (!this.isCrossValidationAlgorithm(algo.name)) return true;
+        const base = this.getCrossValidationBase(algo.name);
+        return !base || !this.backendAlgorithms()[base];
+      })
+      .filter(algo => !this.isTransformationAlgorithm(algo.name))
       .reduce((acc, algo) => {
       const cat = algo.category || 'Other';
       if (!acc[cat]) acc[cat] = [];
@@ -410,6 +489,19 @@ export class ExperimentStudioService {
       return yOk && allCovsNominal;
     }
 
+    // One-sample t-test: exactly 1 dependent variable, no covariates
+    if (name === 'ttest_onesample') {
+      const vars = this.selectedVariables();
+      const covs = this.selectedCovariates();
+
+      if (vars.length !== 1) return false;
+      if (covs.length !== 0) return false;
+
+      const yType = vars[0].type;
+      const yOk = ['real', 'integer', 'int'].includes(yType);
+      return yOk;
+    }
+
     if (name === 'pca') {
       if (this.selectedVariables().length < 2) return false;
       if (this.selectedCovariates().length !== 0) return false;
@@ -427,24 +519,39 @@ export class ExperimentStudioService {
       }
     };
 
+    const normalizeBool = (value: boolean | string | undefined | null): boolean | null => {
+      if (value === undefined || value === null) return null;
+      if (typeof value === 'boolean') return value;
+      const normalized = String(value).trim().toLowerCase();
+      if (normalized === 'true') return true;
+      if (normalized === 'false') return false;
+      return null;
+    };
+
     const hasRole = (role: string) => Object.prototype.hasOwnProperty.call(algo.inputdata, role);
 
     if (!hasRole('y') && selections['y'].length > 0) return false;
     if (!hasRole('x') && selections['x'].length > 0) return false;
 
     // Filters are treated as optional; if the algo doesn't declare them, keep the algo available.
-    const filterReq = hasRole('filters') ? (algo.inputdata as any).filters : null;
+    const filterReq = hasRole('filters')
+      ? (algo.inputdata as any).filters
+      : hasRole('filter')
+        ? (algo.inputdata as any).filter
+        : null;
 
     for (const [role, req] of Object.entries(algo.inputdata)) {
       if (!['y', 'x'].includes(role)) continue;
 
       const sel = selections[role as keyof typeof selections] || [];
+      const notBlank = normalizeBool((req as any)?.notblank) === true;
+      const multiple = normalizeBool((req as any)?.multiple);
 
-      if (req.notblank && sel.length === 0) {
+      if (notBlank && sel.length === 0) {
         return false;
       }
 
-      if (!req.multiple && sel.length > 1) {
+      if (multiple === false && sel.length > 1) {
         return false;
       }
 
@@ -468,8 +575,11 @@ export class ExperimentStudioService {
 
     if (filterReq) {
       const sel = selections['filters'] || [];
-      if (filterReq.notblank && sel.length === 0) return false;
-      if (filterReq.multiple === false && sel.length > 1) return false;
+      const notBlank = normalizeBool(filterReq.notblank) === true;
+      const multiple = normalizeBool(filterReq.multiple);
+
+      if (notBlank && sel.length === 0) return false;
+      if (multiple === false && sel.length > 1) return false;
 
       if (filterReq.types?.length) {
         const selTypes = sel
@@ -487,6 +597,39 @@ export class ExperimentStudioService {
     }
 
     return true;
+  }
+
+  getAlgorithmRequirementOverrides(algo: { name?: string; inputdata?: any } | null | undefined): { y?: string; x?: string; filters?: string } | null {
+    const name = algo?.name;
+    const formatTypes = (types?: string[] | null) =>
+      Array.isArray(types) && types.length ? ` • types: ${types.join(',')}` : '';
+    const yTypes = Array.isArray(algo?.inputdata?.y?.types) ? algo?.inputdata?.y?.types : null;
+    const xTypes = Array.isArray(algo?.inputdata?.x?.types) ? algo?.inputdata?.x?.types : null;
+
+    switch (name) {
+      case 'anova_oneway':
+        return {
+          y: `Variable: exactly 1${formatTypes(['real', 'int'])}`,
+          x: `Covariate: exactly 1${formatTypes(['nominal', 'text'])}`,
+        };
+      case 'anova':
+        return {
+          y: `Variable: exactly 1${formatTypes(['real', 'int'])}`,
+          x: `Covariate: exactly 2${formatTypes(['nominal', 'text'])}`,
+        };
+      case 'ttest_onesample':
+        return {
+          y: `Variable: exactly 1${formatTypes(['real', 'int'])}`,
+          x: 'Covariate: none',
+        };
+      case 'pca':
+        return {
+          y: `Variable: 2+${formatTypes(yTypes ?? ['real', 'int'])}`,
+          x: 'Covariate: none',
+        };
+      default:
+        return null;
+    }
   }
 
   private rolePayload(
@@ -509,7 +652,8 @@ export class ExperimentStudioService {
   buildRequestBody(
     algorithmName: string | null = null,
     yVariables: string[] | null = null,
-    xVariables: string[] | null = null
+    xVariables: string[] | null = null,
+    effectiveAlgorithmName: string | null = null
   ): any {
     let algoConfig: AlgorithmConfig | undefined;
 
@@ -523,7 +667,8 @@ export class ExperimentStudioService {
       throw new Error('No algorithm config found for ' + algorithmName);
     }
 
-    const defaultName = `experiment_${algoConfig.name.replace(/\s+/g, '_')}`;
+    const requestAlgorithmName = effectiveAlgorithmName ?? algoConfig.name;
+    const defaultName = `experiment_${requestAlgorithmName.replace(/\s+/g, '_')}`;
     const expName = this.getExperimentNameOrDefault(defaultName);
 
     const description =
@@ -538,7 +683,10 @@ export class ExperimentStudioService {
       xVariables ?? this.selectedCovariates().map((c) => c.code);
 
     const allConfigs = this.algorithmConfigurations();
-    const config = allConfigs[algoConfig.name ?? ''] || {};
+    const config = { ...(allConfigs[algoConfig.name ?? ''] || {}) };
+    if (requestAlgorithmName !== algoConfig.name && config['n_splits'] === undefined) {
+      config['n_splits'] = 5;
+    }
 
 
     // filters logic
@@ -556,7 +704,7 @@ export class ExperimentStudioService {
         name: expName,
         description,
         algorithm: {
-          name: algorithmName,
+          name: requestAlgorithmName,
           inputdata: {
             data_model: this.getActiveDataModelCode(),
             y: yVariables ?? null,
@@ -575,7 +723,7 @@ export class ExperimentStudioService {
       name: expName,
       description,
       algorithm: {
-        name: algoConfig.name,
+        name: requestAlgorithmName,
         inputdata: {
           data_model: this.getActiveDataModelCode(),
           y: yPayload,
@@ -777,14 +925,20 @@ export class ExperimentStudioService {
     );
   }
 
-  runSelectedAlgorithm(): Observable<any> | null {
+  runSelectedAlgorithm(
+    algorithmNameOverride: string | null = null,
+    effectiveAlgorithmName: string | null = null
+  ): Observable<any> | null {
     const selectedAlgo = this.selectedAlgorithm();
     if (!selectedAlgo) {
       console.error('No algorithm selected.');
       return null;
     }
 
-    if (selectedAlgo.name === 'descriptive_stats') {
+    const baseAlgorithmName = algorithmNameOverride ?? selectedAlgo.name;
+    const requestAlgorithmName = effectiveAlgorithmName ?? baseAlgorithmName;
+
+    if (baseAlgorithmName === 'descriptive_stats') {
       const variableCodes = this.selectedVariables().map((v) => v.code);
       if (!variableCodes.length) {
         console.warn('Descriptive stats: no variables selected.');
@@ -793,9 +947,9 @@ export class ExperimentStudioService {
       return this.loadDescriptiveOverview(variableCodes);
     }
 
-    const requestBody = this.buildRequestBody(selectedAlgo.name);
+    const requestBody = this.buildRequestBody(baseAlgorithmName, null, null, requestAlgorithmName);
 
-    const defaultName = `experiment_${selectedAlgo.name.replace(/\s+/g, '_')}`;
+    const defaultName = `experiment_${requestAlgorithmName.replace(/\s+/g, '_')}`;
     const expName = this.getExperimentNameOrDefault(defaultName);
 
     return this.submitRequest(requestBody).pipe(
