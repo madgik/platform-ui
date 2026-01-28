@@ -9,16 +9,9 @@
     <!-- Variables Section -->
     <div class="section-container">
       <div class="panel-controls">
-        <div class="button-container">
-          <button
-            class="variable-btn"
-            [disabled]="!hasSelectedDatasets"
-            [title]="!hasSelectedDatasets ? 'Select a dataset first' : ''"
-            (click)="addVariable()"
-          >
-            + Add Variable
-          </button>
-          <span class="counter">{{ variables.length }}</span>
+        <div class="panel-title panel-title--variable">
+          <span>Variables</span>
+          <span class="counter counter--inline counter--variable">{{ variables.length }}</span>
         </div>
         @if (variables.length > 0) {
         <button class="bin-btn" (click)="clearList('variables')">
@@ -68,16 +61,9 @@
     <!-- Covariates Section -->
     <div class="section-container">
       <div class="panel-controls">
-        <div class="button-container">
-          <button
-            class="covariate-btn"
-            [disabled]="!hasSelectedDatasets"
-            [title]="!hasSelectedDatasets ? 'Select a dataset first' : ''"
-            (click)="addCovariate()"
-          >
-            + Add Covariate
-          </button>
-          <span class="counter">{{ covariates.length }}</span>
+        <div class="panel-title panel-title--covariate">
+          <span>Covariates</span>
+          <span class="counter counter--inline counter--covariate">{{ covariates.length }}</span>
         </div>
         @if (covariates.length > 0) {
         <button class="bin-btn" (click)="clearList('covariates')">
@@ -128,16 +114,9 @@
     <!-- Filters Section -->
     <div class="section-container">
       <div class="panel-controls">
-        <div class="button-container">
-          <button
-            class="filter-btn"
-            [disabled]="!hasSelectedDatasets"
-            [title]="!hasSelectedDatasets ? 'Select a dataset first' : ''"
-            (click)="addFilter()"
-          >
-            + Add Filter
-          </button>
-          <span class="counter">{{ filters.length }}</span>
+        <div class="panel-title panel-title--filter">
+          <span>Filters</span>
+          <span class="counter counter--inline counter--filter">{{ filters.length }}</span>
         </div>
         @if (filters.length > 0) {
         <button class="bin-btn" (click)="clearList('filters')">

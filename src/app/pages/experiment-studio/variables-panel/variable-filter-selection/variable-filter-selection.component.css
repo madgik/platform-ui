@@ -47,6 +47,29 @@
   margin-left: 0;
 }
 
+.panel-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #ffffff;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.panel-title--variable {
+  background: linear-gradient(120deg, #0890a6, #8fe3f0);
+}
+
+.panel-title--covariate {
+  background: linear-gradient(120deg, #c88d00, #ffda61);
+}
+
+.panel-title--filter {
+  background: linear-gradient(120deg, #16a34a, #4ade80ab);
+}
+
 /* ===== BUTTONS & COUNTERS ===== */
 .button-container {
   display: inline-flex;
@@ -122,6 +145,25 @@
   justify-content: center;
   align-items: center;
   box-shadow: 0 4px 10px rgba(0, 166, 192, 0.55);
+}
+
+.counter--inline {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: none;
+}
+
+.counter--variable,
+.counter--covariate,
+.counter--filter {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 /* Clear bin */

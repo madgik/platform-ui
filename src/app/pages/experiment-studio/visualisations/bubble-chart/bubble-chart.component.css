@@ -53,8 +53,9 @@ circle.selected {
 #chart {
   width: 100%;
   height: auto;
-  overflow: hidden;
+  overflow: visible;
   aspect-ratio: 1 / 1; /* square */
+  position: relative;
 }
 
 #chart-canvas {
@@ -63,15 +64,19 @@ circle.selected {
 }
 
 .bubble-color-controls {
+  position: absolute;
+  top: -38px;
+  left: 10px;
   display: flex;
   flex-wrap: wrap;
   gap: 8px 16px;
   align-items: center;
-  margin: 6px 0 10px;
+  margin: 0;
   padding: 6px 8px;
   background: rgba(255, 255, 255, 0.7);
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 8px;
+  z-index: 2;
 }
 
 .bubble-color-controls label {

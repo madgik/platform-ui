@@ -29,6 +29,35 @@
   <div class="variables-main">
     <!-- Bubble Chart -->
     <div class="bubble-chart-section">
+      <div class="bubble-actions">
+        <button
+          class="bubble-action bubble-action--variable"
+          [disabled]="!hasSelectedDatasets"
+          [title]="!hasSelectedDatasets ? 'Select a dataset first' : ''"
+          (click)="addVariableFromBubble()"
+        >
+          + Add as Variable
+          <span class="bubble-action-count">{{ selectedVariables.length }}</span>
+        </button>
+        <button
+          class="bubble-action bubble-action--covariate"
+          [disabled]="!hasSelectedDatasets"
+          [title]="!hasSelectedDatasets ? 'Select a dataset first' : ''"
+          (click)="addCovariateFromBubble()"
+        >
+          + Add as Covariate
+          <span class="bubble-action-count">{{ selectedCovariates.length }}</span>
+        </button>
+        <button
+          class="bubble-action bubble-action--filter"
+          [disabled]="!hasSelectedDatasets"
+          [title]="!hasSelectedDatasets ? 'Select a dataset first' : ''"
+          (click)="addFilterFromBubble()"
+        >
+          + Add as Filter
+          <span class="bubble-action-count">{{ selectedFilters.length }}</span>
+        </button>
+      </div>
       @if (selectedDataModel()) {
       <app-bubble-chart
         [d3Data]="d3Data"
@@ -44,14 +73,6 @@
 
     <!-- Right column: parameters + distribution -->
     <div class="right-column">
-      <section class="panel-block variable-filter-container">
-        <app-variable-filter-selection
-          [selectedNode]="selectedNode"
-          (filtersChange)="onFilterChange($event)"
-          (variableClicked)="onVariableClicked($event)"
-        ></app-variable-filter-selection>
-      </section>
-
       <div class="histogam-placeholder">
         <section class="panel-block distribution-graph" #distributionExport>
           <p class="distribution-graph-header">
@@ -141,6 +162,15 @@
         }
 
       </div>
+
+      <section class="panel-block variable-filter-container">
+        <app-variable-filter-selection
+          #variableFilterSelection
+          [selectedNode]="selectedNode"
+          (filtersChange)="onFilterChange($event)"
+          (variableClicked)="onVariableClicked($event)"
+        ></app-variable-filter-selection>
+      </section>
     </div>
   </div>
 </div>

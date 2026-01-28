@@ -2,11 +2,14 @@
 
 .variables-panel-shell {
   width: 100%;
+  max-width: 100%;
+  margin: 0;
   box-sizing: border-box;
-  background: transparent;
-  border: none;
-  box-shadow: none;
-  padding: 0;
+  background: var(--studio-card-bg, rgba(255, 255, 255, 0.92));
+  border: 1px solid var(--studio-card-border, rgba(148, 163, 184, 0.45));
+  box-shadow: var(--studio-card-shadow, 0 8px 18px rgba(15, 23, 42, 0.08));
+  padding: 12px;
+  border-radius: 18px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -19,10 +22,8 @@
   padding: 10px 16px;
   background: linear-gradient(90deg, #026d6d, #3ac6b8);
   color: #ffffff;
-  border-radius: 16px;
-  margin: 2px 0 6px;
-  position: sticky;
-  top: 12px;
+  border-radius: 12px;
+  margin: 0 0 6px;
   z-index: 2;
   box-shadow: 0 8px 18px rgba(2, 109, 109, 0.18);
   border-bottom: 1px solid rgba(255, 255, 255, 0.25);
@@ -64,8 +65,8 @@
 /* ---------- MAIN LAYOUT: bubble + right column ---------- */
 
 .variables-main {
-  display: grid;
-  grid-template-columns: minmax(0, 0.6fr) minmax(0, 0.4fr);
+  display: flex;
+  flex-direction: column;
   gap: 18px;
   padding: 6px 2px 4px;
   align-items: stretch;
@@ -73,14 +74,77 @@
 
 /* Left: bubble chart “canvas” */
 .bubble-chart-section {
+  position: relative;
   min-height: 470px;
   background: var(--studio-card-bg, rgba(255, 255, 255, 0.78));
   border-radius: 14px;
   border: 1px solid var(--studio-card-border, rgba(148, 163, 184, 0.4));
-  padding: 8px;
+  padding: 48px 8px 8px;
   box-shadow: var(--studio-card-shadow, 0 10px 22px rgba(15, 23, 42, 0.08));
   box-sizing: border-box;
   overflow: hidden;
+}
+
+.bubble-actions {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+  z-index: 2;
+}
+
+.bubble-action {
+  position: relative;
+  color: #fff;
+  border: none;
+  padding: 0.42rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  white-space: nowrap;
+  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.18);
+}
+
+.bubble-action--variable {
+  background: linear-gradient(120deg, #0890a6, #8fe3f0);
+}
+
+.bubble-action--covariate {
+  background: linear-gradient(120deg, #c88d00, #ffda61);
+}
+
+.bubble-action--filter {
+  background: linear-gradient(120deg, #16a34a, #4ade80ab);
+}
+
+.bubble-action:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.04);
+  box-shadow: 0 12px 22px rgba(15, 23, 42, 0.25);
+}
+
+.bubble-action:disabled {
+  background: #e5e7eb !important;
+  color: #9ca3af !important;
+  cursor: not-allowed;
+  box-shadow: none;
+  filter: none;
+}
+
+.bubble-action-count {
+  margin-left: 8px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.85);
+  color: #0f172a;
+  font-size: 0.72rem;
+  font-weight: 700;
 }
 
 /* Right column: parameters + distribution */
@@ -90,8 +154,6 @@
   gap: 20px;
   width: 100%;
   min-width: 0;
-  min-height: 470px;
-  height: 100%;
 }
 
 /* Common block styling */
@@ -453,6 +515,16 @@
 
   .bubble-chart-section {
     min-height: 360px;
+  }
+
+  .bubble-actions {
+    position: static;
+    justify-content: flex-start;
+    margin-bottom: 6px;
+  }
+
+  .bubble-chart-section {
+    padding-top: 12px;
   }
 
   .distribution-graph {

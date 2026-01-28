@@ -38,6 +38,7 @@ export class VariablesPanelComponent implements OnDestroy {
   @Input() defaultModel: DataModel | null = null;
   @Input() dataModelHierarchy: any;
   @ViewChild('distributionExport') distributionExport?: ElementRef<HTMLElement>;
+  @ViewChild(VariableFilterSelectionComponent) variableFilterSelection?: VariableFilterSelectionComponent;
   highlightNode: any = null;
 
   experimentStudioService = inject(ExperimentStudioService);
@@ -138,6 +139,22 @@ export class VariablesPanelComponent implements OnDestroy {
 
   get selectedFilters(): any[] {
     return this.experimentStudioService.selectedFilters();
+  }
+
+  get hasSelectedDatasets(): boolean {
+    return (this.experimentStudioService.selectedDatasets() || []).length > 0;
+  }
+
+  addVariableFromBubble(): void {
+    this.variableFilterSelection?.addVariable();
+  }
+
+  addCovariateFromBubble(): void {
+    this.variableFilterSelection?.addCovariate();
+  }
+
+  addFilterFromBubble(): void {
+    this.variableFilterSelection?.addFilter();
   }
 
   findParentNode(currentNode: any, targetNode: any, parent: any = null): any {
