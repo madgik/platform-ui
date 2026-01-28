@@ -17,39 +17,53 @@
   }
 
   <div class="studio-inner studio-layout">
-    <nav class="studio-sidenav" aria-label="Studio sections">
-      <div class="studio-flow-header">
-        <div class="studio-flow-title">Setup progress</div>
-        <div class="studio-flow-meta">Step 1 / 6</div>
-        <div class="studio-flow-bar">
-          <span class="studio-flow-bar-fill" style="width: 16%;"></span>
-        </div>
+    <nav class="studio-sidenav" aria-label="Studio navigation">
+      <div class="studio-rail-header">
+        <div class="studio-rail-title">Navigation</div>
+        <div class="studio-rail-meta">Current model: {{ currentModelLabel }}</div>
       </div>
 
-      <a href="/experiment-studio#variables-top" class="studio-step current">
-        <span class="studio-step-dot"></span>
-        <span class="studio-step-label">Datasets Selection</span>
-      </a>
-      <a href="/experiment-studio#data-model-visualization" class="studio-step upcoming">
-        <span class="studio-step-dot"></span>
-        <span class="studio-step-label">Pathology Visualization</span>
-      </a>
-      <a href="/experiment-studio#distribution-graph" class="studio-step upcoming">
-        <span class="studio-step-dot"></span>
-        <span class="studio-step-label">Distribution Graph</span>
-      </a>
-      <a href="/experiment-studio#parameters-listing" class="studio-step upcoming">
-        <span class="studio-step-dot"></span>
-        <span class="studio-step-label">Parameters</span>
-      </a>
-      <a href="/experiment-studio#statistics-section" class="studio-step upcoming">
-        <span class="studio-step-dot"></span>
-        <span class="studio-step-label">Statistics</span>
-      </a>
-      <a href="/experiment-studio#algorithm-section" class="studio-step upcoming">
-        <span class="studio-step-dot"></span>
-        <span class="studio-step-label">Algorithm</span>
-      </a>
+      <div class="studio-rail-section">
+        <div class="studio-rail-section-title">Setup</div>
+        <a href="/experiment-studio#variables-top" class="studio-rail-item is-active" aria-current="page">
+          <span class="studio-rail-icon"><i class="fas fa-database"></i></span>
+          <span class="studio-rail-label">Datasets Selection</span>
+        </a>
+        <a href="/experiment-studio#data-model-visualization" class="studio-rail-item">
+          <span class="studio-rail-icon"><i class="fas fa-microscope"></i></span>
+          <span class="studio-rail-label">Pathology Visualization</span>
+        </a>
+      </div>
+
+      <div class="studio-rail-section">
+        <div class="studio-rail-section-title">
+          Modeling <span class="studio-rail-optional">(optional)</span>
+        </div>
+        <a href="/experiment-studio#variables-top" class="studio-rail-item">
+          <span class="studio-rail-icon"><i class="fas fa-sliders-h"></i></span>
+          <span class="studio-rail-label">Variables &amp; Covariates</span>
+        </a>
+        <a href="/experiment-studio#distribution-graph" class="studio-rail-item">
+          <span class="studio-rail-icon"><i class="fas fa-chart-area"></i></span>
+          <span class="studio-rail-label">Distribution Graph</span>
+        </a>
+        <a href="/experiment-studio#parameters-listing" class="studio-rail-item">
+          <span class="studio-rail-icon"><i class="fas fa-sliders"></i></span>
+          <span class="studio-rail-label">Parameters</span>
+        </a>
+      </div>
+
+      <div class="studio-rail-section">
+        <div class="studio-rail-section-title">Analysis</div>
+        <a href="/experiment-studio#statistics-section" class="studio-rail-item">
+          <span class="studio-rail-icon"><i class="fas fa-sigma"></i></span>
+          <span class="studio-rail-label">Statistics</span>
+        </a>
+        <a href="/experiment-studio#algorithm-section" class="studio-rail-item">
+          <span class="studio-rail-icon"><i class="fas fa-cogs"></i></span>
+          <span class="studio-rail-label">Algorithm</span>
+        </a>
+      </div>
     </nav>
 
     <div class="studio-main">

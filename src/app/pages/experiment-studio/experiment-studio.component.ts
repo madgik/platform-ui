@@ -69,6 +69,11 @@ export class ExperimentStudioComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  get currentModelLabel(): string {
+    return this.expStudioService.selectedDataModel()?.label ?? '—';
+  }
+
+
   dismissError(): void {
     this.errorService.clearError();
     this.errorMessage = '';
