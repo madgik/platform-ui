@@ -26,6 +26,7 @@
   gap: 0.8rem;
   padding: 0.6rem 0.15rem 0.4rem;
 }
+
 /* ===== COLUMN / SECTION ===== */
 
 .section-container {
@@ -45,6 +46,9 @@
   flex-wrap: nowrap;
   width: 100%;
   margin-left: 0;
+  position: relative;
+  z-index: 2;
+  pointer-events: auto;
 }
 
 .panel-title {
@@ -56,6 +60,17 @@
   color: #ffffff;
   padding: 4px 10px;
   border-radius: 999px;
+  border: none;
+  cursor: pointer !important;
+}
+
+.panel-title:disabled {
+  cursor: not-allowed !important;
+  opacity: 0.6;
+}
+
+.panel-title * {
+  cursor: inherit;
 }
 
 .panel-title--variable {
@@ -216,9 +231,11 @@
 .panel::-webkit-scrollbar {
   width: 6px;
 }
+
 .panel::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .panel::-webkit-scrollbar-thumb {
   background: rgba(148, 163, 184, 0.7);
   border-radius: 999px;
@@ -368,6 +385,7 @@
 /* ===== RESPONSIVE ===== */
 
 @media (max-width: 1440px) {
+
   .variable-btn,
   .covariate-btn,
   .filter-btn {
@@ -395,7 +413,8 @@
 
 @media (max-width: 1024px) {
   .parameters-content {
-    grid-template-columns: minmax(0, 1fr);   /* stack columns */
+    grid-template-columns: minmax(0, 1fr);
+    /* stack columns */
   }
 
   .panel-controls {
@@ -417,4 +436,67 @@
     align-items: flex-start;
     gap: 0.45rem;
   }
+}
+
+@keyframes pulse-blue {
+  0% {
+    box-shadow: 0 0 0 0 rgba(8, 144, 166, 0.7);
+    transform: scale(1);
+  }
+
+  70% {
+    box-shadow: 0 0 0 10px rgba(8, 144, 166, 0);
+    transform: scale(1.05);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(8, 144, 166, 0);
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse-gold {
+  0% {
+    box-shadow: 0 0 0 0 rgba(200, 141, 0, 0.7);
+    transform: scale(1);
+  }
+
+  70% {
+    box-shadow: 0 0 0 10px rgba(200, 141, 0, 0);
+    transform: scale(1.05);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(200, 141, 0, 0);
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse-green {
+  0% {
+    box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7);
+    transform: scale(1);
+  }
+
+  70% {
+    box-shadow: 0 0 0 10px rgba(22, 163, 74, 0);
+    transform: scale(1.05);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(22, 163, 74, 0);
+    transform: scale(1);
+  }
+}
+
+.pulse-hint--variable {
+  animation: pulse-blue 2s infinite;
+}
+
+.pulse-hint--covariate {
+  animation: pulse-gold 2s infinite;
+}
+
+.pulse-hint--filter {
+  animation: pulse-green 2s infinite;
 }

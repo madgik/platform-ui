@@ -10,6 +10,8 @@ import { BackendFilter } from '../models/filters.model';
 import { AlgorithmConfig } from '../models/algorithm-definition.model';
 import { BackendExperiment } from '../models/backend-experiment.model';
 import { ErrorService } from './error.service';
+import { AlgorithmRulesService } from './algorithm-rules.service';
+import { AlgorithmNames, VariableTypes } from '../core/constants/algorithm.constants';
 
 
 @Injectable({ providedIn: 'root' })
@@ -17,6 +19,7 @@ export class ExperimentStudioService {
   private http = inject(HttpClient);
   private sessionStorage = inject(SessionStorageService);
   private errorService = inject(ErrorService);
+  private algorithmRulesService = inject(AlgorithmRulesService);
 
   private apiUrl = '/services/data-models';
   private experimentUrl = '/services/experiments';
@@ -71,6 +74,9 @@ export class ExperimentStudioService {
   selectedDatasets = computed(() => this.selectedDatasetsSignal());
   backendAlgorithms = signal<Record<string, AlgorithmConfig>>({});
   selectedDataModel = signal<DataModel | null>(null);
+  readonly crossSectionalModels = signal<DataModel[]>([]);
+  readonly longitudinalModels = signal<DataModel[]>([]);
+  readonly availableDatasets = signal<{ code: string; label: string }[]>([]);
 
   private experimentNameSignal = signal<string>('');
   readonly experimentName = this.experimentNameSignal.asReadonly();
@@ -206,22 +212,22 @@ export class ExperimentStudioService {
     this.loadAllDataModels()
       .pipe(takeUntil(this.destroy$))
       .subscribe(models => {
-      const active = models.filter(m => selected.includes(m.code));
-      if (!active.length) return;
+        const active = models.filter(m => selected.includes(m.code));
+        if (!active.length) return;
 
-      const model = active[0];
-      this.selectedDataModel.set(model);
+        const model = active[0];
+        this.selectedDataModel.set(model);
 
-      const converted = this.convertToD3Hierarchy(model);
+        const converted = this.convertToD3Hierarchy(model);
 
-      // enrich variables
-      const enrichedVariables = converted.allVariables.map(v => ({
-        ...v,
-        supportedAlgos: this.algorithmEnabled(v.type ?? 'unknown')
-      }));
+        // enrich variables
+        const enrichedVariables = converted.allVariables.map(v => ({
+          ...v,
+          supportedAlgos: this.algorithmEnabled(v.type ?? 'unknown')
+        }));
 
-      this.selectedDataModel.set(model);
-    });
+        this.selectedDataModel.set(model);
+      });
   }
 
 
@@ -244,9 +250,9 @@ export class ExperimentStudioService {
           return false;
         }
 
-        const varIsNominal = varTypes.includes("nominal");
+        const varIsNominal = varTypes.includes(VariableTypes.NOMINAL);
 
-        if (varIsNominal && yReq.stattypes?.includes("nominal")) {
+        if (varIsNominal && yReq.stattypes?.includes(VariableTypes.NOMINAL)) {
           return true;
         }
 
@@ -267,7 +273,7 @@ export class ExperimentStudioService {
           }
         }
 
-        if (varIsNominal && xReq?.stattypes?.includes("nominal")) {
+        if (varIsNominal && xReq?.stattypes?.includes(VariableTypes.NOMINAL)) {
           return true;
         }
         return true;
@@ -419,8 +425,19 @@ export class ExperimentStudioService {
   }
 
   availableGroupedAlgorithms = computed(() => {
+    // Explicitly read selection signals to establish reactive dependencies.
+    // Without this, the computed only re-runs when backendAlgorithms() changes,
+    // not when variable/covariate selections change.
+    const _variables = this.selectedVariables();
+    const _covariates = this.selectedCovariates();
+    const _filters = this.selectedFilters();
+
     // Hide quick-preview algorithms from the selection list.
-    const hidden = new Set(['multiple_histograms', 'descriptive_stats', 'logistic_regression_fedaverage_flower']);
+    const hidden = new Set([
+      AlgorithmNames.MULTIPLE_HISTOGRAMS,
+      AlgorithmNames.DESCRIPTIVE_STATS,
+      AlgorithmNames.LOGISTIC_REGRESSION_FEDAVERAGE_FLOWER
+    ]);
 
     return Object.values(this.backendAlgorithms())
       .filter(algo => !hidden.has(algo.name))
@@ -431,13 +448,13 @@ export class ExperimentStudioService {
       })
       .filter(algo => !this.isTransformationAlgorithm(algo.name))
       .reduce((acc, algo) => {
-      const cat = algo.category || 'Other';
-      if (!acc[cat]) acc[cat] = [];
-      acc[cat].push({
-        ...algo,
-        isDisabled: !this.isAlgorithmAvailable(algo.name)
-      });
-      return acc;
+        const cat = algo.category || 'Other';
+        if (!acc[cat]) acc[cat] = [];
+        acc[cat].push({
+          ...algo,
+          isDisabled: !this.isAlgorithmAvailable(algo.name)
+        });
+        return acc;
       }, {} as Record<string, AlgorithmConfig[]>);
   });
 
@@ -445,191 +462,15 @@ export class ExperimentStudioService {
     const algo = this.backendAlgorithms()[name];
     if (!algo?.inputdata) return false;
 
-    // UI selections
-    const selections: Record<string, any[]> = {
+    return this.algorithmRulesService.isAlgorithmAvailable(algo, {
       y: this.selectedVariables(),
       x: this.selectedCovariates(),
       filters: this.selectedFilters(),
-    };
-
-    // SPECIAL CASES
-
-    // 1-way ANOVA: 1 dependent (real/int) + 1 factor (nominal/text)
-    if (name === 'anova_oneway') {
-      const vars = this.selectedVariables();
-      const covs = this.selectedCovariates();
-
-      if (vars.length !== 1) return false;
-      if (covs.length !== 1) return false;
-
-      const yType = vars[0].type;
-      const xType = covs[0].type;
-
-      // y: real/int, x: nominal/text
-      const yOk = ['real', 'integer', 'int'].includes(yType);
-      const xOk = ['nominal', 'text'].includes(xType);
-
-      return yOk && xOk;
-    }
-
-    // 2-way ANOVA: 1 dependent + 2 nominal factors
-    if (name === 'anova') {
-      const vars = this.selectedVariables();
-      const covs = this.selectedCovariates();
-
-      if (vars.length !== 1) return false;
-      if (covs.length !== 2) return false;
-
-      const allCovsNominal = covs.every(c =>
-        ['nominal', 'text'].includes(c.type)
-      );
-
-      const yOk = ['real', 'integer', 'int'].includes(vars[0].type);
-
-      return yOk && allCovsNominal;
-    }
-
-    // One-sample t-test: exactly 1 dependent variable, no covariates
-    if (name === 'ttest_onesample') {
-      const vars = this.selectedVariables();
-      const covs = this.selectedCovariates();
-
-      if (vars.length !== 1) return false;
-      if (covs.length !== 0) return false;
-
-      const yType = vars[0].type;
-      const yOk = ['real', 'integer', 'int'].includes(yType);
-      return yOk;
-    }
-
-    if (name === 'pca') {
-      if (this.selectedVariables().length < 2) return false;
-      if (this.selectedCovariates().length !== 0) return false;
-      return true;
-    }
-
-
-    // helper: normalize types from UI -> backend
-    const normalizeType = (t: string | undefined | null): string | undefined => {
-      if (!t) return undefined;
-      switch (t) {
-        case 'nominal': return 'text';
-        case 'integer': return 'int';
-        default: return t; // real, text, binary...
-      }
-    };
-
-    const normalizeBool = (value: boolean | string | undefined | null): boolean | null => {
-      if (value === undefined || value === null) return null;
-      if (typeof value === 'boolean') return value;
-      const normalized = String(value).trim().toLowerCase();
-      if (normalized === 'true') return true;
-      if (normalized === 'false') return false;
-      return null;
-    };
-
-    const hasRole = (role: string) => Object.prototype.hasOwnProperty.call(algo.inputdata, role);
-
-    if (!hasRole('y') && selections['y'].length > 0) return false;
-    if (!hasRole('x') && selections['x'].length > 0) return false;
-
-    // Filters are treated as optional; if the algo doesn't declare them, keep the algo available.
-    const filterReq = hasRole('filters')
-      ? (algo.inputdata as any).filters
-      : hasRole('filter')
-        ? (algo.inputdata as any).filter
-        : null;
-
-    for (const [role, req] of Object.entries(algo.inputdata)) {
-      if (!['y', 'x'].includes(role)) continue;
-
-      const sel = selections[role as keyof typeof selections] || [];
-      const notBlank = normalizeBool((req as any)?.notblank) === true;
-      const multiple = normalizeBool((req as any)?.multiple);
-
-      if (notBlank && sel.length === 0) {
-        return false;
-      }
-
-      if (multiple === false && sel.length > 1) {
-        return false;
-      }
-
-      if (sel.length === 0) continue;
-
-      // type check
-      if (req.types?.length) {
-        const selTypes = sel
-          .map(v => normalizeType(v.type))
-          .filter((t): t is string => !!t);
-
-        const badType = selTypes.find(t => !req.types.includes(t));
-        if (badType) {
-          console.warn(
-            `✘ ${name}: invalid type on role ${role}: ${badType} not in [${req.types.join(', ')}]`
-          );
-          return false;
-        }
-      }
-    }
-
-    if (filterReq) {
-      const sel = selections['filters'] || [];
-      const notBlank = normalizeBool(filterReq.notblank) === true;
-      const multiple = normalizeBool(filterReq.multiple);
-
-      if (notBlank && sel.length === 0) return false;
-      if (multiple === false && sel.length > 1) return false;
-
-      if (filterReq.types?.length) {
-        const selTypes = sel
-          .map(v => normalizeType(v.type))
-          .filter((t): t is string => !!t);
-
-        const badType = selTypes.find(t => !filterReq.types.includes(t));
-        if (badType) {
-          console.warn(
-            `✘ ${name}: invalid type on role filters: ${badType} not in [${filterReq.types.join(', ')}]`
-          );
-          return false;
-        }
-      }
-    }
-
-    return true;
+    });
   }
 
   getAlgorithmRequirementOverrides(algo: { name?: string; inputdata?: any } | null | undefined): { y?: string; x?: string; filters?: string } | null {
-    const name = algo?.name;
-    const formatTypes = (types?: string[] | null) =>
-      Array.isArray(types) && types.length ? ` • types: ${types.join(',')}` : '';
-    const yTypes = Array.isArray(algo?.inputdata?.y?.types) ? algo?.inputdata?.y?.types : null;
-    const xTypes = Array.isArray(algo?.inputdata?.x?.types) ? algo?.inputdata?.x?.types : null;
-
-    switch (name) {
-      case 'anova_oneway':
-        return {
-          y: `Variable: exactly 1${formatTypes(['real', 'int'])}`,
-          x: `Covariate: exactly 1${formatTypes(['nominal', 'text'])}`,
-        };
-      case 'anova':
-        return {
-          y: `Variable: exactly 1${formatTypes(['real', 'int'])}`,
-          x: `Covariate: exactly 2${formatTypes(['nominal', 'text'])}`,
-        };
-      case 'ttest_onesample':
-        return {
-          y: `Variable: exactly 1${formatTypes(['real', 'int'])}`,
-          x: 'Covariate: none',
-        };
-      case 'pca':
-        return {
-          y: `Variable: 2+${formatTypes(yTypes ?? ['real', 'int'])}`,
-          x: 'Covariate: none',
-        };
-      default:
-        return null;
-    }
+    return this.algorithmRulesService.getAlgorithmRequirementOverrides(algo);
   }
 
   private rolePayload(
@@ -684,8 +525,12 @@ export class ExperimentStudioService {
 
     const allConfigs = this.algorithmConfigurations();
     const config = { ...(allConfigs[algoConfig.name ?? ''] || {}) };
-    if (requestAlgorithmName !== algoConfig.name && config['n_splits'] === undefined) {
+    const isCvRequest = this.isCrossValidationAlgorithm(requestAlgorithmName);
+    if (isCvRequest && config['n_splits'] === undefined) {
       config['n_splits'] = 5;
+    }
+    if (!isCvRequest && config['n_splits'] !== undefined) {
+      delete config['n_splits'];
     }
 
 
@@ -699,7 +544,7 @@ export class ExperimentStudioService {
       );
 
     // special case for multiple_histograms (no filters, transient)
-    if (algorithmName === 'multiple_histograms') {
+    if (algorithmName === AlgorithmNames.MULTIPLE_HISTOGRAMS) {
       return {
         name: expName,
         description,
@@ -1017,6 +862,46 @@ export class ExperimentStudioService {
 
   private toArray = (v: any): string[] => v == null ? [] : Array.isArray(v) ? v : [v];
 
+  loadAndCategorizeModels(): Observable<any[]> {
+    return this.getAllDataModels().pipe(
+      tap((models) => {
+        const { crossSectional, longitudinal } = this.categorizeDataModels(models);
+        this.crossSectionalModels.set(crossSectional);
+        this.longitudinalModels.set(longitudinal);
+      })
+    );
+  }
+
+  updateAvailableDatasets(model: DataModel | null): void {
+    if (!model) {
+      this.availableDatasets.set([]);
+      return;
+    }
+    const { hierarchy, allVariables } = this.convertToD3Hierarchy(model);
+    const datasetVariable = allVariables.find(
+      (variable: any) => String(variable?.code ?? '').toLowerCase() === 'dataset'
+    );
+    const datasetEnums = datasetVariable?.enumerations ?? [];
+    const datasetSource: any = (model as any).datasets;
+    const allowedCodes = new Set<string>(
+      Array.isArray(datasetSource)
+        ? datasetSource
+          .map((item: any) => String(item?.code ?? item ?? ''))
+          .filter((code: string) => code)
+        : []
+    );
+    const available = datasetEnums
+      .filter((dataset: any) => {
+        const code = String(dataset?.code ?? '');
+        return allowedCodes.size === 0 || allowedCodes.has(code);
+      })
+      .map((dataset: any) => ({
+        code: String(dataset?.code ?? ''),
+        label: String(dataset?.label ?? dataset?.name ?? dataset?.code ?? ''),
+      }));
+    this.availableDatasets.set(available);
+  }
+
   hydrateFromBackendExperiment(exp: BackendExperiment): void {
     if (!exp || !exp.algorithm) {
       console.warn('hydrateFromBackendExperiment called with invalid exp:', exp);
@@ -1047,62 +932,62 @@ export class ExperimentStudioService {
     this.loadAllDataModels()
       .pipe(takeUntil(this.destroy$))
       .subscribe((models) => {
-      if (!models || !models.length) {
-        console.warn('No data models available for hydration.');
-        return;
-      }
+        if (!models || !models.length) {
+          console.warn('No data models available for hydration.');
+          return;
+        }
 
-      const model = this.findDataModelByCodeVersion(input.data_model, models);
-      if (!model) {
-        console.warn(
-          'No matching data model found for',
-          input.data_model,
-          'in',
-          models
+        const model = this.findDataModelByCodeVersion(input.data_model, models);
+        if (!model) {
+          console.warn(
+            'No matching data model found for',
+            input.data_model,
+            'in',
+            models
+          );
+          return;
+        }
+
+        this.selectedDataModel.set(model);
+
+        const converted = this.convertToD3Hierarchy(model);
+        const allVariables = converted.allVariables;
+
+        const yCodes = this.toArray(input.y);
+        const xCodes = this.toArray(input.x);
+        const filterCodes = this.collectFilterVariableCodes(filters);
+
+        const yNodes = allVariables
+          .filter((v: any) => yCodes.includes(v.code))
+          .map((n) => this.enrichVariableNode(n));
+
+        const xNodes = allVariables
+          .filter((v: any) => xCodes.includes(v.code))
+          .map((n) => this.enrichVariableNode(n));
+
+        const filterNodes = allVariables.filter((v: any) =>
+          filterCodes.includes(v.code)
         );
-        return;
-      }
 
-      this.selectedDataModel.set(model);
+        this.setVariables(yNodes);
+        this.setCovariates(xNodes);
+        this.setFilters(filterNodes);
 
-      const converted = this.convertToD3Hierarchy(model);
-      const allVariables = converted.allVariables;
+        const algoConfig = this.backendAlgorithms()[algoName];
 
-      const yCodes = this.toArray(input.y);
-      const xCodes = this.toArray(input.x);
-      const filterCodes = this.collectFilterVariableCodes(filters);
+        if (!algoConfig) {
+          console.warn('Algorithm config not found for', algoName);
+          return;
+        }
 
-      const yNodes = allVariables
-        .filter((v: any) => yCodes.includes(v.code))
-        .map((n) => this.enrichVariableNode(n));
+        const existingConfigs = this.algorithmConfigurations();
+        this.algorithmConfigurations.set({
+          ...existingConfigs,
+          [algoName]: params,
+        });
 
-      const xNodes = allVariables
-        .filter((v: any) => xCodes.includes(v.code))
-        .map((n) => this.enrichVariableNode(n));
-
-      const filterNodes = allVariables.filter((v: any) =>
-        filterCodes.includes(v.code)
-      );
-
-      this.setVariables(yNodes);
-      this.setCovariates(xNodes);
-      this.setFilters(filterNodes);
-
-      const algoConfig = this.backendAlgorithms()[algoName];
-
-      if (!algoConfig) {
-        console.warn('Algorithm config not found for', algoName);
-        return;
-      }
-
-      const existingConfigs = this.algorithmConfigurations();
-      this.algorithmConfigurations.set({
-        ...existingConfigs,
-        [algoName]: params,
+        this.setAlgorithm(algoConfig);
       });
-
-      this.setAlgorithm(algoConfig);
-    });
   }
 
   onToggleShare(): void {
@@ -1195,6 +1080,11 @@ export class ExperimentStudioService {
 
   setRunning(isRunning: boolean): void {
     this._isRunning.set(isRunning);
+  }
+
+  clearSelectedAlgorithm(): void {
+    this.selectedAlgorithm.set(null);
+    this.sessionStorage.removeItem('selectedAlgorithm');
   }
 
   ngOnDestroy(): void {

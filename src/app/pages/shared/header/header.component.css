@@ -8,14 +8,29 @@
   align-items: center;
   justify-content: space-between;
   gap: 1.5rem;
-  padding: 0 2rem;
-  height: 65px;
-  background: linear-gradient(90deg, #015f73 0%, #028090 40%, #012a3a 100%);
-  color: #f9fafb;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(8px);
+  padding: 8px 32px;
+  height: 64px;
+  background: white;
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  color: var(--text-main);
   box-sizing: border-box;
+  transition: all 0.3s ease;
+}
+
+.header.header--transparent {
+  background: transparent !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  pointer-events: none;
+  /* Let clicks pass through to content behind (except buttons) */
+}
+
+.header--transparent .branding,
+.header--transparent .user-icon {
+  pointer-events: auto;
+  /* Re-enable clicks for logo and user btn */
 }
 
 /* BRANDING (LEFT) */
@@ -72,7 +87,7 @@
   min-width: 0;
 }
 
-.navbar-wrapper > app-navbar {
+.navbar-wrapper>app-navbar {
   max-width: 100%;
 }
 

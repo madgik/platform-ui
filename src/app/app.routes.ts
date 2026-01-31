@@ -1,16 +1,11 @@
-import {RouterModule, Routes} from '@angular/router';
-import { ExperimentsDashboardComponent } from './pages/experiments-dashboard/experiments-dashboard.component';
-import { AccountPageComponent } from './pages/account-page/account-page.component';
-import { ExperimentStudioComponent } from './pages/experiment-studio/experiment-studio.component';
+import { Routes } from '@angular/router';
 import { AuthGuard } from './guards/auth.guard';
 import { TermsGuard } from './guards/terms.guard';
-import { NgModule } from "@angular/core";
-import { TermsPageComponent } from './pages/terms-page/terms-page.component';
 
 export const appRoutes: Routes = [
   {
     path: 'experiments-dashboard',
-    component: ExperimentsDashboardComponent,
+    loadComponent: () => import('./pages/experiments-dashboard/experiments-dashboard.component').then(m => m.ExperimentsDashboardComponent),
     canActivate: [AuthGuard, TermsGuard],
   },
   {
@@ -20,24 +15,18 @@ export const appRoutes: Routes = [
   },
   {
     path: 'terms',
-    component: TermsPageComponent,
+    loadComponent: () => import('./pages/terms-page/terms-page.component').then(m => m.TermsPageComponent),
     canActivate: [AuthGuard],
   },
   {
     path: 'account',
-    component: AccountPageComponent,
+    loadComponent: () => import('./pages/account-page/account-page.component').then(m => m.AccountPageComponent),
     canActivate: [AuthGuard, TermsGuard],
   },
   {
     path: 'experiment-studio',
-    component: ExperimentStudioComponent,
+    loadComponent: () => import('./pages/experiment-studio/experiment-studio.component').then(m => m.ExperimentStudioComponent),
     canActivate: [AuthGuard, TermsGuard],
   },
   { path: '**', redirectTo: 'experiments-dashboard' }
 ];
-
-@NgModule({
-  imports: [RouterModule.forRoot(appRoutes)],
-  exports: [RouterModule]
-})
-export class AppRoutingModule { }

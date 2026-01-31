@@ -1,34 +1,60 @@
 <div id="chart">
-  @if (!error) {
-  <div class="bubble-color-controls">
-    <label>
-      Var.
-      <input type="color" [(ngModel)]="colors.variable" (input)="onColorChange()" />
-    </label>
-    <label>
-      Covar.
-      <input type="color" [(ngModel)]="colors.covariate" (input)="onColorChange()" />
-    </label>
-    <label>
-      Filt.
-      <input type="color" [(ngModel)]="colors.filter" (input)="onColorChange()" />
-    </label>
-    <label>
-      Selected
-      <input type="color" [(ngModel)]="colors.selected" (input)="onColorChange()" />
-    </label>
-    <label>
-      Group Start
-      <input type="color" [(ngModel)]="colors.groupStart" (input)="onColorChange()" />
-    </label>
-    <label>
-      Group End
-      <input type="color" [(ngModel)]="colors.groupEnd" (input)="onColorChange()" />
-    </label>
-  </div>
+  <div class="chart-body">
+    <div id="chart-canvas" #chartCanvas></div>
+    <div class="chart-settings">
+      <button class="settings-btn" (click)="toggleSettings()" title="Customize Colors">
+        <i class="fas fa-cog"></i>
+      </button>
 
-  <div id="chart-canvas"></div>
-  } @else {
+      @if (showSettings) {
+      <div class="settings-dropdown">
+        <div class="dropdown-header">
+          <span>Color Settings</span>
+          <button class="close-dropdown" (click)="toggleSettings()">&times;</button>
+        </div>
+
+        <div class="mode-selector">
+          <button class="mode-btn" [class.active]="colorMode === 'default'"
+            (click)="applyColorMode('default')">Default</button>
+          <button class="mode-btn" [class.active]="colorMode === 'colorBlind'"
+            (click)="applyColorMode('colorBlind')">Color Blind</button>
+          <button class="mode-btn" [class.active]="colorMode === 'custom'" (click)="applyColorMode('custom')">My
+            Setup</button>
+        </div>
+
+        @if (colorMode === 'custom') {
+        <div class="bubble-color-controls">
+          <label>
+            Var.
+            <input type="color" [(ngModel)]="colors.variable" (input)="onColorChange()" />
+          </label>
+          <label>
+            Covar.
+            <input type="color" [(ngModel)]="colors.covariate" (input)="onColorChange()" />
+          </label>
+          <label>
+            Filt.
+            <input type="color" [(ngModel)]="colors.filter" (input)="onColorChange()" />
+          </label>
+          <label>
+            Selected
+            <input type="color" [(ngModel)]="colors.selected" (input)="onColorChange()" />
+          </label>
+          <label>
+            Group Start
+            <input type="color" [(ngModel)]="colors.groupStart" (input)="onColorChange()" />
+          </label>
+          <label>
+            Group End
+            <input type="color" [(ngModel)]="colors.groupEnd" (input)="onColorChange()" />
+          </label>
+        </div>
+        }
+      </div>
+      }
+    </div>
+  </div>
+  @if (error) {
   <div class="error-message">
     {{ error }}
   </div>

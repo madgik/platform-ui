@@ -17,9 +17,9 @@
 
 /* Styled select, more in line with dashboard pills */
 .data-model-select {
-  min-width: 210px;
-  padding: 8px 34px 8px 12px;
-  font-size: 0.9rem;
+  min-width: 170px;
+  padding: 6px 30px 6px 10px;
+  font-size: 0.82rem;
   font-weight: 600;
   color: #0f172a;
   background: #ffffff;
@@ -38,7 +38,7 @@
   background-image: url("data:image/svg+xml,%3Csvg width='16' height='16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 6l4 4 4-4' stroke='%2302686d' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
-  background-size: 14px;
+  background-size: 12px;
   transition: border-color 0.16s ease, box-shadow 0.16s ease,
     background-color 0.16s ease, transform 0.12s ease;
 }
@@ -64,7 +64,7 @@
 /* Mobile tweaks */
 @media (max-width: 960px) {
   .data-model-select {
-    min-width: 180px;
-    font-size: 0.85rem;
+    min-width: 150px;
+    font-size: 0.8rem;
   }
 }

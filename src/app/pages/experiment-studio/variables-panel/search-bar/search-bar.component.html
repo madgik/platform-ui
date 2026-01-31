@@ -1,10 +1,10 @@
 <div class="search-container">
-  <label class="search-label" for="search-bar">Search variables or groups</label>
   <div class="search-input-container">
     <input
       type="text"
       id="search-bar"
       placeholder="Search variables or groups..."
+      aria-label="Search variables or groups"
       [(ngModel)]="searchQuery"
       (focus)="onSearchFocus()"
       (input)="handleSearch(searchQuery)"

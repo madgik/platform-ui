@@ -10,10 +10,8 @@ import { ExperimentStudioService } from '../../../services/experiment-studio.ser
 import { ChartBuilderService } from '../visualisations/charts/chart-builder.service';
 import { ChartRendererComponent } from '../visualisations/charts/charts-renderer/charts-renderer.component';
 import { EChartsOption } from 'echarts';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { ViewChildren, QueryList } from '@angular/core';
-import html2canvas from 'html2canvas';
+import { PdfExportService } from '../../../services/pdf-export.service';
 import { SpinnerComponent } from '../../shared/spinner/spinner.component';
 
 
@@ -46,6 +44,7 @@ export class StatisticAnalysisPanelComponent implements OnChanges {
 
   private expStudioService = inject(ExperimentStudioService);
   private chartBuilder = inject(ChartBuilderService);
+  private pdfExportService = inject(PdfExportService);
 
   openAccordions: Record<string, boolean> = {};
   isLoading = true;
@@ -371,99 +370,20 @@ export class StatisticAnalysisPanelComponent implements OnChanges {
 
   async exportAllDescriptiveToPDF(): Promise<void> {
     this.isExporting = true;
-    document.body.classList.add('pdf-exporting');
-
-    await new Promise(res => setTimeout(res, 50));
-
-    const doc = new jsPDF();
-    let yOffset = 10;
-
     try {
-      const addSection = (title: string, data: any[]) => {
-        if (!data?.length) return;
-        doc.setFontSize(14);
-        doc.text(title, 10, yOffset);
-        yOffset += 8;
-        data.forEach((v: any) => {
-          doc.setFontSize(12);
-          doc.text(v.name, 10, yOffset);
-          yOffset += 6;
-          const head = [['Metric', ...v.columns]];
-          const body = v.rows.map((r: any) => [
-            r.metric,
-            ...v.columns.map((ds: any) => r.values[ds])
-          ]);
-          autoTable(doc, {
-            startY: yOffset,
-            head,
-            body,
-            styles: { fontSize: 9 },
-            margin: { left: 10, right: 10 },
-          });
-          const last = (doc as any).lastAutoTable?.finalY ?? yOffset;
-          yOffset = last + 10;
-          if (yOffset > 270) { doc.addPage(); yOffset = 20; }
-        });
-      };
+      const charts = document.querySelectorAll(
+        '.hidden-charts-for-export app-chart-renderer'
+      ) as NodeListOf<HTMLElement>;
 
-      // Variables + Model
-      addSection('Variables', this.processedData || []);
-      addSection('Model', this.modelData || []);
-
-      // Boxplots
-      if (this.showBoxPlots && this.nonNominalVariables?.length) {
-        doc.addPage();
-        yOffset = 20;
-        doc.setFontSize(14);
-        doc.text('Box Plot Charts', 10, yOffset);
-        yOffset += 10;
-
-        const hiddenCharts = document.querySelectorAll(
-          '.hidden-charts-for-export app-chart-renderer'
-        ) as NodeListOf<HTMLElement>;
-
-        for (let i = 0; i < hiddenCharts.length; i++) {
-          const label =
-            this.nonNominalVariables[i]?.name ||
-            this.nonNominalVariables[i]?.label ||
-            `Variable ${i + 1}`;
-          const chartEl = hiddenCharts[i];
-          if (!chartEl) continue;
-
-          try {
-            const canvas = await html2canvas(chartEl, {
-              backgroundColor: '#ffffff',
-              scale: 1,
-              useCORS: true,
-              logging: false,
-            });
-            const imgData = canvas.toDataURL('image/png');
-            const imgWidth = 180;
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-            doc.setFontSize(11);
-            doc.text(label, 15, yOffset);
-            yOffset += 6;
-
-            if (yOffset + imgHeight > 270) {
-              doc.addPage();
-              yOffset = 20;
-            }
-            doc.addImage(imgData, 'PNG', 15, yOffset, imgWidth, imgHeight);
-            yOffset += imgHeight + 12;
-          } catch (err) {
-            console.warn(`Failed to render chart for ${label}`, err);
-            doc.text(`${label} — (chart not ready)`, 15, yOffset);
-            yOffset += 10;
-          }
-        }
-      }
-
-      doc.save('descriptive_statistics.pdf');
+      await this.pdfExportService.exportDescriptiveStatisticsPdf({
+        variables: this.processedData,
+        models: this.modelData,
+        charts,
+        nonNominalVariables: this.nonNominalVariables
+      });
     } catch (err) {
       console.error('PDF export failed:', err);
     } finally {
-      document.body.classList.remove('pdf-exporting');
       this.isExporting = false;
     }
   }

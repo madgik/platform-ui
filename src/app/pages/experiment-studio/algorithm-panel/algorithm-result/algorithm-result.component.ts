@@ -28,26 +28,38 @@ export class AlgorithmResultComponent {
 
   constructor(private chartBuilder: ChartBuilderService) { }
 
+  errorMessage = computed(() => {
+    if (!this.result) return null;
+    if (this.result?.status === 'error') {
+      return this.result?.error || this.result?.message || 'An error occurred.';
+    }
+    return this.result?.error ?? null;
+  });
+
   isRenderable = computed(() => {
-    return !!this.result && !!this.algorithm;
+    return !!this.result && !!this.algorithm && !this.errorMessage();
   });
 
   mappedResult = computed(() =>
-    mapAlgorithmResultEnums(this.algorithm, this.result, this.enumMaps, {
-      y: this.yVar,
-      x: this.xVar,
-    }, this.labelMap)
+    this.errorMessage()
+      ? this.result
+      : mapAlgorithmResultEnums(this.algorithm, this.result, this.enumMaps, {
+        y: this.yVar,
+        x: this.xVar,
+      }, this.labelMap)
   );
 
   chartOptions = computed<EChartsOption[]>(() =>
-    this.chartBuilder.getChartsForAlgorithm(
-      this.algorithm,
-      this.mappedResult()
-    )
+    this.errorMessage()
+      ? []
+      : this.chartBuilder.getChartsForAlgorithm(
+        this.algorithm,
+        this.mappedResult()
+      )
   );
 
   renderedCharts = computed(() => {
-    if (!this.result || !this.algorithm) return [];
+    if (!this.result || !this.algorithm || this.errorMessage()) return [];
     return this.chartBuilder.getChartsForAlgorithm(this.algorithm, this.mappedResult());
   });
 

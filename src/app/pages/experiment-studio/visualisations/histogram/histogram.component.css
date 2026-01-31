@@ -1,12 +1,12 @@
-
 #histogram-chart {
   display: block;
   padding: 0;
   width: 100%;
-  height: 100%; /* Set to use available height */
-  min-height: 520px; /* Ensure a minimum height */
+  height: 100%;
+  min-height: 450px;
   box-sizing: border-box;
-  overflow: visible;
+  overflow-x: auto;
+  overflow-y: visible;
 }
 
 .histogram-container {
@@ -15,12 +15,13 @@
   justify-content: center;
   align-items: center;
   width: 100%;
-  height: 100%; /* Fill available vertical space */
+  height: 100%;
+  min-height: 450px;
   padding: 10px;
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .chart-description {
@@ -63,6 +64,11 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }

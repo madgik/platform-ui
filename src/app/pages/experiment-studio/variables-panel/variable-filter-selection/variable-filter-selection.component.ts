@@ -114,22 +114,13 @@ export class VariableFilterSelectionComponent implements OnInit {
       event.currentIndex
     );
 
-    const updated = event.container.data;
-
-    switch (listName) {
-      case 'variables':
-        this.variables = updated;
-        this.expStudioService.setVariables(this.variables);
-        break;
-      case 'covariates':
-        this.covariates = updated;
-        this.expStudioService.setCovariates(this.covariates);
-        break;
-      case 'filters':
-        this.filters = updated;
-        this.expStudioService.setFilters(this.filters);
-        break;
-    }
+    // Sync all lists after move so availability recalculates correctly
+    this.variables = [...this.variables];
+    this.covariates = [...this.covariates];
+    this.filters = [...this.filters];
+    this.expStudioService.setVariables(this.variables);
+    this.expStudioService.setCovariates(this.covariates);
+    this.expStudioService.setFilters(this.filters);
   }
 
   addVariable(): void {
@@ -142,6 +133,12 @@ export class VariableFilterSelectionComponent implements OnInit {
 
   addFilter(): void {
     this.addItem('filters');
+  }
+
+  isNodeSelectedAndNotInList(listName: 'variables' | 'covariates' | 'filters'): boolean {
+    if (!this.selectedNode || this.selectedNode.children) return false;
+    const list = this[listName];
+    return !list.some(item => item.code === this.selectedNode.code);
   }
 
   removeItem(item: any, listName: string): void {

@@ -4,21 +4,20 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 16px;
-  background: linear-gradient(90deg, #026d6d, #3ac6b8);
-  color: #ffffff;
-  border-top-left-radius: 16px;
-  border-top-right-radius: 16px;
-  border-radius: 16px;
+  padding: 12px 16px;
+  background: #f8fafc;
+  border-bottom: 1px solid var(--border-color);
+  border-radius: 0px;
   margin: 2px 0 10px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
 }
 
 .panel-header p {
   margin: 0;
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
 }
 
 .experiment-container {
@@ -40,7 +39,7 @@
   color: #0f172a;
   background: var(--studio-card-bg, #f9fdfd);
   border: 1px solid var(--studio-card-border, #cdeaea);
-  border-radius: 16px;
+  border-radius: 0px;
   padding: 12px 14px 12px;
   box-shadow: var(--studio-card-shadow, 0 10px 28px rgba(15, 23, 42, 0.06));
   box-sizing: border-box;
@@ -61,7 +60,7 @@
 
 .category {
   border: 1px solid #e2e8f0;
-  border-radius: 12px;
+  border-radius: 0px;
   margin-bottom: 10px;
   background: #ffffff;
   padding: 6px 6px 8px;
@@ -76,7 +75,7 @@
   padding: 8px 10px;
   margin: 0;
   color: #016b6e;
-  border-radius: 10px;
+  border-radius: 0px;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -113,7 +112,7 @@
   font-size: 0.82rem;
   padding: 6px 8px;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: 0px;
   border-bottom: 1px solid transparent;
   background: #ffffff;
   transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.12s ease;
@@ -152,7 +151,7 @@
   background: #ffffff;
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.25);
   padding: 12px 14px;
-  border-radius: 10px;
+  border-radius: 0px;
   max-width: 280px;
   max-height: 60vh;
   overflow-y: auto;
@@ -185,7 +184,7 @@
   padding: 8px 10px !important;
   background: linear-gradient(135deg, #fff6e0, #ffecb3) !important;
   border-left: 3px solid #f19a28 !important;
-  border-radius: 6px !important;
+  border-radius: 0px!important;
   color: #b96504 !important;
   font-weight: 500 !important;
   font-size: 0.8rem !important;
@@ -211,19 +210,19 @@
   position: relative;
   background: var(--studio-card-bg, rgba(255, 255, 255, 0.92));
   border: 1px solid var(--studio-card-border, rgba(148, 163, 184, 0.45));
-  border-radius: 16px;
+  border-radius: 0px;
   box-shadow: var(--studio-card-shadow, 0 10px 22px rgba(15, 23, 42, 0.08));
 }
 
 /* Header (name + run + info) */
 
-.experiment-panel > header {
+.experiment-panel>header {
   margin: -10px -12px 12px;
-  padding: 8px 12px 10px;
-  background: var(--studio-card-header-bg, rgba(241, 245, 249, 0.85));
-  border-bottom: 1px solid var(--studio-card-header-border, rgba(226, 232, 240, 0.9));
-  border-top-left-radius: 14px;
-  border-top-right-radius: 14px;
+  padding: 12px 16px;
+  background: #f8fafc;
+  border-bottom: 1px solid var(--border-color);
+  border-top-left-radius: 0px;
+  border-top-right-radius: 0px;
 }
 
 .experiment-header {
@@ -238,7 +237,7 @@
 .icon-pill {
   width: 36px;
   height: 36px;
-  border-radius: 999px;
+  border-radius: 0px;
   border: none;
   background: linear-gradient(135deg, #00b8a8, rgba(112, 219, 210, 0.7));
   display: inline-flex;
@@ -293,7 +292,7 @@
 
 .experiment-name-box input {
   padding: 6px 10px;
-  border-radius: 999px;
+  border-radius: 0px;
   border: 1px solid #cbd5e1;
   font-size: 0.85rem;
   outline: none;
@@ -318,7 +317,7 @@
   justify-content: center;
   width: 18px;
   height: 18px;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   border: 1px solid rgba(2, 109, 109, 0.4);
   background: rgba(240, 252, 252, 0.9);
 }
@@ -333,7 +332,7 @@
   color: white;
   padding: 4px 10px;
   border: none;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   font-size: 0.7rem;
   cursor: pointer;
   transition: 0.15s ease-in-out;
@@ -357,7 +356,7 @@
   border: 1px solid #cbd5e1;
   width: 36px;
   height: 36px;
-  border-radius: 50%;
+  border-radius: var(--radius-sm);
   font-size: 16px;
   cursor: pointer;
 }
@@ -368,19 +367,18 @@
 
 /* RUN BUTTON */
 .run-button {
-  background: linear-gradient(135deg, #028080, #2dcccc);
+  background: var(--primary-color);
   color: white;
   border: none;
-  padding: 8px 16px;
-  border-radius: 999px;
+  padding: 10px 22px;
+  border-radius: var(--radius-md);
   font-size: 0.82rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 12px 25px rgba(15, 23, 42, 0.25);
-  transition: background 0.2s ease-in-out, transform 0.15s ease-in-out,
-    box-shadow 0.15s ease-in-out, opacity 0.15s ease-in-out;
+  box-shadow: var(--shadow-md);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: absolute;
-  top: 6px;
+  top: 8px;
   right: 68px;
 }
 
@@ -403,7 +401,7 @@
 .icon-pill {
   width: 34px;
   height: 34px;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   border: 1px solid #cbd5e1;
   background: #ffffff;
   display: inline-flex;
@@ -413,10 +411,12 @@
   box-shadow: 0 10px 22px rgba(15, 23, 42, 0.12);
   transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
 }
+
 .icon-pill i {
   color: #026d6d;
   font-size: 13px;
 }
+
 .icon-pill:hover {
   transform: translateY(-1px);
   background: rgba(2, 109, 109, 0.08);
@@ -439,7 +439,7 @@
   padding: 0;
   width: 34px;
   height: 34px;
-  border-radius: 50%;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: 16px;
   font-weight: 600;
@@ -467,7 +467,7 @@
   color: #0f172a;
   background: var(--studio-card-bg, #f9fdfd);
   border: 1px solid var(--studio-card-border, #cdeaea);
-  border-radius: 14px;
+  border-radius: 0px;
   padding: 10px 12px 12px;
   box-shadow: var(--studio-card-shadow, 0 18px 40px rgba(15, 23, 42, 0.18));
   transition: right 0.24s ease-in-out, opacity 0.18s ease-out,
@@ -513,7 +513,7 @@
   font-size: 0.9rem;
   cursor: pointer;
   padding: 3px;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   color: #6b7280;
   line-height: 1;
   transition: background 0.12s ease, color 0.12s ease, transform 0.08s ease;
@@ -582,7 +582,7 @@
   align-items: center;
   max-width: 100%;
   padding: 3px 8px;
-  border-radius: 999px;
+  border-radius: 0px;
   background: #eefdfb;
   border: 1px solid rgba(148, 227, 213, 0.9);
   font-size: 0.74rem;
@@ -611,7 +611,7 @@
   display: inline-flex;
   align-items: center;
   padding: 3px 10px;
-  border-radius: 999px;
+  border-radius: 0px;
   font-size: 0.74rem;
   background: #f8fafc;
   color: #94a3b8;
@@ -655,7 +655,7 @@
 .experiment-settings {
   background: var(--studio-card-bg, rgba(255, 255, 255, 0.92));
   border: 1px solid var(--studio-card-border, rgba(148, 163, 184, 0.45));
-  border-radius: 14px;
+  border-radius: 0px;
   padding: 14px 16px;
   margin-top: 12px;
   box-shadow: var(--studio-card-shadow, 0 10px 22px rgba(15, 23, 42, 0.08));
@@ -701,7 +701,7 @@
   gap: 4px;
   margin-bottom: 10px;
   padding: 8px 10px;
-  border-radius: 12px;
+  border-radius: 0px;
   background: rgba(2, 128, 128, 0.06);
   border: 1px solid rgba(2, 128, 128, 0.18);
 }
@@ -718,7 +718,7 @@
   gap: 6px;
   margin-bottom: 10px;
   padding: 10px 12px;
-  border-radius: 14px;
+  border-radius: 0px;
   background: rgba(8, 59, 94, 0.06);
   border: 1px solid rgba(8, 59, 94, 0.18);
 }
@@ -778,7 +778,7 @@
   display: flex;
   flex-direction: column;
   padding: 10px 12px;
-  border-radius: 14px;
+  border-radius: 0px;
   background: rgba(255, 255, 255, 0.95);
   border: 1px solid rgba(203, 213, 225, 0.6);
   box-shadow: 0 6px 16px rgba(15, 23, 42, 0.04);
@@ -787,7 +787,7 @@
 /* Label + "Required" */
 
 .config-label,
-.config-field > label {
+.config-field>label {
   font-weight: 600;
   font-size: 0.86rem;
   color: #026a6a;
@@ -805,7 +805,7 @@
   font-size: 0.7rem;
   font-weight: 600;
   padding: 2px 6px;
-  border-radius: 999px;
+  border-radius: 0px;
   border: 1px solid rgba(157, 178, 248, 0.9);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -817,7 +817,7 @@
 .config-select {
   padding: 8px 12px;
   background: rgba(255, 255, 255, 0.96);
-  border-radius: 999px;
+  border-radius: 0px;
   border: 1px solid #c4e3e3;
   font-size: 0.85rem;
   line-height: 1.4;
@@ -854,7 +854,7 @@
 .checkbox-wrapper input[type="checkbox"] {
   width: 15px;
   height: 15px;
-  border-radius: 4px;
+  border-radius: 0px;
 }
 
 /* Field meta info (desc / range / default) */
@@ -934,7 +934,7 @@
   border: 1px solid #f3b1b1;
   background: #ffecec;
   color: #8a1f1f;
-  border-radius: 8px;
+  border-radius: 0px;
   line-height: 1.4;
   font-size: 0.8rem;
 }
@@ -951,7 +951,7 @@
   align-items: center;
   gap: 8px;
   padding: 6px 10px;
-  border-radius: 999px;
+  border-radius: 0px;
   border: 1px solid rgba(2, 109, 109, 0.25);
   background: #ffffff;
   color: #026d6d;
@@ -977,7 +977,7 @@
 .pill-dot {
   width: 8px;
   height: 8px;
-  border-radius: 999px;
+  border-radius: 0px;
   background: rgba(2, 109, 109, 0.35);
 }
 
@@ -994,7 +994,7 @@
 .no-algos-empty {
   margin-top: 10px;
   padding: 12px 12px;
-  border-radius: 12px;
+  border-radius: 0px;
   border: 1px dashed rgba(148, 163, 184, 0.75);
   background: linear-gradient(135deg, #ffffff, #f7fbfb);
   color: #475569;
@@ -1048,7 +1048,7 @@
   align-items: center;
   gap: 6px;
   padding: 6px 10px;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   border: 1px solid #cbd5e1;
   background: #ffffff;
   font-size: 0.75rem;
@@ -1099,6 +1099,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -1167,7 +1168,7 @@
   }
 
   .algorithm-panel {
-    border-radius: 12px;
+    border-radius: 0px;
     box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
   }
 
@@ -1212,7 +1213,7 @@
 
   .experiment-settings {
     padding: 12px 12px;
-    border-radius: 12px;
+    border-radius: 0px;
   }
 
   .experiment-info-panel {
@@ -1222,7 +1223,7 @@
     left: 8px;
     width: auto;
     max-height: calc(100vh - 90px);
-    border-radius: 16px;
+    border-radius: 0px;
     z-index: 999;
   }
 

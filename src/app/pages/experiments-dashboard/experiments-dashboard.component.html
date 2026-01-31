@@ -1,11 +1,6 @@
 <div class="experiments-dashboard full-bleed">
   @if (errorMessage()) {
-  <div
-    class="dashboard-error-banner"
-    role="alert"
-    aria-live="assertive"
-    aria-atomic="true"
-  >
+  <div class="dashboard-error-banner" role="alert" aria-live="assertive" aria-atomic="true">
     <div class="banner-content">
       <i class="fas fa-exclamation-triangle"></i>
       <span>{{ errorMessage() }}</span>
@@ -16,105 +11,57 @@
   </div>
   }
 
-  <!-- Top header -->
-  <header class="dashboard-header">
-    <div class="greeting-block">
-       <h1 class="greeting-title">Hello, {{ greetingName() }} 👋</h1>
-      <p class="greeting-subtitle">
-        Manage your experiments and compare their results.
-      </p>
-    </div>
+  <div class="studio-inner studio-layout">
+    <div class="studio-main full-width">
+      <!-- MAIN TRIPLE PANE CONTENT (now integrated actions) -->
+      <div class="command-center-layout">
+        <!-- LEFT: NAVIGATION & SELECTION -->
+        <aside class="side-pane experiments-pane">
+          <div class="pane-header header-with-actions">
+            <h2>Dashboard</h2>
 
-    <div class="header-actions">
-      <button
-        class="btn-new-experiment"
-        type="button"
-        (click)="goToNewExperiment()"
-      >
-        <i class="fas fa-plus"></i>
-        <span>New Experiment</span>
-      </button>
-    </div>
-  </header>
+            <div class="pane-actions">
+              <button class="compare-mode-btn" [class.active]="compareMode()" (click)="toggleCompareMode()"
+                title="Comparison Mode">
+                <i class="fas fa-columns"></i>
+              </button>
 
-  <!-- Main layout -->
-  <div class="dashboard-layout">
-    <!-- LEFT: experiments list -->
-    <aside class="experiments-panel">
-      <div class="panel-header">
-        <div>
-          <h2>Experiments List</h2>
-          <p class="panel-subtitle">
-            Browse your saved runs and pick one to inspect.
-          </p>
-        </div>
+              <button class="btn-new-experiment primary" (click)="goToNewExperiment()" title="New Experiment">
+                <i class="fas fa-plus"></i>
+                New Experiment
+              </button>
+            </div>
+          </div>
+          <div class="pane-content">
+            <app-experiments-list [selectedExperimentId]="selectedExperiment()?.id ?? null"
+              [currentUserEmail]="currentUserEmail" [compareIds]="compareIds()" [compareMode]="compareMode()"
+              (experimentSelected)="onExperimentSelected($event)" (editRequested)="onEditExperiment($event)"
+              (deleteRequested)="onDeleteFromList($event)" />
+          </div>
+        </aside>
 
-        <button
-          type="button"
-          class="compare-mode-btn"
-          [class.active]="compareMode()"
-          (click)="toggleCompareMode()"
-        >
-          <i class="fas fa-columns"></i>
-          <span>Compare</span>
-        </button>
+        <!-- CENTER: MAIN WORKSPACE -->
+        <main class="main-pane">
+          @if (!compareMode()) {
+          <app-experiment-details [selectedExperiment]="selectedExperiment()" (run)="onRunExperiment($event)"
+            (deleteExperiment)="onDeleteRequested()" (nameUpdated)="onNameUpdated($event)" />
+          } @else {
+          <div class="compare-workspace">
+            @if (experimentsForCompare().length < 2) { <div class="compare-placeholder">
+              <i class="fas fa-layer-group"></i>
+              <h3>Comparison Workspace</h3>
+              <p>Select at least two experiments from the left panel to compare their results side by side.</p>
+          </div>
+          } @else {
+          <app-experiments-compare [experiments]="experimentsForCompare()" />
+          }
       </div>
-
-      <section class="experiments-list-section">
-        <app-experiments-list
-          [selectedExperimentId]="selectedExperiment()?.id ?? null"
-          [currentUserEmail]="currentUserEmail"
-          [compareIds]="compareIds()"
-          [compareMode]="compareMode()"
-          (experimentSelected)="onExperimentSelected($event)"
-          (editRequested)="onEditExperiment($event)"
-          (deleteRequested)="onDeleteFromList($event)"
-        >
-        </app-experiments-list>
-      </section>
-    </aside>
-
-    <!-- RIGHT: details + results -->
-    <main class="details-panel">
-      @if (!compareMode()) {
-      <app-experiment-details
-        [selectedExperiment]="selectedExperiment()"
-        (run)="onRunExperiment($event)"
-        (deleteExperiment)="onDeleteRequested()"
-        (nameUpdated)="onNameUpdated($event)"
-      >
-      </app-experiment-details>
-      } @else if (experimentsForCompare().length < 2) {
-      <section class="compare-placeholder-card">
-        <h2>Compare mode is on</h2>
-
-        @if (experimentsForCompare().length === 0) {
-        <p>
-          Click experiments in the list on the left to start building your
-          comparison grid.
-        </p>
-        } @else if (experimentsForCompare().length === 1) {
-        <p>
-          One experiment selected. Pick at least one more from the list to see
-          them side by side.
-        </p>
-        } @else {
-        <p>
-          {{ experimentsForCompare().length }} experiments selected. Scroll down
-          to see the comparison grid.
-        </p>
-        }
-      </section>
       }
+      </main>
 
-      <!-- Comparison Grid -->
-      @if (compareMode() && experimentsForCompare().length >= 2) {
-      <app-experiments-compare
-        [experiments]="experimentsForCompare()"
-      ></app-experiments-compare>
-      }
-    </main>
+    </div>
 
+    <!-- Delete Modal -->
     <!-- Delete Confirmation Modal -->
     @if (isConfirmingDelete) {
     <div class="modal-overlay" (click)="cancelDelete()">
@@ -128,8 +75,7 @@
 
         <div class="modal-body">
           <p>
-            Are you sure you want to permanently delete this experiment and its
-            results?
+            Permanently delete this experiment?
           </p>
         </div>
 
@@ -137,13 +83,9 @@
           <button type="button" class="btn-cancel" (click)="cancelDelete()">
             Cancel
           </button>
-          <button
-            type="button"
-            class="btn-create danger"
-            (click)="
-              confirmDelete(selectedExperiment()?.id ?? 'No experiment id')
-            "
-          >
+          <button type="button" class="btn-create danger" (click)="
+                  confirmDelete(selectedExperiment()?.id ?? 'No experiment id')
+                ">
             Delete
           </button>
         </div>

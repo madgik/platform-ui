@@ -1,5 +1,12 @@
 <div class="p-4 space-y-6">
 
+  @if (errorMessage()) {
+    <div class="algorithm-error">
+      <strong>Algorithm error:</strong>
+      <span>{{ errorMessage() }}</span>
+    </div>
+  }
+
   <!-- Custom structured renderer -->
   @if (isRenderable()) {
     <app-auto-renderer [value]="mappedResult()" [algorithm]="algorithm"/>

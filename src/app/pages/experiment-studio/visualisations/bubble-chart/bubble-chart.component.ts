@@ -1,8 +1,7 @@
-import { Input, OnChanges, OnInit, SimpleChanges, AfterViewInit } from '@angular/core';
+import { Input, OnChanges, OnInit, SimpleChanges, AfterViewInit, ViewChild, OnDestroy } from '@angular/core';
 import { Component, EventEmitter, Output, ElementRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { createZoomableCirclePacking } from './zoomable-circle-packing';
-import { ErrorService } from '../../../../services/error.service';
 
 @Component({
   selector: 'app-bubble-chart',
@@ -12,7 +11,7 @@ import { ErrorService } from '../../../../services/error.service';
   imports: [FormsModule],
 })
 
-export class BubbleChartComponent implements OnInit, OnChanges, AfterViewInit {
+export class BubbleChartComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
   @Input() d3Data: any;
   @Input() highlightNode: any | null = null;
   @Input() selectedVariables: any[] = [];
@@ -28,6 +27,8 @@ export class BubbleChartComponent implements OnInit, OnChanges, AfterViewInit {
   }>;
 
   @Output() selectedNodeChange = new EventEmitter<any>();
+  @Output() nodeDoubleClicked = new EventEmitter<any>();
+  @ViewChild('chartCanvas') chartCanvas?: ElementRef<HTMLElement>;
 
   private lastHighlighted: any = null;
   private zoomToNodeFn!: (d: any) => void;
@@ -38,9 +39,33 @@ export class BubbleChartComponent implements OnInit, OnChanges, AfterViewInit {
     selectedFilters?: any[];
     colors?: Partial<BubbleChartComponent['colors']>;
   }) => void;
+  private destroyFn?: () => void;
+  private resizeObserver?: ResizeObserver;
+  private resizeRaf = 0;
+  private lastSize = { width: 0, height: 0 };
 
 
   error: string | null = null; // Holds the current error message
+  readonly DEFAULT_PALETTE = {
+    variable: '#37c0ae',
+    covariate: '#c88d00',
+    filter: '#44bf00',
+    selected: '#27d6d1',
+    groupStart: '#bcefdc',
+    groupEnd: '#4255a8',
+  };
+
+  readonly COLORBLIND_PALETTE = {
+    variable: '#648fff',
+    covariate: '#785ef0',
+    filter: '#dc267f',
+    selected: '#fe6100',
+    groupStart: '#ffb000',
+    groupEnd: '#004d40',
+  };
+
+  colorMode: 'default' | 'colorBlind' | 'custom' = 'default';
+
   colors: {
     variable: string;
     covariate: string;
@@ -48,29 +73,71 @@ export class BubbleChartComponent implements OnInit, OnChanges, AfterViewInit {
     selected: string;
     groupStart: string;
     groupEnd: string;
-  } = {
-      variable: '#37c0ae',
-      covariate: '#c88d00',
-      filter: '#44bf00',
-      selected: '#27d6d1',
-      groupStart: '#bcefdc',
-      groupEnd: '#4255a8',
-    };
+  } = { ...this.DEFAULT_PALETTE };
 
-  constructor(private elementRef: ElementRef, private errorService: ErrorService) {
-    // Subscribe to the error service
-    this.errorService.error$.subscribe((message) => {
-      this.error = message; // Update the local error property
-    });
+  showSettings = false;
+
+  toggleSettings(): void {
+    this.showSettings = !this.showSettings;
   }
 
+  applyColorMode(mode: 'default' | 'colorBlind' | 'custom'): void {
+    this.colorMode = mode;
+    if (mode === 'default') {
+      this.colors = { ...this.DEFAULT_PALETTE };
+    } else if (mode === 'colorBlind') {
+      this.colors = { ...this.COLORBLIND_PALETTE };
+    }
+    this.saveSettings();
+    this.onColorChange();
+  }
+
+  private readonly STORAGE_KEY = 'bubble_chart_colors';
+
+  private saveSettings(): void {
+    const settings = {
+      mode: this.colorMode,
+      colors: this.colors
+    };
+    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(settings));
+  }
+
+  private loadSettings(): void {
+    const saved = localStorage.getItem(this.STORAGE_KEY);
+    if (saved) {
+      try {
+        const settings = JSON.parse(saved);
+        if (settings.mode) this.colorMode = settings.mode;
+        if (settings.colors) this.colors = { ...settings.colors };
+      } catch (e) {
+        console.error('Failed to load chart settings', e);
+      }
+    }
+  }
+
+  constructor(private elementRef: ElementRef) { }
+
   ngOnInit(): void {
+    this.loadSettings();
     this.renderChart();
   }
 
   ngAfterViewInit(): void {
     this.viewReady = true;
     this.renderChart();
+    const canvas = this.chartCanvas?.nativeElement;
+    if (canvas && typeof ResizeObserver !== 'undefined') {
+      this.resizeObserver = new ResizeObserver(entries => {
+        const entry = entries[0];
+        if (!entry) return;
+        const { width, height } = entry.contentRect;
+        if (Math.floor(width) === this.lastSize.width && Math.floor(height) === this.lastSize.height) return;
+        this.lastSize = { width: Math.floor(width), height: Math.floor(height) };
+        if (this.resizeRaf) cancelAnimationFrame(this.resizeRaf);
+        this.resizeRaf = requestAnimationFrame(() => this.renderChart());
+      });
+      this.resizeObserver.observe(canvas);
+    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -105,23 +172,32 @@ export class BubbleChartComponent implements OnInit, OnChanges, AfterViewInit {
     }
   }
 
+  ngOnDestroy(): void {
+    this.destroyFn?.();
+    this.resizeObserver?.disconnect();
+    if (this.resizeRaf) cancelAnimationFrame(this.resizeRaf);
+  }
+
   renderChart(): void {
     if (!this.viewReady) return;
-    const container = this.elementRef.nativeElement.querySelector('#chart-canvas');
-    if (!container) {
-      this.errorService.setError('Chart container is not available.');
-      return;
-    }
+    const container = this.chartCanvas?.nativeElement
+      ?? this.elementRef.nativeElement.querySelector('#chart-canvas');
+    if (!container) return;
 
     if (!this.d3Data) {
-      this.errorService.setError('No data available for visualization.');
+      this.error = 'No data available for visualization.';
       return;
     }
+    this.error = null;
 
-    const { zoomToNode, refreshColors } = createZoomableCirclePacking(
+    // Clean up previous chart if exists (e.g. tooltip)
+    this.destroyFn?.();
+
+    const { zoomToNode, refreshColors, destroy } = createZoomableCirclePacking(
       this.d3Data,
       container,
       node => this.selectedNodeChange.emit(node),
+      node => this.nodeDoubleClicked.emit(node),
       {
         selectedVariables: this.selectedVariables,
         selectedCovariates: this.selectedCovariates,
@@ -131,6 +207,7 @@ export class BubbleChartComponent implements OnInit, OnChanges, AfterViewInit {
     );
     this.zoomToNodeFn = zoomToNode;
     this.refreshColorsFn = refreshColors;
+    this.destroyFn = destroy;
 
 
     // apply pending highlight after chart is created
@@ -184,5 +261,6 @@ export class BubbleChartComponent implements OnInit, OnChanges, AfterViewInit {
     if (this.refreshColorsFn) {
       this.refreshColorsFn({ colors: this.colors });
     }
+    this.saveSettings();
   }
 }

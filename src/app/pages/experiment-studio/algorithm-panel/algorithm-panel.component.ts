@@ -548,7 +548,8 @@ export class AlgorithmPanelComponent {
 
     if (!algo) {
       console.error('No algorithm selected in service.');
-      this.errorService.setError('Please choose an algorithm before running.');
+      const msg = 'Please choose an algorithm before running.';
+      this.errorMsg.set(msg);
       this.experimentStudioService.setRunning(false);
       return;
     }
@@ -601,7 +602,12 @@ export class AlgorithmPanelComponent {
       finalAlgorithmName
     );
     if (!result$) {
-      this.errorService.setError('Unable to start the run. Check your selections.');
+      const msg = 'Unable to start the run. Check your selections.';
+      this.errorMsg.set(msg);
+      this.result.set({
+        status: 'error',
+        error: msg,
+      });
       return;
     }
 
@@ -615,7 +621,12 @@ export class AlgorithmPanelComponent {
           payload?.message ||
           'The server returned an error for this run.';
         this.errorMsg.set(msg);
-        this.errorService.setError(msg);
+        this.result.set({
+          status: 'error',
+          error: msg,
+          payload,
+        });
+        this.experimentStudioService.clearSelectedAlgorithm();
         this.experimentStudioService.setRunning(false);
         return;
       }
@@ -635,7 +646,7 @@ export class AlgorithmPanelComponent {
       });
       this.lastUsedAlgorithm = finalAlgorithmName;
       this.lastUsedSchema.set(schema);
-      this.selectedAlgorithm.set(null);
+      this.experimentStudioService.clearSelectedAlgorithm();
       this.experimentStudioService.setRunning(false);
     });
 

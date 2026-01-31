@@ -1,7 +1,7 @@
 import { BubbleChartComponent } from './../visualisations/bubble-chart/bubble-chart.component';
 import { ErrorService } from '../../../services/error.service';
 import { ExperimentStudioService } from '../../../services/experiment-studio.service';
-import { Component, signal, inject, Input, WritableSignal, OnDestroy, ElementRef, ViewChild } from '@angular/core';
+import { Component, signal, inject, Input, WritableSignal, OnDestroy, ElementRef, ViewChild, effect, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
@@ -13,14 +13,14 @@ import { VariableFilterSelectionComponent } from './variable-filter-selection/va
 import { DistributionGraphComponent } from './distribution-graph/distribution-graph.component';
 import { SpinnerComponent } from '../../shared/spinner/spinner.component';
 import { catchError, map, of, Subject, switchMap, takeUntil } from 'rxjs';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import { PdfExportService } from '../../../services/pdf-export.service';
 
 @Component({
   selector: 'app-variables-panel',
   standalone: true,
   templateUrl: './variables-panel.component.html',
   styleUrls: ['./variables-panel.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     MatChipsModule,
@@ -42,6 +42,8 @@ export class VariablesPanelComponent implements OnDestroy {
   highlightNode: any = null;
 
   experimentStudioService = inject(ExperimentStudioService);
+  pdfExportService = inject(PdfExportService);
+  private cdr = inject(ChangeDetectorRef);
 
   errorService = inject(ErrorService);
   filteredVariables: WritableSignal<any[]> = signal([]);
@@ -70,10 +72,24 @@ export class VariablesPanelComponent implements OnDestroy {
   refreshKey = signal(0);
   private destroy$ = new Subject<void>();
   private histogramRequest$ = new Subject<{ codes: string[]; label?: string }>();
+  private lastModelKey: string | null = null;
 
   constructor() {
     this.setupHistogramPipeline();
+
+    effect(() => {
+      const model = this.selectedDataModel();
+      if (!model) return;
+      const key = `${model.code}:${model.version}`;
+      if (this.lastModelKey === key) return;
+      this.lastModelKey = key;
+      this.loadVisualizationData();
+      if (this.d3Data) {
+        this.onSelectedNodeChange(this.d3Data);
+      }
+    }, { allowSignalWrites: true });
   }
+
 
   ngOnInit(): void {
     this.selectedDataModel.set(this.defaultModel);
@@ -127,6 +143,12 @@ export class VariablesPanelComponent implements OnDestroy {
     }
     this.highlightNode = variable;
     this.onSelectedNodeChange(variable);
+  }
+
+  onNodeDoubleClicked(node: any): void {
+    this.onSelectedNodeChange(node);
+    this.addVariableFromBubble();
+    this.cdr.detectChanges();
   }
 
   get selectedVariables(): any[] {
@@ -202,9 +224,17 @@ export class VariablesPanelComponent implements OnDestroy {
     this.longitudinalModels = longitudinal;
 
     if (dataModels.length > 0) {
-      this.selectedDataModel.set(crossSectional[0] || longitudinal[0] || null);
+      const current = this.selectedDataModel();
+      const models = [...crossSectional, ...longitudinal];
+      const next = current
+        ? models.find(
+          (model) =>
+            model.code === current.code
+            && String(model.version) === String(current.version)
+        ) ?? null
+        : null;
+      this.selectedDataModel.set(next ?? models[0] ?? null);
       this.experimentStudioService.selectedDataModel.set(this.selectedDataModel() ?? null);
-
       if (this.selectedDataModel()) {
         this.loadVisualizationData();
         if (this.d3Data) {
@@ -233,8 +263,8 @@ export class VariablesPanelComponent implements OnDestroy {
     const allowedCodes = new Set<string>(
       Array.isArray(datasetSource)
         ? datasetSource
-            .map((item: any) => String(item?.code ?? item ?? ''))
-            .filter((code: string) => code)
+          .map((item: any) => String(item?.code ?? item ?? ''))
+          .filter((code: string) => code)
         : []
     );
     this.availableDatasets = datasetEnums
@@ -266,6 +296,14 @@ export class VariablesPanelComponent implements OnDestroy {
   // end of services functions
   onSelectedDataModelChange(selectedDataModel: DataModel | null): void {
     if (!selectedDataModel) return;
+    const current = this.selectedDataModel();
+    if (
+      current
+      && current.code === selectedDataModel.code
+      && String(current.version) === String(selectedDataModel.version)
+    ) {
+      return;
+    }
     // update service signal
     this.experimentStudioService.selectedDataModel.set(selectedDataModel);
 
@@ -329,6 +367,7 @@ export class VariablesPanelComponent implements OnDestroy {
 
   onSelectedNodeChange(node: any): void {
     this.selectedNode = { ...node };
+    this.cdr.detectChanges();
     this.errorMessage.set(null);
     this.distributionData.set(null); // clear previous histogram
     this.groupHistogramData.set(null);
@@ -496,147 +535,29 @@ export class VariablesPanelComponent implements OnDestroy {
   async exportDistributionPdf(): Promise<void> {
     if (this.isExportDisabled()) return;
     this.isExporting.set(true);
-    document.body.classList.add('pdf-exporting');
-    await new Promise(res => setTimeout(res, 50));
 
     try {
-      const doc = new jsPDF('p', 'mm', 'a4');
-      const isGroupView = !!this.groupHistogramData();
-      const title = isGroupView ? 'Group Description' : 'Distribution Graph';
-      const nodeLabel = String(this.selectedNode?.label ?? this.distributionData()?.variableName ?? '');
-      const model = this.selectedDataModel();
-      const modelLabel = String(model?.label ?? model?.code ?? '');
-      const selectedDatasetCodes = this.experimentStudioService.selectedDatasets();
-      const datasetLabels = selectedDatasetCodes
-        .map(code => this.availableDatasets.find(d => d.code === code)?.label ?? code)
-        .filter(label => !!label);
-      const meta = this.groupHistogramMeta();
-      const variableDescription = String(this.selectedNode?.description ?? '');
-
-      doc.setFontSize(16);
-      doc.text(title, 12, 14);
-      if (nodeLabel) {
-        doc.setFontSize(11);
-        doc.text(nodeLabel, 12, 21);
-      }
-
-      let cursorY = nodeLabel ? 26 : 20;
-      if (modelLabel) {
-        doc.setFontSize(9);
-        doc.text(`Data model: ${modelLabel}`, 12, cursorY);
-        cursorY += 5;
-      }
-      if (!isGroupView && datasetLabels.length) {
-        doc.setFontSize(9);
-        const datasetLines = doc.splitTextToSize(`Datasets: ${datasetLabels.join(', ')}`, 180);
-        doc.text(datasetLines, 12, cursorY);
-        cursorY += datasetLines.length * 4 + 1;
-      }
-      if (!isGroupView && variableDescription) {
-        doc.setFontSize(9);
-        const descriptionLines = doc.splitTextToSize(`Description: ${variableDescription}`, 180);
-        doc.text(descriptionLines, 12, cursorY);
-        cursorY += descriptionLines.length * 4 + 1;
-      }
-      if (!isGroupView && meta?.pathNodes?.length) {
-        const pathText = meta.pathNodes.map((node) => node.label).join(' > ');
-        doc.setFontSize(9);
-        const pathLines = doc.splitTextToSize(`Path: ${pathText}`, 180);
-        doc.text(pathLines, 12, cursorY);
-        cursorY += pathLines.length * 4 + 2;
-      }
-      if (!isGroupView && meta) {
-        doc.setFontSize(9);
-        const countLabel = meta.hasGroups ? 'Number of groups in' : 'Number of variables in';
-        doc.text(`${countLabel} ${nodeLabel}: ${meta.groupCount}`, 12, cursorY);
-        cursorY += 6;
-      }
-
       const exportTarget = this.distributionExport?.nativeElement;
       if (!exportTarget) {
         console.warn('Distribution export target not found.');
         return;
       }
 
-      const svgElement = exportTarget.querySelector('#histogram-chart svg') as SVGSVGElement | null;
-      let imgData: string | null = null;
-      let rawWidth = 0;
-      let rawHeight = 0;
+      await this.pdfExportService.exportDistributionPdf(exportTarget, {
+        title: this.groupHistogramData() ? 'Group Description' : 'Distribution Graph',
+        nodeLabel: String(this.selectedNode?.label ?? this.distributionData()?.variableName ?? ''),
+        modelLabel: String(this.selectedDataModel()?.label ?? this.selectedDataModel()?.code ?? ''),
+        datasetLabels: this.experimentStudioService.selectedDatasets()
+          .map(code => this.availableDatasets.find(d => d.code === code)?.label ?? code)
+          .filter(label => !!label),
+        description: String(this.selectedNode?.description ?? ''),
+        meta: this.groupHistogramMeta() ?? undefined,
+        isGroupView: !!this.groupHistogramData()
+      });
 
-      if (svgElement) {
-        const cloned = svgElement.cloneNode(true) as SVGSVGElement;
-        if (!cloned.getAttribute('xmlns')) {
-          cloned.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-        }
-        const widthAttr = cloned.getAttribute('width');
-        const heightAttr = cloned.getAttribute('height');
-        rawWidth = widthAttr ? parseFloat(widthAttr) : svgElement.getBoundingClientRect().width;
-        rawHeight = heightAttr ? parseFloat(heightAttr) : svgElement.getBoundingClientRect().height;
-
-        const serializer = new XMLSerializer();
-        const svgData = serializer.serializeToString(cloned);
-        const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-        const url = URL.createObjectURL(svgBlob);
-
-        imgData = await new Promise<string | null>((resolve) => {
-          const img = new Image();
-          img.onload = () => {
-            const canvas = document.createElement('canvas');
-            const width = rawWidth || img.width;
-            const height = rawHeight || img.height;
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            if (ctx) {
-              ctx.fillStyle = '#ffffff';
-              ctx.fillRect(0, 0, width, height);
-              ctx.drawImage(img, 0, 0, width, height);
-              resolve(canvas.toDataURL('image/png'));
-            } else {
-              resolve(null);
-            }
-            URL.revokeObjectURL(url);
-          };
-          img.onerror = () => {
-            URL.revokeObjectURL(url);
-            resolve(null);
-          };
-          img.src = url;
-        });
-      }
-
-      if (!imgData) {
-        const canvas = await html2canvas(exportTarget, {
-          backgroundColor: '#ffffff',
-          scale: 1.25,
-          useCORS: true,
-          logging: false,
-        });
-        imgData = canvas.toDataURL('image/png');
-        rawWidth = canvas.width;
-        rawHeight = canvas.height;
-      }
-
-      const pageWidth = 210;
-      const margin = 12;
-      const maxWidth = pageWidth - margin * 2;
-      const imgHeight = rawWidth && rawHeight ? (rawHeight * maxWidth) / rawWidth : 120;
-      const startY = cursorY;
-      const maxHeight = 297 - startY - margin;
-
-      let renderWidth = maxWidth;
-      let renderHeight = imgHeight;
-      if (imgHeight > maxHeight) {
-        renderHeight = maxHeight;
-        renderWidth = rawWidth && rawHeight ? (rawWidth * renderHeight) / rawHeight : maxWidth;
-      }
-
-      doc.addImage(imgData, 'PNG', margin, startY, renderWidth, renderHeight);
-      doc.save(`${nodeLabel ? nodeLabel.replace(/[^\w\s-]/g, '').trim() : 'distribution'}_summary.pdf`);
     } catch (err) {
       console.error('Distribution PDF export failed:', err);
     } finally {
-      document.body.classList.remove('pdf-exporting');
       this.isExporting.set(false);
     }
   }

@@ -1,8 +1,7 @@
-import { AfterViewInit, Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { VariablesPanelComponent } from './variables-panel/variables-panel.component';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { FormsModule } from '@angular/forms';
 import { ExperimentStudioService } from '../../services/experiment-studio.service';
 import { AlgorithmPanelComponent } from './algorithm-panel/algorithm-panel.component';
 import { AuthService } from '../../services/auth.service';
@@ -19,7 +18,6 @@ import { Subject, takeUntil } from 'rxjs';
     CommonModule,
     VariablesPanelComponent,
     AlgorithmPanelComponent,
-    FormsModule,
     SpinnerComponent,
     StatisticAnalysisPanelComponent,
     RouterLink
@@ -36,17 +34,50 @@ export class ExperimentStudioComponent implements OnInit, OnDestroy, AfterViewIn
     private errorService: ErrorService
   ) { }
 
-  // private service via inject
-  private expStudioService = inject(ExperimentStudioService);
+  // Public service for telemetry/ribbon signals
+  public expStudioService = inject(ExperimentStudioService);
   readonly isRunning = this.expStudioService.isRunning;
+  readonly selectedDataModel = this.expStudioService.selectedDataModel;
+  readonly selectedDatasets = this.expStudioService.selectedDatasets;
+  readonly selectedAlgorithm = this.expStudioService.selectedAlgorithm;
+  readonly experimentName = this.expStudioService.experimentName;
+  readonly lastExperimentUUID = this.expStudioService.currentExperimentUUID;
+  readonly lastSavedName = this.expStudioService.lastSavedName;
+  @ViewChild(AlgorithmPanelComponent) algorithmPanel?: AlgorithmPanelComponent;
+  saveExperimentName() {
+    this.algorithmPanel?.saveExperimentName();
+  }
+
+  onExperimentNameChange(val: string) {
+    this.expStudioService.setExperimentName(val);
+  }
+
+  onRunClick() {
+    this.algorithmPanel?.onClickRunExp();
+  }
+
+  isRunDisabled() {
+    return this.algorithmPanel?.isRunButtonDisabled() ?? true;
+  }
   private destroy$ = new Subject<void>();
   errorMessage = '';
   activeSection = 'variables-top';
+  mobileNavOpen = false;
+  sidebarCollapsed = false;
   private sectionObserver?: IntersectionObserver;
+
+  toggleMobileNav() {
+    this.mobileNavOpen = !this.mobileNavOpen;
+  }
+
+  toggleSidebarCollapse() {
+    this.sidebarCollapsed = !this.sidebarCollapsed;
+  }
 
   ngOnInit(): void {
     // Reset any lingering global errors when arriving on the studio
     this.errorService.clearError();
+    this.expStudioService.loadAndCategorizeModels().subscribe();
 
     this.errorService.error$
       .pipe(takeUntil(this.destroy$))
@@ -68,6 +99,11 @@ export class ExperimentStudioComponent implements OnInit, OnDestroy, AfterViewIn
 
   ngAfterViewInit(): void {
     this.setupSectionObserver();
+    this.scrollToHash(this.route.snapshot.fragment);
+
+    this.route.fragment
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((fragment) => this.scrollToHash(fragment));
   }
 
   ngOnDestroy(): void {
@@ -80,6 +116,7 @@ export class ExperimentStudioComponent implements OnInit, OnDestroy, AfterViewIn
 
   dismissError(): void {
     this.errorService.clearError();
+    this.expStudioService.loadAndCategorizeModels().subscribe();
     this.errorMessage = '';
   }
 
@@ -93,35 +130,54 @@ export class ExperimentStudioComponent implements OnInit, OnDestroy, AfterViewIn
       'algorithm-section',
     ];
 
-    const targets = sectionIds
-      .map((id) => document.getElementById(id))
-      .filter((el): el is HTMLElement => !!el);
+    const observerCallback: IntersectionObserverCallback = (entries) => {
+      const visible = entries.filter((entry) => entry.isIntersecting);
+      if (!visible.length) return;
 
-    if (!targets.length) return;
+      const inView = visible
+        .map((entry) => ({
+          id: entry.target.id,
+          top: entry.boundingClientRect.top,
+        }))
+        .sort((a, b) => a.top - b.top);
 
-    this.sectionObserver = new IntersectionObserver(
-      (entries) => {
-        const visible = entries.filter((entry) => entry.isIntersecting);
-        if (!visible.length) return;
+      const firstBelowTop = inView.find((entry) => entry.top >= 0);
+      this.activeSection = (firstBelowTop ?? inView[0]).id;
+    };
 
-        const inView = visible
-          .map((entry) => ({
-            id: entry.target.id,
-            top: entry.boundingClientRect.top,
-          }))
-          .sort((a, b) => a.top - b.top);
+    // Retry setup for dynamic content
+    let attempts = 0;
+    const tryObserve = () => {
+      const targets = sectionIds
+        .map((id) => document.getElementById(id))
+        .filter((el): el is HTMLElement => !!el);
 
-        const firstBelowTop = inView.find((entry) => entry.top >= 0);
-        this.activeSection = (firstBelowTop ?? inView[0]).id;
-      },
-      {
-        root: null,
-        threshold: [0.1, 0.2, 0.4],
-        rootMargin: '0px 0px -60% 0px',
+      if (targets.length === sectionIds.length || attempts > 5) {
+        if (this.sectionObserver) this.sectionObserver.disconnect();
+
+        this.sectionObserver = new IntersectionObserver(observerCallback, {
+          root: null,
+          threshold: [0.1, 0.2, 0.4],
+          rootMargin: '0px 0px -60% 0px',
+        });
+
+        targets.forEach((el) => this.sectionObserver?.observe(el));
+      } else {
+        attempts++;
+        setTimeout(tryObserve, 200);
       }
-    );
+    };
 
-    targets.forEach((el) => this.sectionObserver?.observe(el));
+    tryObserve();
+  }
+
+  private scrollToHash(fragment: string | null): void {
+    if (!fragment) return;
+    const target = document.getElementById(fragment);
+    if (!target) return;
+    requestAnimationFrame(() => {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
   }
 
   // Clean create mode. resets all of the studio's state
@@ -160,6 +216,7 @@ export class ExperimentStudioComponent implements OnInit, OnDestroy, AfterViewIn
     this.expStudioService.setExperimentName('');
     this.expStudioService.setExperimentDescription('');
     this.errorService.clearError();
+    this.expStudioService.loadAndCategorizeModels().subscribe();
 
     // Go to experiments dashboard
     this.router.navigate(['/experiments-dashboard']);

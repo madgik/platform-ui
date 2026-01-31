@@ -107,9 +107,11 @@
 .experiments-list::-webkit-scrollbar {
   width: 6px;
 }
+
 .experiments-list::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .experiments-list::-webkit-scrollbar-thumb {
   background: rgba(148, 163, 184, 0.55);
   border-radius: 999px;
@@ -119,34 +121,31 @@
 .experiment-row {
   width: 100%;
   box-sizing: border-box;
-  border: none;
-  background: #ffffff;
-  border-radius: 14px;
-  padding: 10px 10px 10px 12px;
+  background: var(--card-bg);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 16px;
   cursor: pointer;
   text-align: left;
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
-  transition: box-shadow 0.12s ease, transform 0.12s ease, background 0.12s ease,
-    border-color 0.12s ease;
-  border: 1px solid transparent;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid var(--border-color);
 }
 
 .experiment-row:hover {
-  background: linear-gradient(180deg, #c2fdf82e, #5fffea59);
-  border-color: rgba(2, 128, 128, 0.22);
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+  background: #f8fafc;
+  border-color: var(--primary-light);
   transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 
 .experiment-row.selected {
-  background: linear-gradient(180deg, #4cf8ea2f, #f973b625);
-  border-color: rgba(14, 165, 233, 0.6);
-  box-shadow: 0 14px 32px rgba(8, 47, 73, 0.18);
-  transform: translateY(-1px);
+  background: #f0f9ff;
+  border-color: var(--primary-color);
+  box-shadow: var(--shadow-md);
   position: relative;
 }
 
@@ -154,11 +153,11 @@
   content: "";
   position: absolute;
   left: 0;
-  top: 8px;
-  bottom: 8px;
-  width: 3px;
-  border-radius: 999px;
-  background: linear-gradient(180deg, #0f766e, #f973b7);
+  top: 12px;
+  bottom: 12px;
+  width: 4px;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: var(--primary-color);
 }
 
 .experiment-row.selected:hover {
@@ -202,13 +201,27 @@
 }
 
 .status-pill.completed {
-  background: #ecfdf3;
-  color: #15803d;
+  background: #f0fdf4;
+  color: #166534;
+}
+
+.status-pill.completed::before {
+  content: '\f058';
+  font-family: 'Font Awesome 5 Free';
+  font-weight: 900;
+  margin-right: 4px;
 }
 
 .status-pill.error {
   background: #fef2f2;
-  color: #b91c1c;
+  color: #991b1b;
+}
+
+.status-pill.error::before {
+  content: '\f06a';
+  font-family: 'Font Awesome 5 Free';
+  font-weight: 900;
+  margin-right: 4px;
 }
 
 /* META LINE */
@@ -251,23 +264,24 @@
 }
 
 .icon-btn {
-  border: none;
-  background: #f1f5f9;
-  border-radius: 999px;
-  width: 28px;
-  height: 28px;
+  border: 1px solid var(--border-color);
+  background: #ffffff;
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
   display: grid;
   place-items: center;
   cursor: pointer;
-  font-size: 0.75rem;
-  color: #64748b;
-  transition: background 0.12s ease, color 0.12s ease, transform 0.12s ease;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  transition: all 0.2s ease;
 }
 
 .icon-btn:hover {
-  background: #e0f2fe;
-  color: #0284c7;
-  transform: translateY(-1px);
+  background: #f1f5f9;
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+  transform: scale(1.05);
 }
 
 .icon-btn.danger:hover {

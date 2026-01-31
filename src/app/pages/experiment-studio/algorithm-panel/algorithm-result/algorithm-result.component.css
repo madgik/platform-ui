@@ -69,6 +69,25 @@
   margin-top: 4px;
 }
 
+/* ERROR MESSAGE */
+
+.algorithm-error {
+  border: 1px solid #f6c8c8;
+  background: #fff3f3;
+  color: #9b1c1c;
+  padding: 0.75rem 0.9rem;
+  border-radius: 10px;
+  font-weight: 600;
+  display: flex;
+  gap: 0.35rem;
+  align-items: baseline;
+  box-shadow: 0 8px 18px rgba(153, 27, 27, 0.08);
+}
+
+.algorithm-error span {
+  font-weight: 500;
+}
+
 /* TYPOGRAPHY HELPERS */
 
 h6 {

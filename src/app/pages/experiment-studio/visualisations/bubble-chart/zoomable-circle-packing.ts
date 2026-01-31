@@ -97,6 +97,7 @@ export function createZoomableCirclePacking(
   data: any,
   container: HTMLElement,
   onNodeClick: (node: any) => void,
+  onNodeDoubleClick: (node: any) => void,
   options?: {
     selectedVariables?: any[];
     selectedCovariates?: any[];
@@ -114,7 +115,10 @@ export function createZoomableCirclePacking(
 
   let colors: BubbleColorConfig = { ...defaultColors, ...(options?.colors ?? {}) };
 
-  const width = 700, height = 728;
+  const bounds = container.getBoundingClientRect();
+  const width = Math.max(320, Math.floor(bounds.width || 0)) || 700;
+  const height = Math.max(320, Math.floor(bounds.height || 0)) || 728;
+  const size = Math.min(width, height);
   let groupColor = d3.scaleLinear<string>()
     .domain([0, 5])
     .range([colors.groupStart, colors.groupEnd])
@@ -203,7 +207,7 @@ export function createZoomableCirclePacking(
     .style('cursor', 'pointer')
     .attr(
       'style',
-      `min-width: 100%; height: auto; display: block; margin: 0 -14px;
+      `width: 100%; height: 100%; display: block; margin: 0;
        background: transparent; cursor: pointer;`
     );
 
@@ -240,6 +244,12 @@ export function createZoomableCirclePacking(
       }
       zoom(event, d);
     })
+    .on('dblclick', (event: MouseEvent, d: any) => {
+      event.stopPropagation();
+      if (!d.children) {
+        onNodeDoubleClick(d.data);
+      }
+    })
     .on('mouseover', function (event, d) {
       d3.select(this)
         .attr('stroke', '#000')
@@ -271,7 +281,7 @@ export function createZoomableCirclePacking(
 
   // Functions
   function zoomTo(v: [number, number, number]) {
-    const k = width / v[2];
+    const k = size / v[2];
     view = v;
 
     node
@@ -344,7 +354,7 @@ export function createZoomableCirclePacking(
 
     labelNodes.each(function (nd: any) {
       const el = d3.select(this as SVGGElement);
-      if (nd.parent === group && shouldShowLabel(nd, width / zoomTarget[2])) {
+      if (nd.parent === group && shouldShowLabel(nd, size / zoomTarget[2])) {
         el.style('display', 'inline').style('fill-opacity', 0.6);
         createLabelGroup(el, nd);
       } else el.style('display', 'none').style('fill-opacity', 0);
@@ -372,7 +382,7 @@ export function createZoomableCirclePacking(
 
         labelNodes.each(function (nd: any) {
           const el = d3.select(this as SVGGElement);
-          if (nd.parent === group && shouldShowLabel(nd, width / zoomTarget[2])) {
+          if (nd.parent === group && shouldShowLabel(nd, size / zoomTarget[2])) {
             el.style('display', 'inline')
               .transition()
               .duration(250)
