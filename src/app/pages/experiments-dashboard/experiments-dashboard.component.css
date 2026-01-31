@@ -13,6 +13,42 @@
   width: 100%;
   max-width: none;
   display: flex;
+  flex-direction: column;
+}
+
+.dashboard-greeting {
+  padding: 12px 10px 24px;
+  animation: slideDownIn 0.6s ease-out;
+}
+
+.greeting-content h1 {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #0f172a 30%, #028080 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.02em;
+}
+
+.greeting-content p {
+  margin: 4px 0 0;
+  font-size: 0.95rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+@keyframes slideDownIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Sidebar structure mirrored from Studio */
@@ -201,12 +237,11 @@
 /* REBALANCED DASHBOARD LAYOUT */
 .command-center-layout {
   display: grid;
-  grid-template-columns: 420px 1fr;
-  gap: 20px;
+  grid-template-columns: 420px minmax(0, 1fr);
+  gap: 24px;
   align-items: stretch;
-  height: calc(100vh - 100px);
-  /* Height adjusted for no top header */
-  padding-top: 32px;
+  height: calc(100vh - 180px);
+  padding-bottom: 20px;
 }
 
 .header-with-actions {

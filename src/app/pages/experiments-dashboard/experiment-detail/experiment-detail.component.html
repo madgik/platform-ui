@@ -4,11 +4,16 @@
     <i class="fas fa-check-circle"></i>
     <span>{{ copyToastMessage() }}</span>
   </div>
-  } @if (!selectedExperiment()) {
+  }
+
+  @if (!selectedExperiment()) {
   <div class="empty-details">
-    <h2>Select an experiment</h2>
+    <div class="empty-illustration">
+      <i class="fas fa-microscope"></i>
+    </div>
+    <h2>Select an individual experiment</h2>
     <p>
-      Pick an experiment from the list to see its configuration and results.
+      Choose an experiment from the left list to explore its configuration and comprehensive results.
     </p>
   </div>
   } @else {
@@ -18,13 +23,10 @@
       <div class="meta-header">
         <span class="meta-pill">Experiment</span>
 
-        <span
-          class="status-chip"
-          [ngClass]="{
+        <span class="status-chip" [ngClass]="{
             completed: selectedExperiment()?.status === 'success',
             error: selectedExperiment()?.status === 'error'
-          }"
-        >
+          }">
           {{ selectedExperiment()?.status }}
         </span>
       </div>
@@ -34,36 +36,17 @@
         <h1 class="experiment-title">
           {{ selectedExperiment()?.name }}
         </h1>
-        <button
-          type="button"
-          class="title-edit-btn"
-          (click)="startNameEdit()"
-          title="Edit experiment name"
-        >
+        <button type="button" class="title-edit-btn" (click)="startNameEdit()" title="Edit experiment name">
           <i class="far fa-edit"></i>
         </button>
         } @else {
         <div class="title-edit-group">
-          <input
-            class="title-edit-input"
-            [value]="nameDraft()"
-            (input)="nameDraft.set($any($event.target).value)"
-            [disabled]="nameSaving()"
-          />
-          <button
-            type="button"
-            class="title-edit-action"
-            (click)="saveNameEdit()"
-            [disabled]="nameSaving()"
-          >
+          <input class="title-edit-input" [value]="nameDraft()" (input)="nameDraft.set($any($event.target).value)"
+            [disabled]="nameSaving()" />
+          <button type="button" class="title-edit-action" (click)="saveNameEdit()" [disabled]="nameSaving()">
             Save
           </button>
-          <button
-            type="button"
-            class="title-edit-action cancel"
-            (click)="cancelNameEdit()"
-            [disabled]="nameSaving()"
-          >
+          <button type="button" class="title-edit-action cancel" (click)="cancelNameEdit()" [disabled]="nameSaving()">
             Cancel
           </button>
         </div>
@@ -72,10 +55,6 @@
       @if (nameError()) {
       <p class="name-error">{{ nameError() }}</p>
       }
-
-<!--      <p class="experiment-description">-->
-<!--        {{ selectedExperiment()?.description || "No description provided." }}-->
-<!--      </p>-->
 
       <div class="meta-grid">
         <div class="meta-item">
@@ -101,36 +80,28 @@
       </div>
 
       <div class="details-actions">
-        <button type="button" class="ghost-btn" (click)="runExperiment()">
-          <i class="fas fa-play-circle"></i>
-          <span>Run again</span>
-        </button>
+        <div class="action-group primary-actions">
+          <button type="button" class="ghost-btn run-btn" (click)="runExperiment()">
+            <i class="fas fa-play"></i>
+            <span>Run again</span>
+          </button>
+          <button type="button" class="ghost-btn export-btn" (click)="onExportPdf()" title="Export to PDF">
+            <i class="far fa-file-pdf"></i>
+            <span>Export PDF</span>
+          </button>
+        </div>
 
-        <button
-          type="button"
-          class="ghost-btn"
-          [class.shared]="isShared()"
-          (click)="onToggleShare()"
-          [title]="isShared() ? 'Stop sharing' : 'Share with others'"
-        >
-          <i class="fas fa-share-alt"></i>
-          <span>{{ isShared() ? "Shared" : "Share" }}</span>
-        </button>
-
-        <button
-          type="button"
-          class="ghost-btn"
-          (click)="onExportPdf()"
-          title="Export to PDF"
-        >
-          <i class="far fa-file-pdf"></i>
-          <span>Export</span>
-        </button>
-
-        <button type="button" class="ghost-btn danger" (click)="onDelete()">
-          <i class="far fa-trash-alt"></i>
-          <span>Delete</span>
-        </button>
+        <div class="action-group secondary-actions">
+          <button type="button" class="ghost-btn share-btn" [class.shared]="isShared()" (click)="onToggleShare()"
+            [title]="isShared() ? 'Stop sharing' : 'Share with others'">
+            <i class="fas" [class.fa-link]="isShared()" [class.fa-share-alt]="!isShared()"></i>
+            <span>{{ isShared() ? "Shared" : "Share" }}</span>
+          </button>
+          <button type="button" class="ghost-btn danger delete-btn" (click)="onDelete()">
+            <i class="far fa-trash-alt"></i>
+            <span>Delete</span>
+          </button>
+        </div>
       </div>
     </section>
 
@@ -154,7 +125,7 @@
               <i class="fas fa-layer-group"></i>
               <span class="domain-text">{{
                 exp.domain || "Not specified"
-              }}</span>
+                }}</span>
             </div>
           </div>
 
@@ -220,15 +191,9 @@
       } @else if (loadError()) {
       <div class="error-box">{{ loadError() }}</div>
       } @else if (experimentResult()) {
-      <app-algorithm-result
-        [result]="experimentResult()"
-        [schema]="outputSchema()"
-        [algorithm]="experimentalAlgorithmName()"
-        [enumMaps]="enumMaps()"
-        [yVar]="yVar()"
-        [xVar]="xVar()"
-        [labelMap]="labelMap()"
-      />
+      <app-algorithm-result [result]="experimentResult()" [schema]="outputSchema()"
+        [algorithm]="experimentalAlgorithmName()" [enumMaps]="enumMaps()" [yVar]="yVar()" [xVar]="xVar()"
+        [labelMap]="labelMap()" />
       } @else {
       <p class="no-data-text">No results available for this experiment yet.</p>
       }
