@@ -71,13 +71,14 @@
 
 /* Row base */
 .compare-row {
-  border-radius: 14px;
-  padding: 10px 10px 12px;
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.06);
-  border: 1px solid rgba(226, 232, 240, 0.9);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease,
-    background 0.15s ease, transform 0.12s ease;
+  border-radius: 20px;
+  padding: 12px 14px 16px;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.05);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Expanded / collapsed accents */
@@ -184,13 +185,15 @@
 
 /* Cards */
 .compare-card {
-  border-radius: 16px;
-  background: #ffffff;
-  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.08);
-  padding: 12px 14px 14px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(4px);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+  padding: 14px 16px 16px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.15);
 }
 
 .compare-card-header {
@@ -221,24 +224,28 @@
 }
 
 .status-chip {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 3px 8px;
+  letter-spacing: 0.06em;
+  padding: 3px 10px;
   border-radius: 999px;
   background: #f1f5f9;
   color: #475569;
   flex-shrink: 0;
+  border: 1px solid transparent;
 }
 
 .status-chip.completed {
-  background: #ecfdf3;
-  color: #15803d;
+  background: #ecfdf5;
+  color: #059669;
+  border-color: rgba(16, 185, 129, 0.2);
 }
 
 .status-chip.error {
-  background: #fef2f2;
-  color: #b91c1c;
+  background: #fff1f2;
+  color: #e11d48;
+  border-color: rgba(225, 29, 72, 0.2);
 }
 
 /* Details table */
@@ -399,16 +406,18 @@
 
 .tag {
   font-size: 0.72rem;
-  padding: 4px 8px;
+  font-weight: 600;
+  padding: 4px 10px;
   border-radius: 999px;
-  background: #f1f5f9;
-  color: #0f172a;
-  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: rgba(2, 128, 144, 0.08);
+  color: #028080;
+  border: 1px solid rgba(2, 128, 144, 0.18);
   max-width: 100%;
 }
 
 /* Mobile: always 1 col */
 @media (max-width: 960px) {
+
   .compare-row.cols-2 .compare-grid,
   .compare-row.cols-3 .compare-grid {
     grid-template-columns: minmax(0, 1fr);

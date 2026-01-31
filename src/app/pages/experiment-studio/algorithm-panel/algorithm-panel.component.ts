@@ -304,6 +304,28 @@ export class AlgorithmPanelComponent {
         console.warn('[Validation] Missing fields from result:', missing.map(f => f.key));
       }
     });
+
+    // Auto-expand categories when they contain available algorithms
+    effect(() => {
+      const categories = this.filteredAlgorithmCategories();
+      const newlyAvailable = categories
+        .filter(c => c.algorithms.some(a => !a.isDisabled))
+        .map(c => c.name);
+
+      if (newlyAvailable.length > 0) {
+        this.openCategories.update(current => {
+          const next = [...current];
+          let changed = false;
+          newlyAvailable.forEach(cat => {
+            if (!next.includes(cat)) {
+              next.push(cat);
+              changed = true;
+            }
+          });
+          return changed ? next : current;
+        });
+      }
+    }, { allowSignalWrites: true });
   }
 
 
@@ -508,7 +530,7 @@ export class AlgorithmPanelComponent {
     return this.experimentStudioService.selectedCovariates();
   }
 
-  openCategories: string[] = [];
+  openCategories = signal<string[]>([]);
   infoPanelOpen = false;
   tooltipVisible = false;
   tooltipPosition = { x: 0, y: 0 };
@@ -558,8 +580,8 @@ export class AlgorithmPanelComponent {
     const baseAlgorithmName = isCvOnly
       ? algo.name
       : this.experimentStudioService.getCrossValidationBase(algo.name) ??
-        this.experimentStudioService.getTransformationBase(algo.name) ??
-        algo.name;
+      this.experimentStudioService.getTransformationBase(algo.name) ??
+      algo.name;
     const cvVariant =
       this.experimentStudioService.getCrossValidationVariant(baseAlgorithmName);
     const shouldIncludeSplits =
@@ -785,47 +807,49 @@ export class AlgorithmPanelComponent {
 
   showTooltip(algorithm: any, event: MouseEvent) {
     event.stopPropagation();
-    this.tooltipVisible = true;
-    this.tooltipData = algorithm;
-    const offset = 12;
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-
-    const target = event.currentTarget as HTMLElement | null;
-    const rect = target?.getBoundingClientRect();
-    const panel = target?.closest('.algorithm-panel') as HTMLElement | null;
+    const item = (event.currentTarget as HTMLElement)?.closest('li') || (event.currentTarget as HTMLElement);
+    const rect = item.getBoundingClientRect();
+    const panel = item.closest('.algorithm-panel') as HTMLElement | null;
     const panelRect = panel?.getBoundingClientRect();
 
-    let x = (panelRect?.right ?? event.clientX) + offset;
-    let y = rect?.top ?? event.clientY;
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const padding = 16;
+    const offset = 12;
 
-    this.tooltipPosition = {
-      x: Math.max(offset, Math.min(x, viewportWidth - offset)),
-      y: Math.max(offset, Math.min(y, viewportHeight - offset)),
-    };
+    // Horizontal: To the right of the sidebar panel
+    let x = (panelRect?.right ?? rect.right) + offset;
+    // Vertical: Aligned with the top of the hovered item
+    let y = rect.top;
 
-    // Measure actual tooltip size to keep it aligned with the hovered row.
+    this.tooltipVisible = true;
+    this.tooltipData = algorithm;
+
+    // Immediate initial placement
+    this.tooltipPosition = { x, y };
+
+    // Refinement after render
     setTimeout(() => {
-      const tooltipEl = document.querySelector('.tooltip') as HTMLElement | null;
-      if (!tooltipEl) return;
+      const el = document.querySelector('.tooltip') as HTMLElement | null;
+      if (!el) return;
 
-      const tooltipWidth = tooltipEl.offsetWidth || 300;
-      const tooltipHeight = tooltipEl.offsetHeight || Math.floor(viewportHeight * 0.6);
+      const w = el.offsetWidth || 320;
+      const h = el.offsetHeight || 200;
 
-      let measuredX = (panelRect?.right ?? event.clientX) + offset;
-      if (measuredX + tooltipWidth > viewportWidth - offset) {
-        measuredX = viewportWidth - tooltipWidth - offset;
+      // Handle horizontal overflow
+      if (x + w > viewportWidth - padding) {
+        x = (panelRect?.left ?? rect.left) - w - offset;
       }
 
-      let measuredY = rect?.top ?? event.clientY;
-      if (measuredY + tooltipHeight > viewportHeight - offset) {
-        measuredY = (rect?.bottom ?? event.clientY) - tooltipHeight;
+      // Handle vertical overflow (shift up if it hits the bottom)
+      if (y + h > viewportHeight - padding) {
+        y = viewportHeight - h - padding;
       }
 
-      this.tooltipPosition = {
-        x: Math.max(offset, measuredX),
-        y: Math.max(offset, measuredY),
-      };
+      // Safety: don't let it go off the top
+      if (y < padding) y = padding;
+
+      this.tooltipPosition = { x: Math.max(padding, x), y };
     }, 0);
 
     if (algorithm.isDisabled) {
@@ -880,33 +904,37 @@ export class AlgorithmPanelComponent {
     return parts.join(' • ');
   }
 
-  getVariableRequirement(): string | null {
-    const override = this.experimentStudioService.getAlgorithmRequirementOverrides(this.tooltipData);
+  getVariableRequirement(algo?: any): string | null {
+    const target = algo || this.tooltipData;
+    const override = this.experimentStudioService.getAlgorithmRequirementOverrides(target);
     if (override?.y) return override.y;
-    return this.getRoleRequirement(this.tooltipData?.inputdata?.y, 'Variable');
+    return this.getRoleRequirement(target?.inputdata?.y, 'Variable');
   }
 
-  getCovariateRequirement(): string | null {
-    const override = this.experimentStudioService.getAlgorithmRequirementOverrides(this.tooltipData);
+  getCovariateRequirement(algo?: any): string | null {
+    const target = algo || this.tooltipData;
+    const override = this.experimentStudioService.getAlgorithmRequirementOverrides(target);
     if (override?.x) {
       if (/:\s*none$/i.test(override.x)) {
         return null;
       }
       return override.x;
     }
-    return this.getRoleRequirement(this.tooltipData?.inputdata?.x, 'Covariate');
+    return this.getRoleRequirement(target?.inputdata?.x, 'Covariate');
   }
 
   isCategoryOpen(category: string): boolean {
-    return this.openCategories.includes(category);
+    return this.openCategories().includes(category);
   }
 
   toggleCategory(category: string): void {
-    if (this.isCategoryOpen(category)) {
-      this.openCategories = this.openCategories.filter((cat) => cat !== category);
-    } else {
-      this.openCategories.push(category);
-    }
+    this.openCategories.update(current => {
+      if (current.includes(category)) {
+        return current.filter(c => c !== category);
+      } else {
+        return [...current, category];
+      }
+    });
   }
 
   onExportResult(section: HTMLElement) {

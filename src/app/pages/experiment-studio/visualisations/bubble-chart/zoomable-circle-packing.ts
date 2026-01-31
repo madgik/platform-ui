@@ -234,6 +234,7 @@ export function createZoomableCirclePacking(
     .attr('fill-opacity', (d: any) => (d.children ? 0.6 : 1))
     .attr('stroke', (d: any) => (d.children ? 'rgba(0,0,0,0.08)' : 'rgba(0,0,0,0.12)'))
     .attr('stroke-width', (d: any) => (d.children ? 1 : 0.6))
+    .style('cursor', 'pointer')
     .on('click', (event: MouseEvent, d: any) => {
       event.stopPropagation();
       if (!d.children) {
@@ -252,8 +253,10 @@ export function createZoomableCirclePacking(
     })
     .on('mouseover', function (event, d) {
       d3.select(this)
+        .transition()
+        .duration(200)
         .attr('stroke', '#000')
-        .attr('stroke-width', 1.6)
+        .attr('stroke-width', 2)
         .attr('filter', 'url(#node-glow)');
       showTooltip(event, d);
     })
@@ -261,6 +264,12 @@ export function createZoomableCirclePacking(
       moveTooltip(event);
     })
     .on('mouseout', function () {
+      d3.select(this)
+        .transition()
+        .duration(200)
+        .attr('stroke', (d: any) => (d.children ? 'rgba(0,0,0,0.08)' : 'rgba(0,0,0,0.12)'))
+        .attr('stroke-width', (d: any) => (d.children ? 1 : 0.6))
+        .attr('filter', 'none');
       updateSelection();
       hideTooltip();
     });

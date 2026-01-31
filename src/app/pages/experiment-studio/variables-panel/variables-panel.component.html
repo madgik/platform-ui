@@ -56,8 +56,22 @@
               <p>{{ errorMessage() }}</p>
             </div>
             } @else if (!selectedNode) {
-            <div class="message-container info">
-              <p>Please select a variable to view its distribution.</p>
+            <div class="message-container empty-state-welcome">
+              <div class="empty-state-icon">
+                <i class="fas fa-magic"></i>
+              </div>
+              <h3>Welcome to Experiment Studio</h3>
+              <p>Explore your data model by clicking the bubbles in the chart or use the search bar to find specific variables.</p>
+              <div class="empty-state-actions">
+                <div class="hint-item">
+                  <i class="fas fa-mouse-pointer"></i>
+                  <span><b>Single-click</b> to view details & distribution</span>
+                </div>
+                <div class="hint-item">
+                  <i class="fas fa-bolt"></i>
+                  <span><b>Double-click</b> to add to Variables list</span>
+                </div>
+              </div>
             </div>
             } @else if (groupHistogramData()) {
             <div class="group-summary">
@@ -66,9 +80,9 @@
                   <span class="group-summary-label">Path</span>
                   <span class="group-summary-value">
                     @for (node of groupHistogramMeta()?.pathNodes; track node.code; let i = $index) {
-                    <span class="group-summary-separator" [class.is-hidden]="i === 0">></span>
                     <button type="button" class="group-summary-link group-summary-path-link"
                       (click)="onGroupSummaryClick(node)">
+                      @if (i === 0) { <i class="fas fa-home" style="font-size: 0.75rem; opacity: 0.7;"></i> }
                       {{ node.label }}
                     </button>
                     }
@@ -91,9 +105,9 @@
                   <span class="group-summary-label">Path</span>
                   <span class="group-summary-value">
                     @for (node of getPathNodes(selectedNode); track node.code; let i = $index) {
-                    <span class="group-summary-separator" [class.is-hidden]="i === 0">></span>
                     <button type="button" class="group-summary-link group-summary-path-link"
                       (click)="onGroupSummaryClick(node)">
+                      @if (i === 0) { <i class="fas fa-home" style="font-size: 0.75rem; opacity: 0.7;"></i> }
                       {{ node.label }}
                     </button>
                     }

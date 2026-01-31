@@ -90,7 +90,7 @@ export function createHistogram(
     .scaleBand()
     .domain(bins)
     .range([0, innerWidth])
-    .padding(0.1);
+    .padding(0.2);
 
   const yScale = d3
     .scaleLinear()
@@ -103,6 +103,22 @@ export function createHistogram(
     .append('g')
     .attr('transform', `translate(${margin.left}, ${margin.top})`);
 
+  // Background Grid (Y-axis only)
+  chart
+    .append('g')
+    .attr('class', 'grid')
+    .call(
+      d3.axisLeft(yScale)
+        .ticks(6)
+        .tickSize(-innerWidth)
+        .tickFormat(() => '')
+    )
+    .call(g => g.select('.domain').remove())
+    .call(g => g.selectAll('.tick line')
+      .attr('stroke', '#e2e8f0')
+      .attr('stroke-dasharray', '3,3')
+    );
+
   // Bars
   chart
     .selectAll('.bar')
@@ -114,7 +130,16 @@ export function createHistogram(
     .attr('y', (d) => yScale(d))
     .attr('width', xScale.bandwidth())
     .attr('height', (d) => innerHeight - yScale(d))
-    .attr('fill', color);
+    .attr('rx', 4) // Rounded corners
+    .attr('ry', 4)
+    .attr('fill', color)
+    .attr('opacity', 0.85)
+    .on('mouseover', function() {
+      d3.select(this).attr('opacity', 1).attr('filter', 'brightness(1.1)');
+    })
+    .on('mouseout', function() {
+      d3.select(this).attr('opacity', 0.85).attr('filter', null);
+    });
 
   // Smart number formatter
   function smartFormat(d: any): string {
@@ -134,38 +159,43 @@ export function createHistogram(
     .tickFormat((d: any) => {
       const num = parseFloat(d);
       return isNaN(num) ? d : smartFormat(num);
-    });
+    })
+    .tickSize(0)
+    .tickPadding(12);
 
   const xAxisGroup = chart
     .append('g')
     .attr('transform', `translate(0, ${innerHeight})`)
-    .call(xAxis);
+    .call(xAxis)
+    .call(g => g.select('.domain').attr('stroke', '#cbd5e1'));
 
   const tickText = xAxisGroup
     .selectAll<SVGTextElement, any>('text')
-    .attr('font-size', '13px')
+    .attr('font-size', '12px')
+    .attr('fill', '#475569')
     .style('text-anchor', needsRotate ? 'end' : 'middle');
 
   if (needsRotate) {
     tickText.attr('transform', 'rotate(-35)');
   }
 
-  // Keep labels on a single line; rely on rotation + scrolling for space.
-
   // Y axis
   const yAxis = d3
     .axisLeft(yScale)
     .ticks(6)
-    .tickFormat((d: any) => smartFormat(d));
+    .tickFormat((d: any) => smartFormat(d))
+    .tickSize(0)
+    .tickPadding(12);
 
-  chart.append('g').call(yAxis);
+  chart.append('g')
+    .call(yAxis)
+    .call(g => g.select('.domain').remove())
+    .selectAll('text')
+    .attr('font-size', '12px')
+    .attr('fill', '#475569');
 
-  // Axis labels
-
-  // X label intentionally omitted (avoid repeating node name under histogram)
-
-  // Y label: uses dynamic margin so it never clips
-  const yLabelPaddingFromAxis = 24; // distance between axis and label
+  // Y label
+  const yLabelPaddingFromAxis = 32;
 
   chart
     .append('text')
@@ -174,5 +204,9 @@ export function createHistogram(
     .attr('y', -margin.left + yLabelPaddingFromAxis)
     .attr('text-anchor', 'middle')
     .text(yLabelText)
-    .style('font-size', '16px');
+    .style('font-size', '13px')
+    .style('font-weight', '600')
+    .style('fill', '#64748b')
+    .style('letter-spacing', '0.05em')
+    .style('text-transform', 'uppercase');
 }
