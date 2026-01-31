@@ -160,7 +160,7 @@
 }
 
 .studio-rail-section-title.is-active {
-  color: #0f766e;
+  color: var(--primary-color);
 }
 
 .studio-rail-section-title.is-active::before {
@@ -171,7 +171,7 @@
   width: 6px;
   height: 6px;
   border-radius: 0px;
-  background: #0f766e;
+  background: var(--primary-color);
 }
 
 .studio-rail-optional-chip {
@@ -184,8 +184,8 @@
   font-weight: 700;
   text-transform: none;
   letter-spacing: 0.04em;
-  color: #0f766e;
-  background: rgba(2, 109, 109, 0.12);
+  color: var(--primary-color);
+  background: rgba(43, 51, 233, 0.12);
 }
 
 .studio-rail-item {
@@ -240,12 +240,12 @@
 }
 
 .studio-rail-item:hover {
-  background: rgba(2, 109, 109, 0.08);
-  color: #0f766e;
+  background: rgba(43, 51, 233, 0.08);
+  color: var(--primary-color);
 }
 
 .studio-rail-item:hover .studio-rail-icon {
-  color: #0f766e;
+  color: var(--primary-color);
 }
 
 .studio-rail-item.is-active {
@@ -573,8 +573,8 @@
 
 .studio-section--algorithm {
   animation-delay: 0.3s;
-  border-top: 4px solid #f59e0b;
-  /* Amber */
+  border-top: 4px solid var(--accent-color);
+  /* MIP Yellow */
 }
 
 /* Global full-page overlay loader */
@@ -771,9 +771,9 @@
 .header-save-btn {
   font-size: 0.65rem;
   font-weight: 800;
-  color: #0f766e;
-  background: #f0fdfa;
-  border: 1px solid #ccfbf1;
+  color: var(--primary-color);
+  background: #f0f7ff;
+  border: 1px solid #dbeafe;
   padding: 2px 8px;
   border-radius: 0px;
   cursor: pointer;

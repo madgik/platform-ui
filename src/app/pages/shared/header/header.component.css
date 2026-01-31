@@ -1,5 +1,3 @@
-/* GLOBAL HEADER */
-
 .header {
   position: fixed;
   inset: 0 0 auto 0;
@@ -8,29 +6,22 @@
   align-items: center;
   justify-content: space-between;
   gap: 1.5rem;
-  padding: 8px 32px;
-  height: 64px;
+  padding: 0 32px;
+  height: var(--header-height);
   background: white;
   border-bottom: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
   color: var(--text-main);
   box-sizing: border-box;
-  transition: all 0.3s ease;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
 }
 
+/* Transparency support removed for polished branding as per charter */
 .header.header--transparent {
-  background: transparent !important;
-  border-bottom: none !important;
-  box-shadow: none !important;
-  backdrop-filter: none !important;
-  pointer-events: none;
-  /* Let clicks pass through to content behind (except buttons) */
-}
-
-.header--transparent .branding,
-.header--transparent .user-icon {
+  background: white;
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
   pointer-events: auto;
-  /* Re-enable clicks for logo and user btn */
 }
 
 /* BRANDING (LEFT) */
@@ -46,13 +37,15 @@
 }
 
 .logo {
-  width: 56px;
-  height: 56px;
+  height: 40px;
+  /* Increased slightly for clear identity */
+  width: auto;
   object-fit: contain;
-  border-radius: 4px;
-  filter: brightness(1.15) contrast(1.1);
-  opacity: 0.95;
-  margin-top: 2%;
+  transition: transform 0.2s ease;
+}
+
+.branding:hover .logo {
+  transform: scale(1.02);
 }
 
 .branding-text {
@@ -64,12 +57,13 @@
 
 .branding-text h1 {
   margin: 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--primary-color);
+  opacity: 0.8;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .branding-text p {

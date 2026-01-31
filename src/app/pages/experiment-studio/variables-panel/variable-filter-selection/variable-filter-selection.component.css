@@ -8,7 +8,7 @@
 
 .parameters-header {
   font-size: 0.92rem;
-  color: #026d6d;
+  color: var(--primary-color);
   margin: -10px -12px 10px;
   font-weight: 600;
   letter-spacing: 0.01em;
@@ -74,11 +74,11 @@
 }
 
 .panel-title--variable {
-  background: linear-gradient(120deg, #0890a6, #8fe3f0);
+  background: linear-gradient(120deg, var(--primary-color), var(--primary-light));
 }
 
 .panel-title--covariate {
-  background: linear-gradient(120deg, #c88d00, #ffda61);
+  background: linear-gradient(120deg, var(--accent-color), #fde047);
 }
 
 .panel-title--filter {
@@ -98,7 +98,7 @@
 .filter-btn {
   position: relative;
   color: #fff;
-  background: linear-gradient(120deg, #0890a6, #8fe3f0);
+  background: linear-gradient(120deg, var(--primary-color), var(--primary-light));
   border: none;
   padding: 0.45rem 0.9rem;
   border-radius: 999px;
@@ -112,7 +112,7 @@
 }
 
 .covariate-btn {
-  background: linear-gradient(120deg, #c88d00, #ffda61);
+  background: linear-gradient(120deg, var(--accent-color), #fde047);
 }
 
 .filter-btn {
@@ -152,14 +152,14 @@
   width: 22px;
   height: 22px;
   border-radius: 999px;
-  background: #00a6c0;
+  background: var(--primary-color);
   color: #f9fafb;
   font-size: 0.72rem;
   font-weight: 700;
   display: flex;
   justify-content: center;
   align-items: center;
-  box-shadow: 0 4px 10px rgba(0, 166, 192, 0.55);
+  box-shadow: 0 4px 10px rgba(43, 51, 233, 0.55);
 }
 
 .counter--inline {
@@ -329,13 +329,13 @@
 }
 
 .highlighted-variable {
-  background: linear-gradient(90deg, #ecfeff, #f5f9ff);
-  border-left: 3px solid #0ea5e9;
+  background: linear-gradient(90deg, #f0f7ff, #f8fbff);
+  border-left: 3px solid var(--primary-color);
 }
 
 .highlighted-covariate {
-  background: linear-gradient(90deg, #fffbeb, #fefce8);
-  border-left: 3px solid #facc15;
+  background: linear-gradient(90deg, #fffcf0, #fffdf5);
+  border-left: 3px solid var(--accent-color);
 }
 
 .highlighted-filter {
@@ -349,7 +349,7 @@
   position: absolute;
   bottom: -16px;
   right: 6px;
-  background: linear-gradient(135deg, #00b8a8, #70dbd2af);
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
   color: #fff;
   border: none;
   border-radius: 999px;
@@ -358,7 +358,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.45);
+  box-shadow: 0 10px 22px rgba(43, 51, 233, 0.45);
   cursor: pointer;
   font-size: 1.1rem;
   transition: transform 0.18s ease, background-color 0.18s ease,

@@ -48,7 +48,7 @@ export class BubbleChartComponent implements OnInit, OnChanges, AfterViewInit, O
   error: string | null = null; // Holds the current error message
   readonly DEFAULT_PALETTE = {
     variable: '#37c0ae',
-    covariate: '#c88d00',
+    covariate: '#ffba08',
     filter: '#44bf00',
     selected: '#27d6d1',
     groupStart: '#bcefdc',

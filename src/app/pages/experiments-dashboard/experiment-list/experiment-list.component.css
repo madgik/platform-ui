@@ -76,7 +76,7 @@
 }
 
 .toggle-switch.on {
-  background: linear-gradient(135deg, #0f766e, #f973b7);
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
   border-color: transparent;
 }
 
@@ -86,7 +86,7 @@
 }
 
 .toggle-switch:focus-visible {
-  outline: 2px solid #0ea5e9;
+  outline: 2px solid var(--primary-color);
   outline-offset: 2px;
 }
 
@@ -121,10 +121,8 @@
 .experiment-row {
   width: 100%;
   box-sizing: border-box;
-  background: var(--studio-card-bg, rgba(255, 255, 255, 0.6));
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border-radius: 16px;
+  background: white;
+  border-radius: var(--radius-lg);
   padding: 16px 20px;
   display: flex;
   align-items: center;
@@ -132,22 +130,22 @@
   gap: 16px;
   cursor: pointer;
   text-align: left;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+  box-shadow: var(--shadow-sm);
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid rgba(148, 163, 184, 0.15);
+  border: 1px solid var(--border-color);
 }
 
 .experiment-row:hover {
-  background: rgba(255, 255, 255, 0.95);
-  border-color: var(--primary-color);
-  transform: translateY(-4px);
-  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.1), 0 0 0 4px rgba(2, 128, 144, 0.04);
+  background: white;
+  border-color: var(--primary-light);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .experiment-row.selected {
-  background: rgba(240, 249, 255, 0.9);
+  background: #f1f5ff;
   border-color: var(--primary-color);
-  box-shadow: 0 4px 20px rgba(2, 128, 144, 0.12);
+  box-shadow: var(--shadow-sm);
   position: relative;
 }
 
@@ -206,15 +204,16 @@
 
 .status-pill.completed {
   background: #ecfdf5;
-  color: #059669;
-  border-color: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+  /* Brand success green */
+  border-color: rgba(16, 185, 129, 0.15);
 }
 
 .status-pill.completed::before {
   content: '\f058';
   font-family: 'Font Awesome 5 Free';
   font-weight: 900;
-  margin-right: 5px;
+  margin-right: 6px;
 }
 
 .status-pill.error {
@@ -297,14 +296,16 @@
 /* EMPTY STATE */
 .empty-state {
   flex: 1;
-  border-radius: 16px;
-  padding: 20px 16px;
-  background: linear-gradient(135deg, #fdf2ff, #e0f2fe);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  background: var(--bg-neutral);
   display: flex;
   flex-direction: column;
   justify-content: center;
-  text-align: left;
-  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.25);
+  align-items: center;
+  /* Center for more polished look */
+  text-align: center;
+  border: 1px solid var(--border-color);
 }
 
 .empty-state h3 {
@@ -417,7 +418,7 @@
   right: 0;
   padding: 4px 10px;
   border-radius: 999px;
-  background: #0f766e;
+  background: var(--primary-color);
   color: #ecfeff;
   font-size: 0.7rem;
   box-shadow: 0 10px 20px rgba(15, 23, 42, 0.25);

@@ -358,7 +358,7 @@
         @for (field of enrichedConfigSchema(); track field.key) { @if
         (configForm.get(field.key)) {
         <div class="config-field">
-          <label class="font-semibold mb-1 text-[#028080] flex items-center gap-2">
+          <label class="font-semibold mb-1 text-[var(--primary-color)] flex items-center gap-2">
             {{ prettyFieldLabel(field) }}
             @if (field.notblank) {
             <span class="required-tag">Required</span>

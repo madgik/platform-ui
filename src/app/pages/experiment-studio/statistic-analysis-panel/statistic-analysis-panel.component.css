@@ -70,11 +70,11 @@
 }
 
 .modal-tabs button {
-  border: 1px solid rgba(2, 109, 109, 0.35);
+  border: 1px solid rgba(43, 51, 233, 0.35);
   border-radius: var(--radius-sm);
   padding: 6px 14px;
   background: #ffffff;
-  color: #026d6d;
+  color: var(--primary-color);
   font-weight: 600;
   font-size: 0.78rem;
   cursor: pointer;
@@ -139,7 +139,7 @@
 .toolbar-seg {
   border: none;
   background: transparent;
-  color: #0f766e;
+  color: var(--primary-color);
   padding: 6px 12px;
   cursor: pointer;
   font-weight: 600;
@@ -151,7 +151,7 @@
 }
 
 .toolbar-seg+.toolbar-seg {
-  border-left: 1px solid rgba(2, 109, 109, 0.2);
+  border-left: 1px solid rgba(43, 51, 233, 0.2);
 }
 
 .toolbar-seg:hover {
@@ -208,7 +208,7 @@
 /* Accordion header */
 .accordion-header {
   background: var(--studio-card-header-bg, rgba(241, 245, 249, 0.85));
-  color: #026d6d;
+  color: var(--primary-color);
   padding: 8px 14px;
   border-radius: 0px;
   border-bottom: 1px solid var(--studio-card-header-border, rgba(226, 232, 240, 0.9));
@@ -297,7 +297,7 @@
 .data-table td:first-child,
 .metric-cell {
   font-weight: 600;
-  color: #026d6d;
+  color: var(--primary-color);
   text-align: left;
   padding-left: 16px;
 }
@@ -335,9 +335,9 @@
 
 .mini-tabs button.active,
 .mini-tabs button:hover {
-  background: linear-gradient(135deg, #026d6d, #3ac6b8);
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
   color: #ffffff;
-  border-color: #026d6d;
+  border-color: var(--primary-color);
   transform: translateY(-1px);
 }
 

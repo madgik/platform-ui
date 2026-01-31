@@ -35,7 +35,7 @@
   appearance: none;
 
   /* Custom arrow */
-  background-image: url("data:image/svg+xml,%3Csvg width='16' height='16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 6l4 4 4-4' stroke='%2302686d' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg width='16' height='16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 6l4 4 4-4' stroke='%232b33e9' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
   background-size: 12px;
@@ -45,20 +45,20 @@
 
 .data-model-select:hover {
   background-color: #f7fcfd;
-  border-color: #028080;
-  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.12);
+  border-color: var(--primary-color);
+  box-shadow: 0 6px 14px rgba(43, 51, 233, 0.12);
   transform: translateY(-0.5px);
 }
 
 .data-model-select:focus {
-  border-color: #028080;
-  box-shadow: 0 0 0 1px rgba(2, 128, 128, 0.35), 0 6px 14px rgba(15, 23, 42, 0.12);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 1px rgba(43, 51, 233, 0.35), 0 6px 14px rgba(15, 23, 42, 0.12);
 }
 
 /* Just to keep optgroup labels readable */
 .data-model-select optgroup[label] {
   font-weight: 600;
-  color: #036b6b;
+  color: var(--primary-color);
 }
 
 /* Mobile tweaks */

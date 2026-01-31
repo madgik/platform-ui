@@ -25,7 +25,7 @@
   margin: 0;
   font-size: 1.8rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #0f172a 30%, #028080 100%);
+  background: linear-gradient(135deg, #0f172a 30%, var(--primary-color) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -555,7 +555,7 @@
 }
 
 .btn-create:hover {
-  background-color: #028080;
+  background-color: var(--primary-color);
 }
 
 .btn-create.danger {

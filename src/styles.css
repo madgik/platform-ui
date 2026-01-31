@@ -1,24 +1,32 @@
 :root {
-  /* Colors */
-  --primary-color: #028090;
-  --primary-dark: #015f73;
-  --primary-light: #39bcc5;
-  --accent-color: #009e9e;
-  --bg-color: #f9fbff;
+  /* MIP Brand Color Palette */
+  --primary-color: #2b33e9;
+  /* Brand Blue */
+  --primary-dark: #1b21a3;
+  --primary-light: #7f9ce8;
+  /* Secondary Light Blue */
+  --accent-color: #ffba08;
+  /* Accent Orange/Yellow */
+  --bg-color: #f8fafc;
+  /* Cleaner background */
+  --bg-neutral: #dfefe4;
+  /* Brand Greenish Neutral */
   --card-bg: #ffffff;
-  --text-main: #1e293b;
-  --text-muted: #64748b;
+  --text-main: #0f172a;
+  --text-muted: #475569;
   --danger: #ef4444;
   --success: #10b981;
-  --border-color: #e2e8f0;
+  --border-color: rgba(43, 51, 233, 0.1);
+  /* Softer brand-tinted border */
 
-  /* Spacing & Borders */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  /* Spacing & Borders - Charter standard */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --header-height: 64px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -45,10 +53,12 @@ body {
 
 body {
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   background-color: var(--bg-color);
   color: var(--text-main);
-  line-height: 1.5;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Style all required fields */
@@ -111,13 +121,13 @@ select:required:valid {
 .btn-create {
   background-color: var(--primary-color);
   color: #fff;
-  box-shadow: 0 2px 4px rgba(2, 128, 144, 0.2);
+  box-shadow: 0 2px 4px rgba(43, 51, 233, 0.2);
 }
 
 .btn-create:hover {
   background-color: var(--primary-dark);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(2, 128, 144, 0.3);
+  transform: translateY(-1.5px);
+  box-shadow: 0 6px 12px rgba(43, 51, 233, 0.25);
 }
 
 .custom-validation-tooltip {

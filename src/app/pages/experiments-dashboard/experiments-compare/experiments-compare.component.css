@@ -50,8 +50,8 @@
 }
 
 .layout-select select:focus {
-  border-color: #0ea5e9;
-  box-shadow: 0 0 0 1px rgba(14, 165, 233, 0.3);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 1px rgba(43, 51, 233, 0.3);
 }
 
 .layout-select select:hover {
@@ -79,9 +79,9 @@
 
 /* Expanded / collapsed accents */
 .compare-row.expanded {
-  border-color: rgba(56, 189, 248, 0.8);
-  box-shadow: 0 16px 34px rgba(8, 47, 73, 0.16);
-  background: radial-gradient(circle at top left, #ecfeff, #ffffff);
+  border-color: var(--primary-light);
+  box-shadow: 0 16px 34px rgba(43, 51, 233, 0.16);
+  background: radial-gradient(circle at top left, #f0f7ff, #ffffff);
   transform: translateY(-1px);
 }
 
@@ -151,7 +151,7 @@
 
 /* Expanded state */
 .compare-row.expanded .row-toggle-btn {
-  background: linear-gradient(135deg, #0f766e, #f973b7);
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
   border-color: transparent;
   color: #ecfeff;
   box-shadow: 0 10px 22px rgba(15, 23, 42, 0.22);
@@ -355,7 +355,7 @@
   align-items: center;
   justify-content: space-between;
   cursor: pointer;
-  color: #028080;
+  color: var(--primary-color);
   font-size: 0.8rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -421,9 +421,9 @@
   font-weight: 600;
   padding: 4px 10px;
   border-radius: 999px;
-  background: rgba(2, 128, 144, 0.08);
-  color: #028080;
-  border: 1px solid rgba(2, 128, 144, 0.18);
+  background: rgba(43, 51, 233, 0.08);
+  color: var(--primary-color);
+  border: 1px solid rgba(43, 51, 233, 0.18);
   max-width: 100%;
 }
 

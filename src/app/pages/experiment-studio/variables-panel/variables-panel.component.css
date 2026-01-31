@@ -379,7 +379,7 @@
 
 .group-summary-count {
   background: rgba(2, 109, 109, 0.12);
-  color: #026d6d;
+  color: var(--primary-color);
   padding: 2px 8px;
   border-radius: 999px;
   font-weight: 700;
@@ -412,7 +412,7 @@
   border: none;
   padding: 0;
   margin: 0;
-  color: #026d6d;
+  color: var(--primary-color);
   font-weight: 600;
   cursor: pointer;
   text-decoration: underline;
@@ -436,8 +436,8 @@
 }
 
 .group-summary-path-link:hover {
-  color: #026d6d;
-  background: rgba(2, 109, 109, 0.18);
+  color: var(--primary-color);
+  background: rgba(43, 51, 233, 0.18);
 }
 
 .group-summary-list-link {
@@ -464,8 +464,8 @@
 }
 
 .group-summary-list li {
-  background: rgba(2, 109, 109, 0.06);
-  border: 1px solid rgba(2, 109, 109, 0.12);
+  background: rgba(43, 51, 233, 0.06);
+  border: 1px solid rgba(43, 51, 233, 0.12);
   border-radius: 12px;
   padding: 8px 12px;
   transition: transform 0.2s ease, background 0.2s ease;
@@ -473,7 +473,7 @@
 
 .group-summary-list li:hover {
   transform: translateY(-2px);
-  background: rgba(2, 109, 109, 0.1);
+  background: rgba(43, 51, 233, 0.1);
 }
 
 /* ---------- MESSAGES (no variable / error) ---------- */
@@ -495,9 +495,9 @@
 }
 
 .message-container.info {
-  background: rgba(0, 128, 128, 0.05);
-  color: #006666;
-  border: 1px solid rgba(0, 128, 128, 0.2);
+  background: rgba(43, 51, 233, 0.05);
+  color: var(--primary-color);
+  border: 1px solid rgba(43, 51, 233, 0.2);
 }
 
 .message-container.error {
@@ -534,7 +534,7 @@
 .empty-state-icon {
   font-size: 48px;
   margin-bottom: 20px;
-  background: linear-gradient(135deg, #028080, #6ee7b7);
+  background: linear-gradient(135deg, var(--primary-color), #60a5fa);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -579,14 +579,14 @@
 
 .hint-item:hover {
   background: #ffffff;
-  border-color: rgba(2, 128, 128, 0.3);
+  border-color: rgba(43, 51, 233, 0.3);
   transform: translateX(4px);
   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
 }
 
 .hint-item i {
   font-size: 1.1rem;
-  color: #028080;
+  color: var(--primary-color);
   width: 20px;
 }
 
