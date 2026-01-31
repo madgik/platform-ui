@@ -139,7 +139,9 @@
         <!--            <i class="fa fa-cog"></i>-->
         <!--          </button>-->
 
-        <button class="run-button top-right" [disabled]="isRunButtonDisabled()" (click)="onClickRunExp()">
+        <button class="primary-action-btn run-button top-right" [disabled]="isRunButtonDisabled()"
+          (click)="onClickRunExp()"
+          [title]="isRunButtonDisabled() ? 'Complete variable and algorithm selection to proceed' : 'Execute experiment'">
           {{ isRunning() ? "Running..." : "Run Experiment" }}
         </button>
 

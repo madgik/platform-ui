@@ -19,6 +19,16 @@
   --border-color: rgba(43, 51, 233, 0.1);
   /* Softer brand-tinted border */
 
+  /* Arctic Precision (Glassmorphism) */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+  --glass-blur: blur(12px);
+
+  /* Typography - Alaska Aesthetic */
+  --line-height-config: 1.6;
+  --letter-spacing-config: 0.015em;
+
   /* Spacing & Borders - Charter standard */
   --radius-sm: 4px;
   --radius-md: 8px;
@@ -53,12 +63,26 @@ body {
 
 body {
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   background-color: var(--bg-color);
   color: var(--text-main);
   line-height: 1.6;
+  letter-spacing: 0.01em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Scientific Precision: Tabular numbers by default for tabular/data elements */
+  font-variant-numeric: tabular-nums;
+
+  /* Anatomical Micro-pattern (Subtle Neuronal Grid) */
+  background-image:
+    radial-gradient(var(--primary-light) 0.5px, transparent 0.5px),
+    radial-gradient(var(--primary-light) 0.5px, var(--bg-color) 0.5px);
+  background-size: 40px 40px;
+  background-position: 0 0, 20px 20px;
+  background-attachment: fixed;
+  opacity: 0.98;
+  /* Keep it very subtle */
 }
 
 /* Style all required fields */
@@ -81,6 +105,40 @@ select:required:invalid {
   /* Red border for invalid fields */
   background-color: #ffe6e6;
   /* Light red background for visibility */
+}
+
+/* Spark Animation */
+@keyframes spark-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+    filter: drop-shadow(0 0 0px var(--primary-light));
+  }
+
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+    filter: drop-shadow(0 0 8px var(--primary-light));
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+    filter: drop-shadow(0 0 0px var(--primary-light));
+  }
+}
+
+.spark-animated {
+  animation: spark-pulse 2s infinite ease-in-out;
+}
+
+/* Glassmorphism Utility */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
 }
 
 /* Style for valid fields (when required fields are filled) */
@@ -128,6 +186,36 @@ select:required:valid {
   background-color: var(--primary-dark);
   transform: translateY(-1.5px);
   box-shadow: 0 6px 12px rgba(43, 51, 233, 0.25);
+}
+
+/* Primary Action Buttons (Harsh Fixes) */
+.primary-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(43, 51, 233, 0.2);
+}
+
+.primary-action-btn:hover:not(:disabled) {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(43, 51, 233, 0.3);
+}
+
+.primary-action-btn:disabled {
+  background: #cbd5e1;
+  color: #f1f5f9;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .custom-validation-tooltip {

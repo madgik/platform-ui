@@ -11,9 +11,9 @@
     <div class="empty-illustration">
       <i class="fas fa-microscope"></i>
     </div>
-    <h2>Select an individual experiment</h2>
+    <h2>Research Workbench</h2>
     <p>
-      Choose an experiment from the left list to explore its configuration and comprehensive results.
+      Select an experiment to explore insights, or create a new one to begin your investigation.
     </p>
   </div>
   } @else {
@@ -81,11 +81,11 @@
 
       <div class="details-actions">
         <div class="action-group primary-actions">
-          <button type="button" class="ghost-btn run-btn" (click)="runExperiment()">
+          <button type="button" class="primary-action-btn run-btn" (click)="runExperiment()">
             <i class="fas fa-play"></i>
             <span>Run again</span>
           </button>
-          <button type="button" class="ghost-btn export-btn" (click)="onExportPdf()" title="Export to PDF">
+          <button type="button" class="primary-action-btn export-btn" (click)="onExportPdf()" title="Export to PDF">
             <i class="far fa-file-pdf"></i>
             <span>Export PDF</span>
           </button>

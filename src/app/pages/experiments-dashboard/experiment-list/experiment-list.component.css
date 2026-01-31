@@ -121,8 +121,11 @@
 .experiment-row {
   width: 100%;
   box-sizing: border-box;
-  background: white;
-  border-radius: var(--radius-lg);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
   padding: 16px 20px;
   display: flex;
   align-items: center;
@@ -130,16 +133,15 @@
   gap: 16px;
   cursor: pointer;
   text-align: left;
-  box-shadow: var(--shadow-sm);
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid var(--border-color);
+  box-shadow: var(--glass-shadow);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .experiment-row:hover {
-  background: white;
+  background: rgba(255, 255, 255, 0.9);
   border-color: var(--primary-light);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 20px 40px rgba(43, 51, 233, 0.1), 0 0 0 4px rgba(43, 51, 233, 0.03);
 }
 
 .experiment-row.selected {
