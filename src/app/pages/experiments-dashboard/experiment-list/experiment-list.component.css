@@ -140,7 +140,7 @@
 .experiment-row:hover {
   background: rgba(255, 255, 255, 0.95);
   border-color: var(--primary-color);
-  transform: translateY(-4px) scale(1.01);
+  transform: translateY(-4px);
   box-shadow: 0 20px 40px rgba(15, 23, 42, 0.1), 0 0 0 4px rgba(2, 128, 144, 0.04);
 }
 
@@ -287,7 +287,6 @@
   background: #f1f5f9;
   color: var(--primary-color);
   border-color: var(--primary-color);
-  transform: scale(1.05);
 }
 
 .icon-btn.danger:hover {

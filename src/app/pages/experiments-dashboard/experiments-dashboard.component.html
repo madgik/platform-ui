@@ -28,9 +28,12 @@
           <h2>Dashboard</h2>
 
           <div class="pane-actions">
-            <button class="compare-mode-btn" [class.active]="compareMode()" (click)="toggleCompareMode()"
-              title="Comparison Mode">
+            <button class="compare-mode-btn" [class.active]="compareMode()"
+              [class.has-selections]="compareIds().length >= 1" (click)="toggleCompareMode()" title="Comparison Mode">
               <i class="fas fa-columns"></i>
+              @if (compareIds().length > 0) {
+              <span class="count-badge">{{ compareIds().length }}</span>
+              }
             </button>
 
             <button class="btn-new-experiment primary" (click)="goToNewExperiment()" title="New Experiment">

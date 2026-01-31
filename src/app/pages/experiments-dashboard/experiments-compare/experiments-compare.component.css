@@ -1,29 +1,25 @@
-.compare-root {
-  margin-top: 18px;
-  padding-top: 12px;
-  border-top: 1px solid #e5e7eb;
-}
-
-/* Header */
 .compare-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  margin-bottom: 10px;
+  margin-bottom: 24px;
+  animation: fadeIn 0.5s ease-out;
 }
 
 .compare-header h3 {
   margin: 0 0 4px;
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: 1.4rem;
+  font-weight: 800;
   color: #0f172a;
+  letter-spacing: -0.02em;
 }
 
 .compare-header p {
   margin: 0;
-  font-size: 0.8rem;
-  color: #6b7280;
+  font-size: 0.9rem;
+  color: #64748b;
+  font-weight: 500;
 }
 
 /* Layout dropdown */
@@ -185,15 +181,24 @@
 
 /* Cards */
 .compare-card {
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(4px);
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
-  padding: 14px 16px 16px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+  padding: 18px 20px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   border: 1px solid rgba(148, 163, 184, 0.15);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.compare-card:hover {
+  background: rgba(255, 255, 255, 0.95);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.12), 0 0 0 4px rgba(2, 128, 144, 0.04);
+  border-color: var(--primary-color);
 }
 
 .compare-card-header {
@@ -205,9 +210,9 @@
 
 .compare-card-header h4 {
   margin: 0;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #020617;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -344,15 +349,22 @@
 .config-toggle {
   width: 100%;
   border: none;
-  background: rgba(224, 242, 254, 0.55);
-  padding: 8px 10px;
+  background: rgba(2, 128, 144, 0.05);
+  padding: 10px 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   cursor: pointer;
-  color: #0f172a;
-  font-size: 0.78rem;
-  font-weight: 600;
+  color: #028080;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transition: all 0.2s ease;
+}
+
+.config-toggle:hover {
+  background: rgba(2, 128, 144, 0.08);
 }
 
 .config-toggle i {

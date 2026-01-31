@@ -266,8 +266,8 @@
   color: #ffffff;
   background: var(--primary-color);
   border: 1px solid var(--primary-dark);
-  box-shadow: 0 10px 24px rgba(2, 128, 144, 0.25);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  box-shadow: 0 4px 12px rgba(2, 128, 144, 0.15);
+  transition: all 0.2s ease;
 }
 
 .btn-new-experiment.primary:hover {
@@ -609,26 +609,47 @@
 .compare-mode-btn {
   border-radius: 999px;
   border: 1px solid rgba(148, 163, 184, 0.7);
-  background: #f8fafc;
+  background: white;
   padding: 6px 10px;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   cursor: pointer;
   color: #475569;
-  transition: background 0.12s ease, border-color 0.12s ease,
-    box-shadow 0.12s ease, transform 0.12s ease, color 0.12s ease;
+  font-weight: 700;
+  transition: all 0.2s ease;
+  position: relative;
 }
 
 .compare-mode-btn i {
-  font-size: 0.8rem;
+  font-size: 0.9rem;
+}
+
+.btn-label {
+  letter-spacing: 0.02em;
+}
+
+.count-badge {
+  background: var(--primary-color);
+  color: white;
+  font-size: 0.6rem;
+  font-weight: 800;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 4px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .compare-mode-btn:hover {
-  background: #e0f2fe;
-  border-color: #0ea5e9;
+  background: #ffffff;
+  border-color: var(--primary-color);
+  color: var(--primary-color);
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(2, 128, 144, 0.1);
 }
 
 .compare-mode-btn.active {
@@ -636,6 +657,12 @@
   border-color: transparent;
   color: #ecfeff;
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.2);
+}
+
+.compare-mode-btn.has-selections:not(.active) {
+  border-color: var(--primary-color);
+  background: #f0fdfa;
+  color: #0d9488;
 }
 
 .compare-placeholder-card {
