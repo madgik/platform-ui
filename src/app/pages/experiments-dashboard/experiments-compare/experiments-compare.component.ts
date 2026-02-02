@@ -223,4 +223,19 @@ export class ExperimentsCompareComponent {
     return null;
   }
 
+  humanizeName(exp: Experiment | undefined | null): string {
+    const name = exp?.name;
+    if (!name) return 'Untitled Investigation';
+    let human = name.replace(/_/g, ' ');
+    if (/experiment|study|run|test/i.test(human)) {
+      const algo = exp?.algorithmName || '';
+      human = human.replace(/(experiment|study|run|test)\s*(\d+)?\s*(.*)?/i, (match, type, num, rest) => {
+        const numPart = num ? `#${num}` : '';
+        const algoPart = algo ? algo.replace(/_/g, ' ').toUpperCase() : (rest ? rest.toUpperCase() : '');
+        const sep = numPart && algoPart ? ': ' : '';
+        return `${numPart}${sep}${algoPart}`.trim() || human;
+      });
+    }
+    return human.charAt(0).toUpperCase() + human.slice(1);
+  }
 }

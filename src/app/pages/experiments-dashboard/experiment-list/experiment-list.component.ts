@@ -52,7 +52,7 @@ export class ExperimentsListComponent {
     shared: 'any',
   });
 
- readonly filteredExperiments = computed(() => {
+  readonly filteredExperiments = computed(() => {
     const f = this.filters();
     const q = (f.query || '').toLowerCase().trim();
     const list = this.experimentsService.experiments();
@@ -242,5 +242,27 @@ export class ExperimentsListComponent {
 
   onDeleteRequested(id: string) {
     this.deleteRequested.emit(id);
+  }
+
+  humanizeName(exp: Experiment | undefined | null): string {
+    const name = exp?.name;
+    if (!name) return 'Untitled Investigation';
+
+    // Replace underscores with spaces and capitalize
+    let human = name.replace(/_/g, ' ');
+
+    // If it's a very technical looking name like experiment_1_lr
+    // we can try to make it look like a scientific title
+    if (/experiment|study|run|test/i.test(human)) {
+      const algo = exp?.algorithmName || '';
+      human = human.replace(/(experiment|study|run|test)\s*(\d+)?\s*(.*)?/i, (match, type, num, rest) => {
+        const numPart = num ? `#${num}` : '';
+        const algoPart = algo ? algo.replace(/_/g, ' ').toUpperCase() : (rest ? rest.toUpperCase() : '');
+        const sep = numPart && algoPart ? ': ' : '';
+        return `${numPart}${sep}${algoPart}`.trim() || human;
+      });
+    }
+
+    return human.charAt(0).toUpperCase() + human.slice(1);
   }
 }

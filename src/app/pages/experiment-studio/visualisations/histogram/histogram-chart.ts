@@ -48,7 +48,7 @@ export function createHistogram(
   const yLabelBBox = (tempLabel.node() as SVGTextElement).getBBox();
   tempLabel.remove();
 
-  const baseMargins = { top: 40, right: 30, bottom: 60, left: 50 };
+  const baseMargins = { top: 30, right: 10, bottom: 60, left: 40 };
   const labelCharsPerLine = 10;
   const maxLabelLength = bins.reduce((max, b) => Math.max(max, String(b).length), 0);
   const estimatedLines = Math.max(1, Math.ceil(maxLabelLength / labelCharsPerLine));
@@ -73,7 +73,7 @@ export function createHistogram(
     top: baseMargins.top,
     right: baseMargins.right,
     bottom: bottomMargin,
-    left: baseMargins.left + yLabelBBox.width + 16
+    left: baseMargins.left + yLabelBBox.width + 8
   };
 
   // Scale width by bin count to allow horizontal scrolling when needed
@@ -83,7 +83,7 @@ export function createHistogram(
   svg.attr('width', desiredWidth).attr('height', effectiveHeight);
 
   const innerWidth = desiredWidth - margin.left - margin.right;
-  const innerHeight = effectiveHeight - margin.top - margin.bottom - 60;
+  const innerHeight = effectiveHeight - margin.top - margin.bottom - 40;
 
   // Scales
   const xScale = d3
@@ -134,10 +134,10 @@ export function createHistogram(
     .attr('ry', 4)
     .attr('fill', color)
     .attr('opacity', 0.85)
-    .on('mouseover', function() {
+    .on('mouseover', function () {
       d3.select(this).attr('opacity', 1).attr('filter', 'brightness(1.1)');
     })
-    .on('mouseout', function() {
+    .on('mouseout', function () {
       d3.select(this).attr('opacity', 0.85).attr('filter', null);
     });
 

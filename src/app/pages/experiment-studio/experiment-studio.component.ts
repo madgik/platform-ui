@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, HostListener, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { VariablesPanelComponent } from './variables-panel/variables-panel.component';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -40,17 +40,7 @@ export class ExperimentStudioComponent implements OnInit, OnDestroy, AfterViewIn
   readonly selectedDataModel = this.expStudioService.selectedDataModel;
   readonly selectedDatasets = this.expStudioService.selectedDatasets;
   readonly selectedAlgorithm = this.expStudioService.selectedAlgorithm;
-  readonly experimentName = this.expStudioService.experimentName;
-  readonly lastExperimentUUID = this.expStudioService.currentExperimentUUID;
-  readonly lastSavedName = this.expStudioService.lastSavedName;
   @ViewChild(AlgorithmPanelComponent) algorithmPanel?: AlgorithmPanelComponent;
-  saveExperimentName() {
-    this.algorithmPanel?.saveExperimentName();
-  }
-
-  onExperimentNameChange(val: string) {
-    this.expStudioService.setExperimentName(val);
-  }
 
   onRunClick() {
     this.algorithmPanel?.onClickRunExp();
@@ -62,19 +52,34 @@ export class ExperimentStudioComponent implements OnInit, OnDestroy, AfterViewIn
   private destroy$ = new Subject<void>();
   errorMessage = '';
   activeSection = 'variables-top';
-  mobileNavOpen = false;
   sidebarCollapsed = false;
   private sectionObserver?: IntersectionObserver;
 
-  toggleMobileNav() {
-    this.mobileNavOpen = !this.mobileNavOpen;
+
+
+
+
+  @HostListener('window:resize', ['$event'])
+  onResize() {
+    this.checkSidebarCollapse();
   }
 
-  toggleSidebarCollapse() {
-    this.sidebarCollapsed = !this.sidebarCollapsed;
+  private checkSidebarCollapse() {
+    const width = window.innerWidth;
+    if (width >= 1440) {
+      // Large Desktop: User can toggle, default to expanded
+      this.sidebarCollapsed = false;
+    } else if (width >= 1200) {
+      // Medium Screens: Force Icon Rail
+      this.sidebarCollapsed = true;
+    } else {
+      // Narrow screens: Fully hidden (handled via CSS), sidebar itself is expanded in drawer
+      this.sidebarCollapsed = false;
+    }
   }
 
   ngOnInit(): void {
+    this.checkSidebarCollapse();
     // Reset any lingering global errors when arriving on the studio
     this.errorService.clearError();
     this.expStudioService.loadAndCategorizeModels().subscribe();

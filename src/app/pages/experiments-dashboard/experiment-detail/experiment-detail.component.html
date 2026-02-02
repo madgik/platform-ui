@@ -34,7 +34,7 @@
       <div class="experiment-title-row">
         @if (!isEditingName()) {
         <h1 class="experiment-title">
-          {{ selectedExperiment()?.name }}
+          {{ humanizeName(selectedExperiment()) }}
         </h1>
         <button type="button" class="title-edit-btn" (click)="startNameEdit()" title="Edit experiment name">
           <i class="far fa-edit"></i>

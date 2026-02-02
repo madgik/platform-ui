@@ -165,9 +165,17 @@
     gap: 0;
   }
 
-  .branding,
-  .user-icon {
+  .branding-text {
     display: none !important;
+  }
+
+  .branding {
+    display: flex !important;
+    gap: 0;
+  }
+
+  .user-icon {
+    display: flex !important;
   }
 
   .navbar-wrapper {

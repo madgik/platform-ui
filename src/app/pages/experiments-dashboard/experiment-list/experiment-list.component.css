@@ -138,10 +138,13 @@
 }
 
 .experiment-row:hover {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.95);
   border-color: var(--primary-light);
-  transform: translateY(-4px) scale(1.01);
-  box-shadow: 0 20px 40px rgba(43, 51, 233, 0.1), 0 0 0 4px rgba(43, 51, 233, 0.03);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow:
+    0 30px 60px rgba(43, 51, 233, 0.15),
+    0 0 0 4px rgba(43, 51, 233, 0.05),
+    inset 0 0 20px rgba(127, 156, 232, 0.1);
 }
 
 .experiment-row.selected {
@@ -369,7 +372,7 @@
 }
 
 /* Responsive */
-@media (max-width: 960px) {
+@media (max-width: 1100px) {
   .experiment-row {
     padding: 8px 10px;
   }

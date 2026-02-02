@@ -158,6 +158,26 @@ export class ExperimentStudioService {
         this.refreshDataModel();
       }
     }, { allowSignalWrites: true });
+
+    // Auto-deselect algorithm when it becomes unavailable due to variable/covariate changes
+    effect(() => {
+      const currentAlgo = this.selectedAlgorithm();
+      if (!currentAlgo) return;
+
+      // Read these to establish reactive dependencies
+      const _variables = this.selectedVariables();
+      const _covariates = this.selectedCovariates();
+
+      // Check if the currently selected algorithm is still available
+      const isStillAvailable = this.isAlgorithmAvailable(currentAlgo.name);
+
+      if (!isStillAvailable) {
+        console.log(
+          `[ExperimentStudioService] Algorithm "${currentAlgo.name}" is no longer available — deselecting.`
+        );
+        this.clearSelectedAlgorithm();
+      }
+    }, { allowSignalWrites: true });
   }
 
   setLastSavedName(name: string) {
@@ -703,6 +723,12 @@ export class ExperimentStudioService {
     return resp;
   }
 
+  private normalizeTransientResponse(resp: any): any {
+    if (!resp) return null;
+    if (resp.result !== undefined || resp.status !== undefined) return resp;
+    return { result: resp };
+  }
+
   private submitTransientRequest(requestBody: any, cacheHandler?: (result: any) => void): Observable<any> {
     return this.http.post<any>(this.transientUrl, requestBody).pipe(
       tap((resp) => {
@@ -801,6 +827,42 @@ export class ExperimentStudioService {
       tap(() => {
         this.setLastSavedName(expName);
       })
+    );
+  }
+
+  runSelectedAlgorithmTransient(
+    algorithmNameOverride: string | null = null,
+    effectiveAlgorithmName: string | null = null
+  ): Observable<any> | null {
+    const selectedAlgo = this.selectedAlgorithm();
+    if (!selectedAlgo) {
+      console.error('No algorithm selected.');
+      return null;
+    }
+
+    const baseAlgorithmName = algorithmNameOverride ?? selectedAlgo.name;
+    const requestAlgorithmName = effectiveAlgorithmName ?? baseAlgorithmName;
+
+    if (baseAlgorithmName === 'descriptive_stats') {
+      const variableCodes = this.selectedVariables().map((v) => v.code);
+      if (!variableCodes.length) {
+        console.warn('Descriptive stats: no variables selected.');
+        return null;
+      }
+      return this.loadDescriptiveOverview(variableCodes).pipe(
+        map(resp => this.normalizeTransientResponse(resp))
+      );
+    }
+
+    const requestBody = this.buildRequestBody(
+      baseAlgorithmName,
+      null,
+      null,
+      requestAlgorithmName
+    );
+
+    return this.submitTransientRequest(requestBody).pipe(
+      map(resp => this.normalizeTransientResponse(resp))
     );
   }
 

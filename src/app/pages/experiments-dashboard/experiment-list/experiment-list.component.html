@@ -1,10 +1,7 @@
 <div class="experiments-list-root">
   <!-- Search bar -->
   <div class="list-toolbar">
-    <app-experiment-search
-      [filters]="filters()"
-      (filtersChange)="patchFilters($event)"
-    ></app-experiment-search>
+    <app-experiment-search [filters]="filters()" (filtersChange)="patchFilters($event)"></app-experiment-search>
   </div>
 
   <!-- My experiments toggle -->
@@ -21,12 +18,7 @@
       </span>
       }
 
-      <button
-        type="button"
-        class="toggle-switch"
-        [class.on]="onlyMine()"
-        (click)="toggleOnlyMine()"
-      >
+      <button type="button" class="toggle-switch" [class.on]="onlyMine()" (click)="toggleOnlyMine()">
         <span class="toggle-thumb"></span>
       </button>
     </div>
@@ -40,51 +32,34 @@
   } @else {
   <!-- Pagination top -->
   <div class="list-pagination list-pagination--top">
-    <button
-      type="button"
-      class="page-btn"
-      (click)="prevPage()"
-      [disabled]="currentPage() === 1"
-    >
+    <button type="button" class="page-btn" (click)="prevPage()" [disabled]="currentPage() === 1">
       ‹ Prev
     </button>
 
     <div class="page-info">Page {{ currentPage() }} of {{ totalPages() }}</div>
 
-    <button
-      type="button"
-      class="page-btn"
-      (click)="nextPage()"
-      [disabled]="currentPage() === totalPages()"
-    >
+    <button type="button" class="page-btn" (click)="nextPage()" [disabled]="currentPage() === totalPages()">
       Next ›
     </button>
   </div>
 
   <ul class="experiments-list">
     @for (exp of pagedExperiments(); track exp.id) {
-    <li
-      class="experiment-row"
-      [class.selected]="
+    <li class="experiment-row" [class.selected]="
         (!compareMode && exp.id === selectedExperimentId) ||
         (compareMode && isInCompare(exp.id))
-      "
-      (click)="selectExperiment(exp)"
-    >
+      " (click)="selectExperiment(exp)">
       <!-- LEFT: main info -->
       <div class="row-main">
         <div class="row-title-line">
           <span class="exp-name" [title]="exp.name">
-            {{ exp.name }}
+            {{ humanizeName(exp) }}
           </span>
 
-          <span
-            class="status-pill"
-            [ngClass]="{
+          <span class="status-pill" [ngClass]="{
               completed: exp.status === 'success',
               error: exp.status === 'error'
-            }"
-          >
+            }">
             {{ exp.status }}
           </span>
         </div>
@@ -104,12 +79,8 @@
 
       <!-- RIGHT: actions -->
       <div class="row-actions">
-        <button
-          class="icon-btn"
-          [class.shared]="exp.isShared"
-          [title]="exp.isShared ? 'Shared – copy link' : 'Share with others'"
-          (click)="onShareClicked(exp, $event)"
-        >
+        <button class="icon-btn" [class.shared]="exp.isShared"
+          [title]="exp.isShared ? 'Shared – copy link' : 'Share with others'" (click)="onShareClicked(exp, $event)">
           <i class="fas fa-share-alt"></i>
         </button>
 
@@ -119,19 +90,11 @@
         </span>
         }
 
-        <button
-          class="icon-btn"
-          title="Edit"
-          (click)="onEditRequested(exp.id); $event.stopPropagation()"
-        >
+        <button class="icon-btn" title="Edit" (click)="onEditRequested(exp.id); $event.stopPropagation()">
           <i class="far fa-edit"></i>
         </button>
 
-        <button
-          class="icon-btn danger"
-          title="Delete"
-          (click)="onDeleteRequested(exp.id); $event.stopPropagation()"
-        >
+        <button class="icon-btn danger" title="Delete" (click)="onDeleteRequested(exp.id); $event.stopPropagation()">
           <i class="far fa-trash-alt"></i>
         </button>
       </div>
@@ -141,23 +104,13 @@
 
   <!-- Pagination bottom -->
   <div class="list-pagination list-pagination--bottom">
-    <button
-      type="button"
-      class="page-btn"
-      (click)="prevPage()"
-      [disabled]="currentPage() === 1"
-    >
+    <button type="button" class="page-btn" (click)="prevPage()" [disabled]="currentPage() === 1">
       ‹ Prev
     </button>
 
     <div class="page-info">Page {{ currentPage() }} of {{ totalPages() }}</div>
 
-    <button
-      type="button"
-      class="page-btn"
-      (click)="nextPage()"
-      [disabled]="currentPage() === totalPages()"
-    >
+    <button type="button" class="page-btn" (click)="nextPage()" [disabled]="currentPage() === totalPages()">
       Next ›
     </button>
   </div>

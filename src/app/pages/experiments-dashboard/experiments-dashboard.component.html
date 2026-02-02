@@ -24,21 +24,26 @@
     <div class="command-center-layout">
       <!-- LEFT: NAVIGATION & SELECTION -->
       <aside class="side-pane experiments-pane">
-        <div class="pane-header header-with-actions">
-          <h2>Research Workspace</h2>
+        <div class="pane-header workspace-pane-header">
+          <div class="workspace-label-group">
+            <h2>Research Workspace</h2>
+          </div>
 
           <div class="pane-actions">
+            <!-- Compare Toggle -->
             <button class="compare-mode-btn" [class.active]="compareMode()"
               [class.has-selections]="compareIds().length >= 1" (click)="toggleCompareMode()" title="Comparison Mode">
               <i class="fas fa-columns"></i>
+              <span class="btn-label">{{ compareMode() ? 'Exit' : 'Compare' }}</span>
               @if (compareIds().length > 0) {
               <span class="count-badge">{{ compareIds().length }}</span>
               }
             </button>
 
+            <!-- New Experiment -->
             <button class="btn-new-experiment primary" (click)="goToNewExperiment()" title="New Experiment">
               <i class="fas fa-plus"></i>
-              New Experiment
+              New
             </button>
           </div>
         </div>

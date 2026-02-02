@@ -107,29 +107,19 @@ select:required:invalid {
   /* Light red background for visibility */
 }
 
-/* Spark Animation */
-@keyframes spark-pulse {
+
+@keyframes glacialPulse {
   0% {
-    transform: scale(1);
-    opacity: 1;
-    filter: drop-shadow(0 0 0px var(--primary-light));
+    box-shadow: 0 0 0 0 rgba(43, 51, 233, 0.2);
   }
 
-  50% {
-    transform: scale(1.1);
-    opacity: 0.8;
-    filter: drop-shadow(0 0 8px var(--primary-light));
+  70% {
+    box-shadow: 0 0 0 10px rgba(43, 51, 233, 0);
   }
 
   100% {
-    transform: scale(1);
-    opacity: 1;
-    filter: drop-shadow(0 0 0px var(--primary-light));
+    box-shadow: 0 0 0 0 rgba(43, 51, 233, 0);
   }
-}
-
-.spark-animated {
-  animation: spark-pulse 2s infinite ease-in-out;
 }
 
 /* Glassmorphism Utility */
