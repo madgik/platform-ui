@@ -78,17 +78,8 @@ export class ExperimentStudioService {
   readonly longitudinalModels = signal<DataModel[]>([]);
   readonly availableDatasets = signal<{ code: string; label: string }[]>([]);
 
-  private experimentNameSignal = signal<string>('');
-  readonly experimentName = this.experimentNameSignal.asReadonly();
-
-  private experimentDescriptionSignal = signal<string>('');
-  readonly experimentDescription = this.experimentDescriptionSignal.asReadonly();
-
   private currentExperimentUUIDSignal = signal<string | null>(null);
   readonly currentExperimentUUID = this.currentExperimentUUIDSignal.asReadonly();
-
-  private lastSavedNameSignal = signal<string | null>(null);
-  readonly lastSavedName = this.lastSavedNameSignal.asReadonly();
 
   private editingExistingExperimentSignal = signal(false);
   readonly editingExistingExperiment = this.editingExistingExperimentSignal.asReadonly();
@@ -178,38 +169,6 @@ export class ExperimentStudioService {
         this.clearSelectedAlgorithm();
       }
     }, { allowSignalWrites: true });
-  }
-
-  setLastSavedName(name: string) {
-    this.lastSavedNameSignal.set(name);
-  }
-
-  setExperimentName(name: string) {
-    this.experimentNameSignal.set(name ?? '');
-  }
-
-  setExperimentDescription(desc: string) {
-    this.experimentDescriptionSignal.set(desc ?? '');
-  }
-
-  patchExperimentDescription(uuid: string, description: string) {
-    return this.http.patch(
-      `/services/experiments/${uuid}`,
-      { description }
-    );
-  }
-
-  getExperimentNameOrDefault(fallback: string): string {
-    const name = (this.experimentNameSignal() || '').trim();
-    return name || fallback;
-  }
-
-  resetExperimentName() {
-    this.experimentNameSignal.set('');
-  }
-
-  resetExperimentDescription() {
-    this.experimentDescriptionSignal.set('');
   }
 
   setSelectedDataModel(model: DataModel | null): void {
@@ -514,7 +473,8 @@ export class ExperimentStudioService {
     algorithmName: string | null = null,
     yVariables: string[] | null = null,
     xVariables: string[] | null = null,
-    effectiveAlgorithmName: string | null = null
+    effectiveAlgorithmName: string | null = null,
+    customName: string | null = null
   ): any {
     let algoConfig: AlgorithmConfig | undefined;
 
@@ -529,11 +489,7 @@ export class ExperimentStudioService {
     }
 
     const requestAlgorithmName = effectiveAlgorithmName ?? algoConfig.name;
-    const defaultName = `experiment_${requestAlgorithmName.replace(/\s+/g, '_')}`;
-    const expName = this.getExperimentNameOrDefault(defaultName);
-
-    const description =
-      (this.experimentDescriptionSignal() || '').trim() || null;
+    const expName = customName ?? `experiment_${requestAlgorithmName.replace(/\s+/g, '_')}`;
 
     // unified signals
     const variables = yVariables?.length
@@ -567,7 +523,6 @@ export class ExperimentStudioService {
     if (algorithmName === AlgorithmNames.MULTIPLE_HISTOGRAMS) {
       return {
         name: expName,
-        description,
         algorithm: {
           name: requestAlgorithmName,
           inputdata: {
@@ -586,7 +541,6 @@ export class ExperimentStudioService {
     // generic build
     const body = {
       name: expName,
-      description,
       algorithm: {
         name: requestAlgorithmName,
         inputdata: {
@@ -798,7 +752,8 @@ export class ExperimentStudioService {
 
   runSelectedAlgorithm(
     algorithmNameOverride: string | null = null,
-    effectiveAlgorithmName: string | null = null
+    effectiveAlgorithmName: string | null = null,
+    customName: string | null = null
   ): Observable<any> | null {
     const selectedAlgo = this.selectedAlgorithm();
     if (!selectedAlgo) {
@@ -818,16 +773,9 @@ export class ExperimentStudioService {
       return this.loadDescriptiveOverview(variableCodes);
     }
 
-    const requestBody = this.buildRequestBody(baseAlgorithmName, null, null, requestAlgorithmName);
+    const requestBody = this.buildRequestBody(baseAlgorithmName, null, null, requestAlgorithmName, customName);
 
-    const defaultName = `experiment_${requestAlgorithmName.replace(/\s+/g, '_')}`;
-    const expName = this.getExperimentNameOrDefault(defaultName);
-
-    return this.submitRequest(requestBody).pipe(
-      tap(() => {
-        this.setLastSavedName(expName);
-      })
-    );
+    return this.submitRequest(requestBody);
   }
 
   runSelectedAlgorithmTransient(
@@ -872,7 +820,7 @@ export class ExperimentStudioService {
 
   pollForResults(url: string): Observable<any> {
     const pollingInterval = 5000;
-    const maxRetries = 10;
+    const maxRetries = 60;
     let attempts = 0;
 
     return interval(pollingInterval).pipe(
@@ -976,8 +924,6 @@ export class ExperimentStudioService {
 
     // Basic metadata
     this.currentExperimentUUIDSignal.set(exp.uuid ?? null);
-    this.setExperimentName(exp.name ?? '');
-    this.setExperimentDescription(exp.description ?? '');
 
     const algoName = exp.algorithm.name;
     const input = exp.algorithm.inputdata || {};
@@ -1128,8 +1074,6 @@ export class ExperimentStudioService {
     this.lastUsedAlgorithm.set(null);
 
     // meta info
-    this.setExperimentName('');
-    this.setExperimentDescription('');
     this.currentExperimentUUIDSignal.set(null);
     this.setEditingExistingExperiment(false);
 

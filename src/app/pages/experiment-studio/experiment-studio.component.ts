@@ -190,8 +190,6 @@ export class ExperimentStudioComponent implements OnInit, OnDestroy, AfterViewIn
     // Reset service state (variables, datasets, filters, algo)
     this.expStudioService.resetStudioState();
 
-    this.expStudioService.setExperimentName('');
-    this.expStudioService.setExperimentDescription('');
     this.expStudioService.setEditingExistingExperiment(false);
   }
 
@@ -218,8 +216,6 @@ export class ExperimentStudioComponent implements OnInit, OnDestroy, AfterViewIn
     // Clean up experiment studio state
     this.expStudioService.resetStudioState();
     this.expStudioService.setEditingExistingExperiment(false);
-    this.expStudioService.setExperimentName('');
-    this.expStudioService.setExperimentDescription('');
     this.errorService.clearError();
     this.expStudioService.loadAndCategorizeModels().subscribe();
 

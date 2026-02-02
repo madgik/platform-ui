@@ -52,7 +52,7 @@
         <header class="compare-card-header">
           <div class="title-block">
             <h4 [title]="item.exp.name">
-              {{ humanizeName(item.exp) }}
+              {{ item.exp.name || "Untitled Investigation" }}
             </h4>
             <p class="algo-line">
               <i class="fas fa-flask"></i>

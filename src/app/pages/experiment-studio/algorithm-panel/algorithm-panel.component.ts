@@ -9,9 +9,9 @@ import { getOutputSchema } from '../../../core/algorithm-mappers';
 import { EchartsxModule } from 'echarts-for-angular';
 import { AlgorithmConfig } from '../../../models/algorithm-definition.model';
 import { PdfExportService } from '../../../services/export-results-pdf.service';
-import { AlgorithmDescriptionModalComponent } from './algorithm-description-modal/algorithm-description-modal.component';
 import { ErrorService } from '../../../services/error.service';
 import { AuthService } from '../../../services/auth.service';
+import { SpinnerComponent } from '../../shared/spinner/spinner.component';
 
 
 @Component({
@@ -23,7 +23,7 @@ import { AuthService } from '../../../services/auth.service';
     ReactiveFormsModule,
     AlgorithmResultComponent,
     EchartsxModule,
-    AlgorithmDescriptionModalComponent
+    SpinnerComponent
   ],
   templateUrl: './algorithm-panel.component.html',
   styleUrls: ['./algorithm-panel.component.css']
@@ -42,15 +42,12 @@ export class AlgorithmPanelComponent {
   errorMsg = signal<string | null>(null);
   readonly isRunning = this.experimentStudioService.isRunning;
 
-  savingName = false;
   lastExperimentUUID = this.experimentStudioService.currentExperimentUUID;
-  lastSavedName = this.experimentStudioService.lastSavedName;
+  saveAsMode = signal(false);
+  saveAsName = signal('');
+  loadingText = signal('Processing experiment...');
+  showSuccessNotification = signal(false);
 
-  descriptionModalOpen = false;
-  descriptionDraft = '';
-
-  readonly experimentName = this.experimentStudioService.experimentName;
-  readonly experimentDescription = this.experimentStudioService.experimentDescription;
   readonly selectedAlgorithm = this.experimentStudioService.selectedAlgorithm;
   readonly enumMaps = computed(() => this.experimentStudioService.getCategoricalEnumMaps());
   readonly yVar = computed(() => this.experimentStudioService.selectedVariables()[0]?.code ?? null);
@@ -201,6 +198,17 @@ export class AlgorithmPanelComponent {
       this.transformationEnabled.set(hasAny);
     });
 
+    effect(() => {
+      // Establish dependencies
+      this.selectedAlgorithm();
+      this.experimentStudioService.selectedVariables();
+      this.experimentStudioService.selectedCovariates();
+
+      // Clear results and reset Save As mode on any selection change
+      this.result.set(null);
+      this.saveAsMode.set(false);
+      this.saveAsName.set('');
+    });
     effect(() => {
       const groups = this.experimentStudioService.availableGroupedAlgorithms();
       if (!groups) return;
@@ -394,36 +402,6 @@ export class AlgorithmPanelComponent {
     getOutputSchema(this.selectedAlgorithm()?.name ?? '') ?? []
   );
 
-  onExperimentNameChange(value: string) {
-    this.experimentStudioService.setExperimentName(value);
-  }
-
-  openDescriptionModal() {
-    this.descriptionDraft = this.experimentStudioService.experimentDescription() ?? '';
-    this.descriptionModalOpen = true;
-  }
-
-  closeDescriptionModal() {
-    this.descriptionModalOpen = false;
-  }
-
-  onDescriptionDraftChange(value: string) {
-    this.descriptionDraft = value ?? '';
-  }
-
-  saveDescriptionFromModal(desc: string) {
-    this.experimentStudioService.setExperimentDescription(desc);
-
-    const uuid = this.experimentStudioService.getCurrentExperimentUUID();
-    if (uuid) {
-      this.experimentStudioService.patchExperimentDescription(uuid, desc).subscribe({
-        next: () => { },
-        error: (e) => console.error('Patch description failed', e),
-      });
-    }
-
-    this.closeDescriptionModal();
-  }
 
 
   readonly filteredAlgorithmCategories = computed(() => {
@@ -452,36 +430,6 @@ export class AlgorithmPanelComponent {
     this.showOnlyActive.update(v => !v);
   }
 
-  saveExperimentName() {
-    const newName = this.experimentStudioService.experimentName();
-    const uuid = this.lastExperimentUUID();
-
-    if (!uuid) {
-      console.warn('No experiment UUID available – run the experiment at least once.');
-      return;
-    }
-
-    if (!newName?.trim()) return;
-
-    this.savingName = true;
-
-    this.experimentStudioService.updateExperimentName(uuid, newName)
-      .subscribe({
-        next: () => {
-          this.experimentStudioService.setLastSavedName(newName);
-          this.savingName = false;
-          this.showSaveToast();
-        },
-        error: (err) => {
-          console.error('Failed to update name:', err);
-          this.savingName = false;
-        }
-      });
-  }
-
-  showSaveToast() {
-    alert('Experiment name updated!');
-  }
 
   readonly experimentInfo = computed(() => {
     const selected = this.experimentStudioService.selectedAlgorithm();
@@ -501,7 +449,7 @@ export class AlgorithmPanelComponent {
       (algoName && allConfigs[algoName]) || {};
 
     return {
-      experimentName: this.experimentStudioService.getExperimentNameOrDefault(defaultName),
+      experimentName: defaultName,
       datasets: this.experimentStudioService.selectedDatasets(),
       variables: this.experimentStudioService.selectedVariables(),
       covariates: this.experimentStudioService.selectedCovariates(),
@@ -539,6 +487,7 @@ export class AlgorithmPanelComponent {
   selectAlgorithm(algorithm: AlgorithmConfig) {
     // Use service method so it enriches configSchema and persists to sessionStorage
     this.experimentStudioService.setAlgorithm(algorithm);
+    this.result.set(null);
     this.errorMsg.set(null);
   }
 
@@ -566,6 +515,9 @@ export class AlgorithmPanelComponent {
     }
 
     const algo = this.experimentStudioService.selectedAlgorithm();
+    this.errorMsg.set(null);
+    this.errorService.clearError();
+    this.loadingText.set('Processing experiment...');
     this.experimentStudioService.setRunning(true);
 
     if (!algo) {
@@ -619,7 +571,7 @@ export class AlgorithmPanelComponent {
       ...(effectiveAlgorithmName !== baseAlgorithmName ? { [effectiveAlgorithmName]: configValues } : {})
     });
 
-    const result$ = this.experimentStudioService.runSelectedAlgorithm(
+    const result$ = this.experimentStudioService.runSelectedAlgorithmTransient(
       baseAlgorithmName,
       finalAlgorithmName
     );
@@ -648,19 +600,10 @@ export class AlgorithmPanelComponent {
           error: msg,
           payload,
         });
-        this.experimentStudioService.clearSelectedAlgorithm();
         this.experimentStudioService.setRunning(false);
         return;
       }
 
-      const algoLabel = algo.label ?? algo.name ?? 'N/A';
-      const defaultName = `Experiment for ${algoLabel}`;
-
-      const finalName = this.experimentStudioService.getExperimentNameOrDefault(defaultName);
-
-      // sync name after first run
-      this.experimentStudioService.setExperimentName(finalName);
-      this.experimentStudioService.setLastSavedName(finalName);
 
       const schema = getOutputSchema(finalAlgorithmName ?? '') ?? [];
       this.result.set({
@@ -668,7 +611,6 @@ export class AlgorithmPanelComponent {
       });
       this.lastUsedAlgorithm = finalAlgorithmName;
       this.lastUsedSchema.set(schema);
-      this.experimentStudioService.clearSelectedAlgorithm();
       this.experimentStudioService.setRunning(false);
     });
 
@@ -923,6 +865,97 @@ export class AlgorithmPanelComponent {
     return this.getRoleRequirement(target?.inputdata?.x, 'Covariate');
   }
 
+  onSaveAs() {
+    if (!this.saveAsName().trim()) {
+      this.errorMsg.set('Please provide a name for the experiment.');
+      return;
+    }
+
+    this.errorMsg.set(null);
+    this.errorService.clearError();
+
+    const algo = this.experimentStudioService.selectedAlgorithm();
+    if (!algo) return;
+
+    this.experimentStudioService.setRunning(true);
+
+    const isCvOnly = this.experimentStudioService.isCrossValidationOnly(algo.name);
+    const baseAlgorithmName = isCvOnly
+      ? algo.name
+      : this.experimentStudioService.getCrossValidationBase(algo.name) ??
+      this.experimentStudioService.getTransformationBase(algo.name) ??
+      algo.name;
+
+    const cvVariant = this.experimentStudioService.getCrossValidationVariant(baseAlgorithmName);
+    const shouldIncludeSplits = this.crossValidationEnabled() || this.experimentStudioService.isCrossValidationOnly(algo.name);
+    const useCrossValidation = shouldIncludeSplits && !!cvVariant;
+    const transformationVariant = this.experimentStudioService.getTransformationVariant(baseAlgorithmName);
+    const useTransformation = this.transformationEnabled() && !!transformationVariant;
+    const effectiveAlgorithmName = useCrossValidation
+      ? cvVariant
+      : useTransformation
+        ? transformationVariant
+        : baseAlgorithmName;
+
+    const finalAlgorithmName = isCvOnly ? algo.name : effectiveAlgorithmName;
+
+    const result$ = this.experimentStudioService.runSelectedAlgorithm(
+      baseAlgorithmName,
+      finalAlgorithmName,
+      this.saveAsName()
+    );
+
+    this.loadingText.set('Saving experiment...');
+
+    if (!result$) {
+      this.errorMsg.set('Unable to start the save process.');
+      this.experimentStudioService.setRunning(false);
+      return;
+    }
+
+    result$.subscribe({
+      next: (res) => {
+        const status = res?.status;
+        const payload = res?.result ?? {};
+
+        if (status === 'error') {
+          const msg = payload?.message || 'Failed to save experiment results.';
+          this.errorMsg.set(msg);
+          this.experimentStudioService.setRunning(false);
+          return;
+        }
+
+        this.saveAsMode.set(false);
+        this.saveAsName.set('');
+        this.result.set(null); // Return to parameters view
+        this.experimentStudioService.setRunning(false);
+        this.triggerSuccessNotification();
+      },
+      error: (err) => {
+        this.errorMsg.set('Failed to save experiment.');
+        this.experimentStudioService.setRunning(false);
+      }
+    });
+  }
+
+  cancelSaveAs() {
+    this.saveAsMode.set(false);
+    this.saveAsName.set('');
+  }
+
+  toggleSaveAsMode() {
+    this.saveAsMode.update(v => !v);
+    if (this.saveAsMode()) {
+      this.saveAsName.set(this.experimentInfo().experimentName);
+    }
+  }
+
+  backToParameters() {
+    this.result.set(null);
+    this.saveAsMode.set(false);
+    this.saveAsName.set('');
+  }
+
   isCategoryOpen(category: string): boolean {
     return this.openCategories().includes(category);
   }
@@ -960,10 +993,7 @@ export class AlgorithmPanelComponent {
     const createdBy =
       currentUser?.fullname || currentUser?.username || currentUser?.email || null;
 
-    const filename =
-      this.experimentStudioService.getExperimentNameOrDefault(
-        `results_${algoKey}`
-      );
+    const filename = info.experimentName;
 
     this.pdfExport.exportExperimentPdf({
       filename,
@@ -984,5 +1014,12 @@ export class AlgorithmPanelComponent {
       result,
       chartContainer: section,
     });
+  }
+
+  private triggerSuccessNotification() {
+    this.showSuccessNotification.set(true);
+    setTimeout(() => {
+      this.showSuccessNotification.set(false);
+    }, 4000);
   }
 }

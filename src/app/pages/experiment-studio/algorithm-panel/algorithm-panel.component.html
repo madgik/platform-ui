@@ -111,166 +111,189 @@
   <main class="experiment-panel">
     <header>
       <div class="experiment-header">
-        <div class="experiment-name-box">
-          <label for="exp-name">Experiment name (optional)</label>
-          <div class="experiment-name-input-row">
-            <input id="exp-name" type="text" [ngModel]="experimentName()"
-              (ngModelChange)="onExperimentNameChange($event)" placeholder="Untitled experiment" />
-            <span class="name-tooltip-icon" tabindex="0"
-              title="If you leave this blank, a default name will be assigned automatically.">
-              ⓘ
-            </span>
-
-            @if (lastExperimentUUID()) {
-            <button class="save-name-btn" (click)="saveExperimentName()"
-              [disabled]="savingName || experimentName() === lastSavedName()">
-              {{ savingName ? "Saving..." : "Change Name" }}
-            </button>
-            }
+        <div class="header-title-group">
+          <span class="icon-pill" aria-hidden="true">
+            <i class="fas fa-microchip"></i>
+          </span>
+          <div class="header-text">
+            <h4 class="experiment-title">
+              {{ result() ? "Experiment Result" : (selectedAlgorithm()?.label || "Algorithm Configuration") }}
+            </h4>
+            <p class="experiment-subtitle">
+              {{ result() ? "Review analysis output" : "Configure parameters and run" }}
+            </p>
           </div>
         </div>
 
-        <!--          <button-->
-        <!--            class="icon-pill"-->
-        <!--            type="button"-->
-        <!--            (click)="openDescriptionModal()"-->
-        <!--            title="Experiment description"-->
-        <!--          >-->
-        <!--            <i class="fa fa-cog"></i>-->
-        <!--          </button>-->
-
-        <button class="primary-action-btn run-button top-right" [disabled]="isRunButtonDisabled()"
-          (click)="onClickRunExp()"
-          [title]="isRunButtonDisabled() ? 'Complete variable and algorithm selection to proceed' : 'Execute experiment'">
-          {{ isRunning() ? "Running..." : "Run Experiment" }}
-        </button>
-
-        <div class="floating-group">
-          <button class="floating-info-button" type="button" (click)="toggleInfoPanel()">
-            i
+        <div class="header-actions-group">
+          @if (result() && !saveAsMode()) {
+          <button class="secondary-action-btn back-btn" (click)="backToParameters()" title="Edit Parameters">
+            <i class="fas fa-chevron-left"></i>
+            <span>Edit Parameters</span>
           </button>
+          <button class="primary-action-btn run-button save-as" (click)="toggleSaveAsMode()">
+            Save As
+          </button>
+          } @else if (saveAsMode()) {
+          <div class="save-as-container">
+            <input type="text" [ngModel]="saveAsName()" (ngModelChange)="saveAsName.set($event)"
+              placeholder="Experiment name" class="save-as-input" />
+            <button class="primary-action-btn run-button" (click)="onSaveAs()"
+              [disabled]="!saveAsName().trim() || isRunning()">
+              {{ isRunning() ? "Saving..." : "Save & Run" }}
+            </button>
+            <button class="secondary-action-btn cancel-btn" (click)="cancelSaveAs()">
+              ✕
+            </button>
+          </div>
+          } @else {
+          <button class="primary-action-btn run-button" [disabled]="isRunButtonDisabled()" (click)="onClickRunExp()"
+            [title]="isRunButtonDisabled() ? 'Complete variable and algorithm selection to proceed' : 'Execute experiment'">
+            {{ isRunning() ? "Running..." : "Run Experiment" }}
+          </button>
+          }
 
-          <aside id="info-panel" class="experiment-info-panel" [class.open]="infoPanelOpen">
-            <header class="info-panel-header">
-              <div class="info-title-block">
-                <h3>Experiment summary</h3>
-                <p class="info-subtitle">
-                  Quick overview of your inputs &amp; configuration.
-                </p>
-              </div>
+          <div class="floating-group">
+            <button class="floating-info-button" type="button" (click)="toggleInfoPanel()">
+              i
+            </button>
 
-              <button class="info-close-btn" type="button" (click)="toggleInfoPanel()" aria-label="Close">
-                ✕
-              </button>
-            </header>
-
-            <div class="info-panel-body">
-              <!-- NAME -->
-              <div class="info-row">
-                <div class="info-label">Name</div>
-                <div class="info-value">
-                  {{
-                  experimentInfo().experimentName || "Untitled experiment"
-                  }}
+            <aside id="info-panel" class="experiment-info-panel" [class.open]="infoPanelOpen">
+              <header class="info-panel-header">
+                <div class="info-title-block">
+                  <h3>Experiment summary</h3>
+                  <p class="info-subtitle">
+                    Quick overview of your inputs &amp; configuration.
+                  </p>
                 </div>
-              </div>
 
-              <!-- DATASETS -->
-              <div class="info-row">
-                <div class="info-label">Datasets</div>
-                <div class="info-value">
-                  @if (experimentInfo().datasets.length) {
-                  <div class="info-chips">
-                    @for (d of experimentInfo().datasets; track d) {
-                    <span class="info-chip">{{ d }}</span>
-                    }
-                  </div>
-                  } @else {
-                  <span class="info-empty-pill">None selected</span>
-                  }
-                </div>
-              </div>
+                <button class="info-close-btn" type="button" (click)="toggleInfoPanel()" aria-label="Close">
+                  ✕
+                </button>
+              </header>
 
-              <!-- VARIABLES -->
-              <div class="info-row">
-                <div class="info-label">Variables</div>
-                <div class="info-value">
-                  @if (experimentInfo().variables.length) {
-                  <div class="info-chips">
-                    @for (v of experimentInfo().variables; track v.code) {
-                    <span class="info-chip">
-                      {{ v.label || v.name || v.code }}
-                    </span>
-                    }
-                  </div>
-                  } @else {
-                  <span class="info-empty-pill">None selected</span>
-                  }
-                </div>
-              </div>
+              <div class="info-panel-body">
 
-              <!-- COVARIATES -->
-              <div class="info-row">
-                <div class="info-label">Covariates</div>
-                <div class="info-value">
-                  @if (experimentInfo().covariates.length) {
-                  <div class="info-chips">
-                    @for (c of experimentInfo().covariates; track c.code) {
-                    <span class="info-chip info-chip--soft">
-                      {{ c.label || c.name || c.code }}
-                    </span>
-                    }
-                  </div>
-                  } @else {
-                  <span class="info-empty-pill">None selected</span>
-                  }
-                </div>
-              </div>
-
-              <!-- FILTERS -->
-              <div class="info-row">
-                <div class="info-label">Filters</div>
-                <div class="info-value">
-                  @if (experimentInfo().filters.length) {
-                  <div class="info-chips">
-                    @for (f of experimentInfo().filters; track f.code) {
-                    <span class="info-chip info-chip--outline">
-                      {{ f.label || f.name || f.code }}
-                    </span>
-                    }
-                  </div>
-                  } @else {
-                  <span class="info-empty-pill">No filters</span>
-                  }
-                </div>
-              </div>
-
-              <!-- ALGORITHM CONFIGS -->
-              <div class="info-row info-row--stacked">
-                <div class="info-label">Algorithm configs</div>
-                <div class="info-value">
-                  @if (objectKeys(experimentInfo().algorithmConfigs).length) {
-                  <dl class="info-config-list">
-                    @for (k of objectKeys(experimentInfo().algorithmConfigs);
-                    track k) {
-                    <div class="info-config-item">
-                      <dt>{{ prettifyKey(k) }}</dt>
-                      <dd>{{ experimentInfo().algorithmConfigs[k] }}</dd>
+                <!-- DATASETS -->
+                <div class="info-row">
+                  <div class="info-label">Datasets</div>
+                  <div class="info-value">
+                    @if (experimentInfo().datasets.length) {
+                    <div class="info-chips">
+                      @for (d of experimentInfo().datasets; track d) {
+                      <span class="info-chip">{{ d }}</span>
+                      }
                     </div>
+                    } @else {
+                    <span class="info-empty-pill">None selected</span>
                     }
-                  </dl>
-                  } @else {
-                  <span class="info-empty-pill">No custom configs</span>
-                  }
+                  </div>
+                </div>
+
+                <!-- VARIABLES -->
+                <div class="info-row">
+                  <div class="info-label">Variables</div>
+                  <div class="info-value">
+                    @if (experimentInfo().variables.length) {
+                    <div class="info-chips">
+                      @for (v of experimentInfo().variables; track v.code) {
+                      <span class="info-chip">
+                        {{ v.label || v.name || v.code }}
+                      </span>
+                      }
+                    </div>
+                    } @else {
+                    <span class="info-empty-pill">None selected</span>
+                    }
+                  </div>
+                </div>
+
+                <!-- COVARIATES -->
+                <div class="info-row">
+                  <div class="info-label">Covariates</div>
+                  <div class="info-value">
+                    @if (experimentInfo().covariates.length) {
+                    <div class="info-chips">
+                      @for (c of experimentInfo().covariates; track c.code) {
+                      <span class="info-chip info-chip--soft">
+                        {{ c.label || c.name || c.code }}
+                      </span>
+                      }
+                    </div>
+                    } @else {
+                    <span class="info-empty-pill">None selected</span>
+                    }
+                  </div>
+                </div>
+
+                <!-- FILTERS -->
+                <div class="info-row">
+                  <div class="info-label">Filters</div>
+                  <div class="info-value">
+                    @if (experimentInfo().filters.length) {
+                    <div class="info-chips">
+                      @for (f of experimentInfo().filters; track f.code) {
+                      <span class="info-chip info-chip--outline">
+                        {{ f.label || f.name || f.code }}
+                      </span>
+                      }
+                    </div>
+                    } @else {
+                    <span class="info-empty-pill">No filters</span>
+                    }
+                  </div>
+                </div>
+
+                <!-- ALGORITHM CONFIGS -->
+                <div class="info-row info-row--stacked">
+                  <div class="info-label">Algorithm configs</div>
+                  <div class="info-value">
+                    @if (objectKeys(experimentInfo().algorithmConfigs).length) {
+                    <dl class="info-config-list">
+                      @for (k of objectKeys(experimentInfo().algorithmConfigs);
+                      track k) {
+                      <div class="info-config-item">
+                        <dt>{{ prettifyKey(k) }}</dt>
+                        <dd>{{ experimentInfo().algorithmConfigs[k] }}</dd>
+                      </div>
+                      }
+                    </dl>
+                    } @else {
+                    <span class="info-empty-pill">No custom configs</span>
+                    }
+                  </div>
                 </div>
               </div>
-            </div>
-          </aside>
+            </aside>
+          </div>
         </div>
       </div>
     </header>
 
-    @if (selectedAlgorithm() && !isRunning()) {
+    @if (isRunning()) {
+    <div class="panel-loader">
+      <app-spinner [overlay]="false"></app-spinner>
+      <p>{{ loadingText() }}</p>
+    </div>
+    } @else if (result()) {
+    <section class="result-section" #resultSection>
+      <div class="result-header">
+        <h5>Experiment Result</h5>
+
+        <!-- Export as PDF button -->
+        <button class="icon-button export-button" type="button" (click)="onExportResult(resultSection)"
+          title="Export as PDF">
+          <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5 20h14v-2H5v2zm7-16v9.17l3.59-3.58L17 11l-5 5-5-5 1.41-1.41L11 13.17V4h2z" />
+          </svg>
+          <span>Export PDF</span>
+        </button>
+      </div>
+
+      <app-algorithm-result [result]="result()" [schema]="lastUsedSchema()" [algorithm]="lastUsedAlgorithm"
+        [enumMaps]="enumMaps()" [yVar]="yVar()" [xVar]="xVar()" [labelMap]="labelMap()" />
+    </section>
+    } @else if (selectedAlgorithm()) {
     <section class="experiment-settings">
       <h5 class="config-title">
         {{ selectedAlgorithm()?.label }} Configuration
@@ -431,30 +454,15 @@
       </form>
       }
     </section>
-    } @else if (!isRunning() && result()) {
-    <section class="result-section" #resultSection>
-      <div class="result-header">
-        <h5>Experiment Result</h5>
-
-        <!-- Export as PDF button -->
-        <button class="icon-button export-button" type="button" (click)="onExportResult(resultSection)"
-          title="Export as PDF">
-          <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M5 20h14v-2H5v2zm7-16v9.17l3.59-3.58L17 11l-5 5-5-5 1.41-1.41L11 13.17V4h2z" />
-          </svg>
-          <span>Export PDF</span>
-        </button>
-      </div>
-
-      <app-algorithm-result [result]="result()" [schema]="lastUsedSchema()" [algorithm]="lastUsedAlgorithm"
-        [enumMaps]="enumMaps()" [yVar]="yVar()" [xVar]="xVar()" [labelMap]="labelMap()" />
-    </section>
     }
   </main>
 </div>
 
-@if (descriptionModalOpen) {
-<app-algorithm-description-modal (saveDescription)="saveDescriptionFromModal($event)"
-  (cancel)="closeDescriptionModal()"></app-algorithm-description-modal>
-
+@if (showSuccessNotification()) {
+<div class="success-notification" role="status" aria-live="polite">
+  <div class="notification-content">
+    <i class="fas fa-check-circle"></i>
+    <span>Experiment saved successfully!</span>
+  </div>
+</div>
 }
