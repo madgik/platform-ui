@@ -1,5 +1,5 @@
 import { ChartBuilderService } from './../../visualisations/charts/chart-builder.service';
-import { Component, Input, signal, computed, effect, inject } from '@angular/core';
+import { Component, input, signal, computed, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AutoRendererComponent } from '../../visualisations/auto-renderer/auto-renderer.component';
 import { ChartRendererComponent } from '../../visualisations/charts/charts-renderer/charts-renderer.component';
@@ -18,49 +18,49 @@ import { EnumMaps, LabelMap, mapAlgorithmResultEnums } from '../../../../core/al
   styleUrls: ['./algorithm-result.component.css']
 })
 export class AlgorithmResultComponent {
-  @Input() result: any = null;
-  @Input() schema: any[] = [];
-  @Input() algorithm!: string;
-  @Input() enumMaps: EnumMaps | null = null;
-  @Input() yVar: string | null = null;
-  @Input() xVar: string | null = null;
-  @Input() labelMap: LabelMap | null = null;
+  result = input<any>(null);
+  schema = input<any[]>([]);
+  algorithm = input.required<string>();
+  enumMaps = input<EnumMaps | null>(null);
+  yVar = input<string | null>(null);
+  xVar = input<string | null>(null);
+  labelMap = input<LabelMap | null>(null);
 
   constructor(private chartBuilder: ChartBuilderService) { }
 
   errorMessage = computed(() => {
-    if (!this.result) return null;
-    if (this.result?.status === 'error') {
-      return this.result?.error || this.result?.message || 'An error occurred.';
+    if (!this.result()) return null;
+    if (this.result()?.status === 'error') {
+      return this.result()?.error || this.result()?.message || 'An error occurred.';
     }
-    return this.result?.error ?? null;
+    return this.result()?.error ?? null;
   });
 
   isRenderable = computed(() => {
-    return !!this.result && !!this.algorithm && !this.errorMessage();
+    return !!this.result() && !!this.algorithm() && !this.errorMessage();
   });
 
   mappedResult = computed(() =>
     this.errorMessage()
-      ? this.result
-      : mapAlgorithmResultEnums(this.algorithm, this.result, this.enumMaps, {
-        y: this.yVar,
-        x: this.xVar,
-      }, this.labelMap)
+      ? this.result()
+      : mapAlgorithmResultEnums(this.algorithm(), this.result(), this.enumMaps(), {
+        y: this.yVar(),
+        x: this.xVar(),
+      }, this.labelMap())
   );
 
   chartOptions = computed<EChartsOption[]>(() =>
     this.errorMessage()
       ? []
       : this.chartBuilder.getChartsForAlgorithm(
-        this.algorithm,
+        this.algorithm(),
         this.mappedResult()
       )
   );
 
   renderedCharts = computed(() => {
-    if (!this.result || !this.algorithm || this.errorMessage()) return [];
-    return this.chartBuilder.getChartsForAlgorithm(this.algorithm, this.mappedResult());
+    if (!this.result() || !this.algorithm() || this.errorMessage()) return [];
+    return this.chartBuilder.getChartsForAlgorithm(this.algorithm(), this.mappedResult());
   });
 
   getMatrixRows(data: any): any[][] {

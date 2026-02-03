@@ -453,7 +453,6 @@ export function createZoomableCirclePacking(
   }
 
   function shouldShowLabel(d: any, k: number): boolean {
-    if (!d.children) return false;
     const radius = d.r * k;
     if (radius < 16) return false;
     const lines = splitText(d.data.label || '');
