@@ -47,21 +47,21 @@ export class BubbleChartComponent implements OnInit, OnChanges, AfterViewInit, O
 
   error: string | null = null; // Holds the current error message
   readonly DEFAULT_PALETTE = {
-    variable: '#37c0ae',
-    covariate: '#ffba08',
-    filter: '#44bf00',
-    selected: '#27d6d1',
-    groupStart: '#bcefdc',
-    groupEnd: '#4255a8',
+    variable: '#2b33e9',     // MIP dark_blue for variables
+    covariate: '#ffeeba',    // Muted pastel orange for covariates
+    filter: '#c5d4f0',       // Muted pastel blue for filters
+    selected: '#1b21a3',     // MIP dark_blue darker for selection
+    groupStart: '#dfefe4',   // MIP light_green for group start
+    groupEnd: '#2b33e9',     // MIP dark_blue for group end
   };
 
   readonly COLORBLIND_PALETTE = {
-    variable: '#648fff',
-    covariate: '#785ef0',
-    filter: '#dc267f',
-    selected: '#fe6100',
-    groupStart: '#ffb000',
-    groupEnd: '#004d40',
+    variable: '#648fff',     // Blue for colorblind
+    covariate: '#ffba08',    // MIP orange (good for colorblind)
+    filter: '#dc267f',       // Magenta for colorblind
+    selected: '#fe6100',     // Orange-red for selection
+    groupStart: '#dfefe4',   // MIP light_green
+    groupEnd: '#1b21a3',     // MIP dark_blue darker
   };
 
   colorMode: 'default' | 'colorBlind' | 'custom' = 'default';

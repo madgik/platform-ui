@@ -67,8 +67,8 @@ export function buildBoxPlotChart(result: any): EChartsOption[] {
         type: 'boxplot',
         data: boxData,
         itemStyle: {
-          color: 'rgba(100,149,237,0.4)',
-          borderColor: '#2f5597',
+          color: 'rgba(43, 51, 233, 0.3)',      // MIP primary with transparency
+          borderColor: '#2b33e9',               // MIP dark_blue
         },
         boxWidth: [20, 30],
       },
@@ -78,7 +78,7 @@ export function buildBoxPlotChart(result: any): EChartsOption[] {
         data: meanPoints,
         symbol: 'circle',
         symbolSize: 8,
-        itemStyle: { color: '#e91e63' },
+        itemStyle: { color: '#ffba08' },         // MIP orange for mean
       },
     ],
   };

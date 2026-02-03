@@ -49,10 +49,10 @@
     --studio-card-bg: #1e293b;
     --studio-card-border: #334155;
     --studio-card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
-    /* Adjust primary colors for better contrast in dark mode if needed */
-    --primary-color: #2dd4bf;
-    --primary-dark: #14b8a6;
-    --accent-color: #2dd4bf;
+    /* MIP Brand colors for dark mode - use light_blue for better contrast */
+    --primary-color: #7f9ce8;
+    --primary-dark: #2b33e9;
+    --accent-color: #ffba08;
   }
 }
 
@@ -291,33 +291,31 @@ select:required:valid {
   padding: 4px 14px;
   margin: 0 3px;
   border-radius: 999px;
-  border: 1px solid #026d6d !important;
-  background: linear-gradient(135deg, #009e9e00, #006c6c3d) !important;
+  border: 1px solid var(--primary-color) !important;
+  background: linear-gradient(135deg, rgba(43, 51, 233, 0), rgba(43, 51, 233, 0.24)) !important;
   font-size: 12px;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   cursor: pointer;
   box-shadow: none !important;
-  border-color: #028c8c !important;
-  color: #026d6d !important;
+  color: var(--primary-color) !important;
   transition: background 0.15s ease-in-out, color 0.15s ease-in-out,
     border-color 0.15s ease-in-out, transform 0.08s ease-in-out;
 }
 
 /* Active state (when radio is checked) */
 input.q-switch-radio:checked+.q-switch-label {
-  background: linear-gradient(135deg, #009e9e, #006c6c) !important;
+  background: linear-gradient(135deg, #2b33e9, #1b21a3) !important;
   color: white !important;
-  box-shadow: 0 0 6px rgba(0, 150, 150, 0.45);
-  color: #ffffff !important;
-  border-color: #026d6d !important;
+  box-shadow: 0 0 6px rgba(43, 51, 233, 0.45);
+  border-color: var(--primary-dark) !important;
 }
 
 .q-switch-group:hover .q-switch-label:hover {
-  background: #049b9bfb !important;
+  background: var(--primary-color) !important;
   color: #ffffff !important;
-  border-color: #026d6d !important;
+  border-color: var(--primary-dark) !important;
 }
 
 
@@ -326,12 +324,12 @@ input.q-switch-radio:checked+.q-switch-label {
 .q-button-group .q-button,
 .q-button-group .btn {
   background: #ffffff !important;
-  color: #026d6d !important;
+  color: var(--primary-color) !important;
   font-weight: 500;
   border-radius: 999px;
   padding: 4px 12px;
   font-size: 12px;
-  border: 1px solid #026d6d !important;
+  border: 1px solid var(--primary-color) !important;
   box-shadow: none;
   text-transform: none;
   letter-spacing: 0.02em;
@@ -343,9 +341,9 @@ input.q-switch-radio:checked+.q-switch-label {
 .q-button-group button:hover,
 .q-button-group .q-button:hover,
 .q-button-group .btn:hover {
-  background: #049b9bfb !important;
+  background: var(--primary-color) !important;
   color: #ffffff !important;
-  border-color: #026d6d !important;
+  border-color: var(--primary-dark) !important;
 }
 
 /* Rule row layout */

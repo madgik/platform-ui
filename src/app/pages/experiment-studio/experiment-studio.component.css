@@ -464,8 +464,8 @@
 
 .studio-section--algorithm {
   animation-delay: 0.3s;
-  border-top: 4px solid var(--accent-color);
-  /* MIP Yellow */
+  border-top: 4px solid var(--primary-color);
+  /* MIP Blue */
 }
 
 /* Global full-page overlay loader */

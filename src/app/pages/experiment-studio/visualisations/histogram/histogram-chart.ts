@@ -16,7 +16,7 @@ export function createHistogram(
 ): void {
   const { bins, counts } = data;
   const {
-    color = '#00758c',
+    color = '#2b33e9',  // MIP dark_blue
     skipEveryOtherLabel = false,
   } = config;
 

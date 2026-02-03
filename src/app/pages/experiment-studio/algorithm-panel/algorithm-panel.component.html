@@ -140,7 +140,7 @@
               placeholder="Experiment name" class="save-as-input" />
             <button class="primary-action-btn run-button" (click)="onSaveAs()"
               [disabled]="!saveAsName().trim() || isRunning()">
-              {{ isRunning() ? "Saving..." : "Save & Run" }}
+              {{ isRunning() ? "Saving..." : "Save" }}
             </button>
             <button class="secondary-action-btn cancel-btn" (click)="cancelSaveAs()">
               ✕

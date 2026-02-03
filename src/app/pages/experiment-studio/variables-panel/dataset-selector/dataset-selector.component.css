@@ -43,7 +43,7 @@
 }
 
 .dataset-btn:hover {
-  background: linear-gradient(90deg, #f7fcfd, #ecfbff);
+  background: linear-gradient(90deg, var(--bg-color, #f8fafc), rgba(43, 51, 233, 0.06));
   border-color: var(--primary-color);
   box-shadow: 0 6px 14px rgba(43, 51, 233, 0.12);
   transform: translateY(-0.5px);
@@ -126,7 +126,7 @@
 }
 
 .dataset-dropdown-menu label:hover {
-  background-color: #ecfbff;
+  background-color: rgba(43, 51, 233, 0.06);
 }
 
 /* Checkboxes */

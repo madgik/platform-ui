@@ -60,7 +60,7 @@ export function buildMeanPlotChart(result: any): EChartsOption[] {
       name: xLabel,
       nameLocation: 'middle',
       nameGap: 40,
-      axisLine: { lineStyle: { color: '#555' } },
+      axisLine: { lineStyle: { color: '#475569' } }, // MIP text-muted
       axisTick: { show: false },
       splitLine: { show: false },
       axisLabel: {

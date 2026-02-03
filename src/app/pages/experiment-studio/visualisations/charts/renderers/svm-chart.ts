@@ -74,7 +74,7 @@ export function buildSVMChart(result: any): EChartsOption[] {
         name: 'Support Vectors',
         type: 'bar',
         data: bins,
-        itemStyle: { color: '#64b5f6' },
+        itemStyle: { color: '#7f9ce8' },     // MIP light_blue
         barWidth: '75%',
       },
       {
@@ -88,7 +88,7 @@ export function buildSVMChart(result: any): EChartsOption[] {
             { xAxis: marginMinus, name: '-1 Margin' },
           ],
           lineStyle: {
-            color: '#f44336',
+            color: '#ffba08',                  // MIP orange
             width: 2,
             type: 'solid',
           },
@@ -96,7 +96,7 @@ export function buildSVMChart(result: any): EChartsOption[] {
             show: true,
             position: 'insideEndTop',
             formatter: '{b}',
-            color: '#333',
+            color: '#0f172a',                  // MIP text-main
           },
         },
       },

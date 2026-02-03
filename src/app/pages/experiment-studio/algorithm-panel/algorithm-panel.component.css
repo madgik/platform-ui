@@ -145,10 +145,11 @@
 }
 
 .category li.selected {
-  background: linear-gradient(135deg, var(--primary-color), #60a5fa);
-  color: white;
-  font-weight: 600;
-  box-shadow: 0 4px 12px rgba(43, 51, 233, 0.25);
+  background: var(--studio-card-bg, rgba(255, 255, 255, 0.92));
+  color: var(--primary-color);
+  font-weight: 700;
+  border: 2px solid var(--primary-color);
+  box-shadow: 0 4px 12px rgba(43, 51, 233, 0.15);
 }
 
 .algo-item-content {
@@ -174,14 +175,15 @@
 }
 
 .algo-badge--req {
-  background: rgba(245, 158, 11, 0.1);
-  color: #f59e0b;
-  border: 1px solid rgba(245, 158, 11, 0.2);
+  background: rgba(255, 186, 8, 0.1);
+  /* MIP orange */
+  color: var(--accent-color, #ffba08);
+  border: 1px solid rgba(255, 186, 8, 0.2);
 }
 
 .algo-badge--active {
   background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
+  color: var(--success, #10b981);
   border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
@@ -295,7 +297,7 @@
 
 .req-icon {
   font-size: 0.85rem;
-  color: #f59e0b;
+  color: var(--accent-color, #ffba08);
   margin-top: 2px;
   flex-shrink: 0;
 }
@@ -496,15 +498,15 @@
 }
 
 .experiment-name-box input:focus {
-  border-color: #026d6d;
-  box-shadow: 0 0 0 1px rgba(2, 109, 109, 0.25);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 1px rgba(43, 51, 233, 0.25);
 }
 
 /* Tooltip icon next to name */
 
 .name-tooltip-icon {
   font-size: 11px;
-  color: #026d6d;
+  color: var(--primary-color);
   cursor: help;
   display: inline-flex;
   align-items: center;
@@ -512,17 +514,17 @@
   width: 18px;
   height: 18px;
   border-radius: var(--radius-sm);
-  border: 1px solid rgba(2, 109, 109, 0.4);
-  background: rgba(240, 252, 252, 0.9);
+  border: 1px solid rgba(43, 51, 233, 0.4);
+  background: rgba(43, 51, 233, 0.05);
 }
 
 .name-tooltip-icon:hover {
-  background: rgba(2, 109, 109, 0.08);
+  background: rgba(43, 51, 233, 0.08);
 }
 
 /* Save name */
 .save-name-btn {
-  background: #028080;
+  background: var(--primary-color);
   color: white;
   padding: 4px 10px;
   border: none;
@@ -534,9 +536,9 @@
 }
 
 .save-name-btn:hover:not(:disabled) {
-  background: #036b6b;
+  background: var(--primary-dark, #1b21a3);
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(3, 107, 107, 0.25);
+  box-shadow: 0 6px 16px rgba(43, 51, 233, 0.25);
 }
 
 .save-name-btn:disabled {
@@ -574,13 +576,13 @@
 }
 
 .run-button:hover:not(:disabled):not(.loading) {
-  background: linear-gradient(135deg, #048079, #29bbbb);
+  background: linear-gradient(135deg, var(--primary-dark, #1b21a3), var(--primary-light, #7f9ce8));
   transform: translateY(-1px);
   box-shadow: 0 16px 30px rgba(15, 23, 42, 0.3);
 }
 
 .run-button:disabled {
-  background: linear-gradient(135deg, #9ecfcf, #bde0e0) !important;
+  background: linear-gradient(135deg, rgba(43, 51, 233, 0.4), rgba(127, 156, 232, 0.5)) !important;
   color: #f9f9f9 !important;
   cursor: not-allowed !important;
   box-shadow: none !important;
@@ -612,7 +614,7 @@
 
 .save-as-input:focus {
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 2px rgba(2, 109, 109, 0.1);
+  box-shadow: 0 0 0 2px rgba(43, 51, 233, 0.1);
 }
 
 .cancel-btn {
@@ -646,7 +648,7 @@
 }
 
 .icon-pill i {
-  color: #026d6d;
+  color: var(--primary-color);
   font-size: 13px;
 }
 
@@ -723,7 +725,7 @@
 .info-title-block h3 {
   margin: 0;
   font-size: 0.9rem;
-  color: #026d6d;
+  color: var(--primary-color);
   font-weight: 700;
 }
 

@@ -2,10 +2,10 @@
   display: block;
   font-family: 'Inter', sans-serif;
   font-size: 0.875rem;
-  color: #1f2937;
+  color: var(--text-main, #0f172a);
 }
 
- /* CONTAINER – GRID LAYOUT */
+/* CONTAINER – GRID LAYOUT */
 .ar-container {
   width: 100%;
   display: grid;
@@ -14,7 +14,7 @@
   align-items: stretch;
 }
 
- /* CARDS */
+/* CARDS */
 .ar-card {
   background: #ffffff;
   border: 1px solid #e1e7e9;
@@ -35,24 +35,24 @@
   grid-column: 1 / -1;
 }
 
- /* TITLES */
+/* TITLES */
 .ar-title {
-  background: linear-gradient(90deg, #027a7a, #4dcaca);
+  background: linear-gradient(90deg, var(--primary-color, #2b33e9), var(--primary-light, #7f9ce8));
   color: white;
   font-weight: 600;
   font-size: 1rem;
   padding: 10px 16px;
-  border-bottom: 1px solid #cce8e8;
+  border-bottom: 1px solid rgba(43, 51, 233, 0.3);
   letter-spacing: 0.3px;
 }
 
- /* TABLE WRAPPER */
+/* TABLE WRAPPER */
 .ar-table-wrapper {
   overflow-x: auto;
   padding: 0.75rem 1rem 1rem 1rem;
 }
 
- /* TABLE BASE STYLING */
+/* TABLE BASE STYLING */
 .ar-table {
   width: 100%;
   border-collapse: collapse;
@@ -62,30 +62,30 @@
 
 /* Header row */
 .ar-table thead th {
-  background-color: #e8fafa;
-  color: #026b6b;
+  background-color: rgba(43, 51, 233, 0.08);
+  color: var(--primary-color, #2b33e9);
   font-weight: 600;
   text-align: left;
   padding: 10px 12px;
-  border-bottom: 2px solid #b6dcdc;
+  border-bottom: 2px solid rgba(43, 51, 233, 0.25);
   text-transform: capitalize;
   letter-spacing: 0.2px;
 }
 
 /* Body rows */
 .ar-table tbody tr:nth-child(even) {
-  background-color: #f9fdfd;
+  background-color: var(--bg-color, #f8fafc);
 }
 
 .ar-table tbody tr:hover {
-  background-color: #e9f7f7;
+  background-color: rgba(43, 51, 233, 0.06);
 }
 
 /* Cells */
 .ar-table td {
   padding: 8px 12px;
-  border-bottom: 1px solid #edf2f2;
-  color: #333;
+  border-bottom: 1px solid var(--border-color, rgba(43, 51, 233, 0.1));
+  color: var(--text-main, #0f172a);
   font-family: 'Roboto Mono', monospace;
   font-size: 0.85rem;
   transition: background 0.2s ease;
@@ -94,27 +94,28 @@
 /* First column emphasis */
 .ar-table td:first-child {
   font-weight: 500;
-  color: #035e5e;
+  color: var(--primary-color, #2b33e9);
 }
 
 /* Last column (numeric) */
 .ar-table td:last-child {
-  color: #222;
+  color: var(--text-main, #0f172a);
 }
 
- /* ANIMATION */
+/* ANIMATION */
 @keyframes fadeIn {
   from {
     opacity: 0;
     transform: translateY(4px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
- /* RESPONSIVE */
+/* RESPONSIVE */
 
 /* Medium screens */
 @media (max-width: 1024px) {

@@ -26,7 +26,7 @@ function createLabelGroup(group: d3.Selection<SVGGElement, any, any, any>, d: an
     .attr('text-anchor', 'middle')
     .style('font-size', '10px')
     .style('font-weight', '600')
-    .style('fill', '#1d1d1d')
+    .style('fill', '#0f172a')
     .style('paint-order', 'stroke')
     .style('stroke', 'rgba(255,255,255,0.9)')
     .style('stroke-width', 2)
@@ -69,12 +69,12 @@ type BubbleColorConfig = {
 };
 
 const defaultColors: BubbleColorConfig = {
-  variable: '#37c0ae',
-  covariate: '#ffba08',
-  filter: '#44bf00',
-  selected: '#27d6d1',
-  groupStart: '#bcefdc',
-  groupEnd: '#4255a8',
+  variable: '#2b33e9',     // MIP dark_blue
+  covariate: '#ffeeba',    // Muted pastel orange
+  filter: '#c5d4f0',       // Muted pastel blue
+  selected: '#1b21a3',     // MIP dark_blue darker
+  groupStart: '#dfefe4',   // MIP light_green
+  groupEnd: '#2b33e9',     // MIP dark_blue
 };
 
 // Calculate leaf color
@@ -142,7 +142,7 @@ export function createZoomableCirclePacking(
     .style('border', '1px solid rgba(0,0,0,0.2)')
     .style('border-radius', '4px')
     .style('font-size', '12px')
-    .style('color', '#222')
+    .style('color', '#0f172a')
     .style('opacity', 0);
 
   function decodeUnicode(str: string): string {
