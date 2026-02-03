@@ -13,8 +13,8 @@
         Model
       </button>
       @if (showBoxPlots) {
-      <button [class.active]="activeTab === 'Boxplots'" (click)="setTab('Boxplots')">
-        Box Plots
+      <button [class.active]="activeTab === 'Distributions'" (click)="setTab('Distributions')">
+        Distributions
       </button>
       }
     </div>
@@ -28,6 +28,10 @@
       @if (activeTab === 'Variables' || activeTab === 'Model') {
       <section class="pivot-section">
         @if ((activeTab === 'Variables' ? processedData : modelData).length > 0) {
+        @if (activeTab === 'Model') {
+        <p class="tab-description">Statistical analysis for complete dataset only, based on the variables and covariates
+          you selected.</p>
+        }
         <div class="accordion-controls">
           <div class="toolbar-segmented">
             <button class="toolbar-seg" (click)="expandAll()">Expand All</button>
@@ -81,21 +85,56 @@
       </section>
       }
 
-      <!-- BOX PLOTS TAB -->
-      @if (activeTab === 'Boxplots' && showBoxPlots) {
-      <section class="boxplots-section">
-        @if (nonNominalVariables.length > 1) {
-        <div class="mini-tabs">
-          @for (v of nonNominalVariables; track v; let i = $index) {
-          <button [class.active]="activeBoxPlotIndex === i" (click)="activeBoxPlotIndex = i">
-            {{ v?.name || v?.label || v?.code }}
+      <!-- DISTRIBUTIONS TAB (Two sheets: Numeric + Nominal) -->
+      @if (activeTab === 'Distributions' && showBoxPlots) {
+      <section class="distributions-section">
+        <!-- Sub-tabs to switch between Numeric and Nominal sheets (only if both exist) -->
+        @if (nonNominalVariables.length > 0 && nominalVariables.length > 0) {
+        <div class="distribution-sheet-tabs">
+          <button [class.active]="distributionSubTab === 'Numeric'" (click)="distributionSubTab = 'Numeric'">
+            Numeric Variables
           </button>
-          }
+          <button [class.active]="distributionSubTab === 'Nominal'" (click)="distributionSubTab = 'Nominal'">
+            Nominal Variables
+          </button>
         </div>
         }
-        <div class="chart-container fade">
-          <app-chart-renderer [charts]="chartsForBoxPlot[activeBoxPlotIndex] || []"></app-chart-renderer>
+
+        <!-- Numeric Variables Sheet (Box Plots) -->
+        @if (distributionSubTab === 'Numeric' && nonNominalVariables.length > 0) {
+        <div class="distribution-sheet">
+          @if (nonNominalVariables.length > 1) {
+          <div class="mini-tabs">
+            @for (v of nonNominalVariables; track v; let i = $index) {
+            <button [class.active]="activeBoxPlotIndex === i" (click)="activeBoxPlotIndex = i">
+              {{ v?.name || v?.label || v?.code }}
+            </button>
+            }
+          </div>
+          }
+          <div class="chart-container fade">
+            <app-chart-renderer [charts]="chartsForBoxPlot[activeBoxPlotIndex] || []"></app-chart-renderer>
+          </div>
         </div>
+        }
+
+        <!-- Nominal Variables Sheet (Grouped Bar Charts) -->
+        @if (distributionSubTab === 'Nominal' && nominalVariables.length > 0) {
+        <div class="distribution-sheet">
+          @if (nominalVariables.length > 1) {
+          <div class="mini-tabs">
+            @for (v of nominalVariables; track v; let i = $index) {
+            <button [class.active]="activeNominalIndex === i" (click)="activeNominalIndex = i">
+              {{ v?.name || v?.label || v?.code }}
+            </button>
+            }
+          </div>
+          }
+          <div class="chart-container fade">
+            <app-chart-renderer [charts]="chartsForNominal[activeNominalIndex] || []"></app-chart-renderer>
+          </div>
+        </div>
+        }
       </section>
       }
       }

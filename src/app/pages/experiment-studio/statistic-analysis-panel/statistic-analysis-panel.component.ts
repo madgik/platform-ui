@@ -13,9 +13,10 @@ import { EChartsOption } from 'echarts';
 import { ViewChildren, QueryList } from '@angular/core';
 import { PdfExportService } from '../../../services/pdf-export.service';
 import { SpinnerComponent } from '../../shared/spinner/spinner.component';
+import { buildGroupedBarChart } from '../visualisations/charts/renderers/grouped-bar-chart';
 
 
-type TabKey = 'Variables' | 'Model' | 'Boxplots';
+type TabKey = 'Variables' | 'Model' | 'Distributions';
 type MetricKey =
   | 'num_dtps' | 'num_na' | 'num_total'
   | 'mean' | 'std' | 'min' | 'q1' | 'q2' | 'q3' | 'max';
@@ -51,10 +52,14 @@ export class StatisticAnalysisPanelComponent implements OnChanges {
 
   activeTab: TabKey = 'Variables';
   showBoxPlots = false;
+  distributionSubTab: 'Numeric' | 'Nominal' = 'Numeric';
 
-  nonNominalVariables: Array<{ code: string; name?: string; label?: string; type?: string }> = [];
+  nonNominalVariables: Array<{ code: string; name?: string; label?: string; type?: string; enumerations?: any[] }> = [];
+  nominalVariables: Array<{ code: string; name?: string; label?: string; type?: string; enumerations?: any[] }> = [];
   chartsForBoxPlot: EChartsOption[][] = [];
+  chartsForNominal: EChartsOption[][] = [];
   activeBoxPlotIndex = 0;
+  activeNominalIndex = 0;
   modelTables: ModelTableBlock[] = [];
 
   modelData: Array<{
@@ -91,18 +96,33 @@ export class StatisticAnalysisPanelComponent implements OnChanges {
     this.activeTab = tab;
   }
 
-  private computeShowBoxPlots(): void {
+  private computeDistributionVariables(): void {
     const selectedVars = this.expStudioService.selectedVariables();
     const selectedCovars = this.expStudioService.selectedCovariates();
     const all = [...selectedVars, ...selectedCovars];
     const dedupMap = new Map(all.map(v => [v.code, v]));
     const unique = Array.from(dedupMap.values());
 
-    // keeps only non-nominal variables
+    // Non-nominal variables (for box plots)
     this.nonNominalVariables = unique.filter(
       (v) => v?.type && v.type !== 'nominal' && v.type !== 'text'
     );
-    this.showBoxPlots = this.nonNominalVariables.length > 0;
+
+    // Nominal variables (for pie charts)
+    this.nominalVariables = unique.filter(
+      (v) => v?.type === 'nominal'
+    );
+
+    this.showBoxPlots = this.nonNominalVariables.length > 0 || this.nominalVariables.length > 0;
+
+    // Auto-select the appropriate sub-tab based on available variable types
+    if (this.nonNominalVariables.length > 0 && this.nominalVariables.length === 0) {
+      this.distributionSubTab = 'Numeric';
+    } else if (this.nominalVariables.length > 0 && this.nonNominalVariables.length === 0) {
+      this.distributionSubTab = 'Nominal';
+    } else if (this.nonNominalVariables.length > 0) {
+      this.distributionSubTab = 'Numeric'; // Default to Numeric when both exist
+    }
   }
 
   private buildBoxPlotCharts(response: any) {
@@ -119,6 +139,18 @@ export class StatisticAnalysisPanelComponent implements OnChanges {
       return this.chartBuilder.getChartsForAlgorithm('descriptive_stats', perVarResp);
     });
     this.activeBoxPlotIndex = 0;
+  }
+
+  private buildNominalCharts(response: any) {
+    const variable_based = response?.result?.variable_based ?? [];
+
+    this.chartsForNominal = this.nominalVariables.map((v) => {
+      const varData = variable_based.filter((r: any) => r.variable === v.code);
+      const varLabel = v.name || v.label || v.code;
+      const enumMap = this.getEnumLabelMap(v);
+      return buildGroupedBarChart(varData, varLabel, enumMap);
+    });
+    this.activeNominalIndex = 0;
   }
 
   fetchDescriptiveStatistics(): void {
@@ -163,12 +195,16 @@ export class StatisticAnalysisPanelComponent implements OnChanges {
         // Variables tab
         this.processedData = this.pivotByDataset(variable_based, varList, allLast);
 
-        // Model tab
-        this.modelData = this.pivotByDataset(model_based, varList, allLast);
+        // Model tab - filter out "Missing" row as model-based uses complete data only
+        this.modelData = this.pivotByDataset(model_based, varList, allLast).map(v => ({
+          ...v,
+          rows: v.rows.filter(r => r.metric !== 'Missing')
+        }));
 
         // Box Plots
-        this.computeShowBoxPlots();
-        if (this.showBoxPlots) this.buildBoxPlotCharts(response);
+        this.computeDistributionVariables();
+        if (this.nonNominalVariables.length > 0) this.buildBoxPlotCharts(response);
+        if (this.nominalVariables.length > 0) this.buildNominalCharts(response);
         this.isLoading = false;
       },
       error: (err) => { console.error(err); this.isLoading = false; }
@@ -326,7 +362,7 @@ export class StatisticAnalysisPanelComponent implements OnChanges {
               m.key === 'num_datapoints' ? byDataset[ds]?.num_dtps :
                 m.key === 'num_missing' ? byDataset[ds]?.num_na :
                   byDataset[ds]?.num_total;
-            values[ds] = this.fmt(raw);
+            values[ds] = this.fmtCount(raw);
           }
           return { metric: m.label, values };
         });
@@ -345,6 +381,7 @@ export class StatisticAnalysisPanelComponent implements OnChanges {
           rows.push({ metric: label, values });
         });
       } else {
+        const countKeys = new Set(['num_datapoints', 'num_missing', 'num_total']);
         rows = this.METRIC_ORDER.map(m => {
           const values: Record<string, string> = {};
           for (const ds of datasetOrder) {
@@ -356,7 +393,7 @@ export class StatisticAnalysisPanelComponent implements OnChanges {
                       m.key === 'q2' ? byDataset[ds]?.q2 :
                         byDataset[ds]?.[m.key];
 
-            values[ds] = this.fmt(raw);
+            values[ds] = countKeys.has(m.key) ? this.fmtCount(raw) : this.fmt(raw);
           }
           return { metric: m.label, values };
         });
@@ -375,7 +412,11 @@ export class StatisticAnalysisPanelComponent implements OnChanges {
         '.hidden-charts-for-export app-chart-renderer'
       ) as NodeListOf<HTMLElement>;
 
+      const dataModel = this.expStudioService.selectedDataModel();
+      const pathologyName = dataModel?.label || dataModel?.code || '';
+
       await this.pdfExportService.exportDescriptiveStatisticsPdf({
+        pathologyName,
         variables: this.processedData,
         models: this.modelData,
         charts,

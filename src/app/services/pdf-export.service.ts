@@ -18,6 +18,7 @@ export interface PdfExportOptions {
 }
 
 export interface DescriptiveStatsData {
+    pathologyName?: string;
     variables: any[];
     models: any[];
     charts?: NodeListOf<HTMLElement>;
@@ -172,6 +173,15 @@ export class PdfExportService {
         let yOffset = 10;
 
         try {
+            // Add pathology name header if provided
+            if (data.pathologyName) {
+                doc.setFontSize(16);
+                doc.setFont('helvetica', 'bold');
+                doc.text(data.pathologyName, 10, yOffset);
+                yOffset += 10;
+                doc.setFont('helvetica', 'normal');
+            }
+
             const addSection = (title: string, tableData: any[]) => {
                 if (!tableData?.length) return;
                 doc.setFontSize(14);
