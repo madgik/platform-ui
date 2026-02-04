@@ -3,12 +3,11 @@
   width: 100%;
   margin: 0;
   font-family: "Roboto", sans-serif;
-  display: inline-block;
-  z-index: 2000;
-  overflow: visible;
   display: flex;
   flex-direction: column;
   gap: 2px;
+  z-index: 100;
+  overflow: visible;
 }
 
 .search-label {
@@ -124,7 +123,7 @@
   background: #ffffff;
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.18);
   border-radius: 10px;
-  z-index: 3000;
+  z-index: 200;
 }
 
 .suggestions-container ul {

@@ -74,15 +74,17 @@
 }
 
 .panel-title--variable {
-  background: linear-gradient(120deg, var(--primary-color), var(--primary-light));
+  background: var(--variable-color, #2b33e9);
 }
 
 .panel-title--covariate {
-  background: linear-gradient(120deg, var(--accent-color), #fde047);
+  background: var(--covariate-color, #ccb692);
+  color: #1e293b;
 }
 
 .panel-title--filter {
-  background: linear-gradient(120deg, #16a34a, #4ade80ab);
+  background: var(--filter-color, #94a3b8);
+  color: #1e293b;
 }
 
 /* ===== BUTTONS & COUNTERS ===== */
@@ -98,7 +100,7 @@
 .filter-btn {
   position: relative;
   color: #fff;
-  background: linear-gradient(120deg, var(--primary-color), var(--primary-light));
+  background: var(--variable-color, #2b33e9);
   border: none;
   padding: 0.45rem 0.9rem;
   border-radius: 999px;
@@ -112,11 +114,13 @@
 }
 
 .covariate-btn {
-  background: linear-gradient(120deg, var(--accent-color), #fde047);
+  background: var(--covariate-color, #ccb692);
+  color: #1e293b;
 }
 
 .filter-btn {
-  background: linear-gradient(120deg, #16a34a, #4ade80ab);
+  background: var(--filter-color, #94a3b8);
+  color: #1e293b;
 }
 
 .variable-btn:hover,
@@ -330,17 +334,17 @@
 
 .highlighted-variable {
   background: linear-gradient(90deg, #f0f7ff, #f8fbff);
-  border-left: 3px solid var(--primary-color);
+  border-left: 3px solid var(--variable-color, #2b33e9);
 }
 
 .highlighted-covariate {
-  background: linear-gradient(90deg, #fffcf0, #fffdf5);
-  border-left: 3px solid var(--accent-color);
+  background: linear-gradient(90deg, #faf6ef, #fdfbf7);
+  border-left: 3px solid var(--covariate-color, #ccb692);
 }
 
 .highlighted-filter {
-  background: linear-gradient(90deg, #ecfdf3, #f0fdf4);
-  border-left: 3px solid #22c55e;
+  background: linear-gradient(90deg, #f1f5f9, #f8fafc);
+  border-left: 3px solid var(--filter-color, #94a3b8);
 }
 
 /* ===== COG BUTTON ===== */
