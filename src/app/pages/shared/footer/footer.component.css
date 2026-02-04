@@ -1,17 +1,137 @@
 .main-footer {
-  background-color: transparent;
-  padding: 6px 10px 12px;
-  text-align: center;
-  color: #64748b;
-}
-
-.footer-link {
-  color: #94a3b8;
-  text-decoration: none;
+  background-color: #000033;
+  /* Dark navy background matching portal */
+  color: #ffffff;
+  padding: 12px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-family: 'Inter', sans-serif;
   font-size: 11px;
+  position: relative;
+  z-index: 1000;
+  width: 100%;
+  margin-top: auto;
 }
 
-.footer-link:hover {
+.footer-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Three Column Layout */
+.footer-left,
+.footer-center,
+.footer-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.footer-center {
+  justify-content: center;
+}
+
+.footer-right {
+  justify-content: flex-end;
+}
+
+/* Logos */
+.footer-logos {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.footer-logo {
+  height: 22px;
+  /* Smaller, more discreet logos as in screenshot */
+  width: auto;
+  object-fit: contain;
+  transition: transform 0.2s ease;
+}
+
+.chuv-logo {
+  filter: invert(1);
+  /* Ensure CHUV is white on dark background */
+}
+
+.logo-link:hover .footer-logo {
+  transform: translateY(-1px);
+}
+
+/* Copyright Section */
+.footer-copyright-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.copyright-text {
+  margin: 0;
+  color: #ffffff;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+.copyright-symbol {
+  font-weight: 700;
+  margin-right: 4px;
+}
+
+.copyright-text a {
+  color: #3366ff;
+  /* Specific blue for links in portal */
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.copyright-text a:hover {
   text-decoration: underline;
-  color: #64748b;
+}
+
+.footer-legal .legal-link {
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: none;
+  font-size: 10px;
+  transition: color 0.2s ease;
+}
+
+.footer-legal .legal-link:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+/* Versions Section */
+.footer-versions {
+  color: #ffffff;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  opacity: 0.9;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 960px) {
+  .footer-container {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+    padding: 20px 24px;
+  }
+
+  .footer-left,
+  .footer-center,
+  .footer-right {
+    justify-content: center;
+    flex: none;
+  }
+}
+
+/* Maintain dark style even in light mode for the footer 'foundation' */
+:host-context(body.theme-dark) .main-footer {
+  background-color: #000022;
+  /* Slightly darker in dark mode */
 }

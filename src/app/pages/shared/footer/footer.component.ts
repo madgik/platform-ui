@@ -10,5 +10,11 @@ import { RouterModule } from '@angular/router';
   styleUrl: './footer.component.css'
 })
 export class FooterComponent {
-
+  currentYear = new Date().getFullYear();
+  versions = {
+    frontend: '10.0.1',
+    gateway: '1.8.0',
+    backend: '8.2.0',
+    exareme: '0.28.0'
+  };
 }
