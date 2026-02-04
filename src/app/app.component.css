@@ -1,34 +1,23 @@
-.main-header {
-  background-color: #007BFF;
-  padding: 20px;
-  text-align: center;
-  color: white;
-}
-
-.nav-bar {
+:host {
   display: flex;
-  justify-content: center;
-  gap: 20px;
-}
-
-.nav-link {
-  color: white;
-  text-decoration: none;
-  font-size: 1.2em;
-}
-
-.nav-link:hover {
-  text-decoration: underline;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 main {
-  padding: 1%;
-  min-height: 80vh; /* Ensures the content area takes up space */
+  flex: 1;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
 }
 
-.main-footer {
-  background-color: #f1f1f1;
-  padding: 10px;
-  text-align: center;
+/* app-header and app-footer are components and will handle their own styles */
+app-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
+app-footer {
+  margin-top: auto;
+}

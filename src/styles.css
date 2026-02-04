@@ -7,10 +7,9 @@
   /* Secondary Light Blue */
   --accent-color: #ffba08;
   /* Accent Orange/Yellow */
-  --bg-color: #f8fafc;
-  /* Cleaner background */
-  --bg-neutral: #dfefe4;
-  /* Brand Greenish Neutral */
+  --bg-color: #f3f8ff;
+  /* Very light blue central background */
+  --bg-neutral: #f8fafc;
   --card-bg: #ffffff;
   --text-main: #0f172a;
   --text-muted: #475569;
@@ -18,6 +17,22 @@
   --success: #10b981;
   --border-color: rgba(43, 51, 233, 0.1);
   /* Softer brand-tinted border */
+  --studio-card-bg: #ffffff;
+  --studio-card-border: rgba(43, 51, 233, 0.1);
+  --studio-card-shadow: 0 8px 32px rgba(15, 23, 42, 0.06);
+  --studio-card-header-bg: #f8fbff;
+  --studio-card-header-border: rgba(43, 51, 233, 0.08);
+
+  /* Low Profile Semantic Colors */
+  --covariate-color: #ccb692;
+  /* Desaturated Sand */
+  --filter-color: #94a3b8;
+  /* Muted Slate */
+  --variable-color: #2b33e9;
+  /* Brand Blue */
+
+  --chart-label-color: #334155;
+  /* Darker for better visibility */
 
   /* Arctic Precision (Glassmorphism) */
   --glass-bg: rgba(255, 255, 255, 0.7);
@@ -40,20 +55,95 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --bg-color: #0f172a;
-    --card-bg: #1e293b;
+  body:not(.theme-light) {
+    --bg-color: #0b0f1a;
+    --card-bg: #151b2b;
     --text-main: #f1f5f9;
     --text-muted: #94a3b8;
-    --border-color: #334155;
-    --studio-card-bg: #1e293b;
-    --studio-card-border: #334155;
-    --studio-card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
-    /* MIP Brand colors for dark mode - use light_blue for better contrast */
+    --border-color: rgba(148, 163, 184, 0.15);
+    --studio-card-bg: #151b2b;
+    --studio-card-border: rgba(148, 163, 184, 0.2);
+    --studio-card-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+    --studio-card-header-bg: #1c253d;
+    --studio-card-header-border: rgba(148, 163, 184, 0.2);
+    --glass-bg: rgba(21, 27, 43, 0.8);
+    --glass-border: rgba(148, 163, 184, 0.1);
+
+    /* MIP Brand colors for dark mode */
     --primary-color: #7f9ce8;
-    --primary-dark: #2b33e9;
+    --primary-dark: #5a73c9;
+    --primary-light: #2b33e9;
     --accent-color: #ffba08;
   }
+}
+
+/* Manual dark mode via class */
+body.theme-dark {
+  --bg-color: #0b0f1a;
+  --card-bg: #151b2b;
+  --text-main: #f1f5f9;
+  --text-muted: #94a3b8;
+  --border-color: rgba(148, 163, 184, 0.15);
+  --studio-card-bg: #151b2b;
+  --studio-card-border: rgba(148, 163, 184, 0.2);
+  --studio-card-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+  --studio-card-header-bg: #1c253d;
+  --studio-card-header-border: rgba(148, 163, 184, 0.2);
+  --glass-bg: rgba(21, 27, 43, 0.8);
+  --glass-border: rgba(148, 163, 184, 0.1);
+
+  /* MIP Brand colors for dark mode */
+  --primary-color: #7f9ce8;
+  --primary-dark: #5a73c9;
+  --primary-light: #2b33e9;
+  /* Low Profile Semantic Colors - Dark mode adjustments */
+  --covariate-color: #a48f68;
+  --filter-color: #64748b;
+  --variable-color: #7f9ce8;
+  --accent-color: var(--covariate-color);
+  --chart-label-color: #cbd5e1;
+}
+
+/* Colorblind Mode Overrides (matches portal-frontend colors) */
+body.colorblind-mode {
+  --variable-color: #ffba08;
+  /* MIP golden yellow */
+  --covariate-color: #bba66f;
+  /* MIP tan/beige */
+  --filter-color: #483300;
+  /* MIP dark brown */
+}
+
+body.colorblind-mode.theme-dark {
+  --variable-color: #ffba08;
+  --covariate-color: #bba66f;
+  --filter-color: #5a4420;
+  /* Slightly lighter for dark mode visibility */
+}
+
+/* Global Transition for Theme Switching */
+body {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Scrollbar Theming */
+body.theme-dark ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+body.theme-dark ::-webkit-scrollbar-track {
+  background: #0b0f1a;
+}
+
+body.theme-dark ::-webkit-scrollbar-thumb {
+  background: #1c253d;
+  border-radius: 10px;
+  border: 2px solid #0b0f1a;
+}
+
+body.theme-dark ::-webkit-scrollbar-thumb:hover {
+  background: #2b33e9;
 }
 
 html,
@@ -74,15 +164,7 @@ body {
   /* Scientific Precision: Tabular numbers by default for tabular/data elements */
   font-variant-numeric: tabular-nums;
 
-  /* Anatomical Micro-pattern (Subtle Neuronal Grid) */
-  background-image:
-    radial-gradient(var(--primary-light) 0.5px, transparent 0.5px),
-    radial-gradient(var(--primary-light) 0.5px, var(--bg-color) 0.5px);
-  background-size: 40px 40px;
-  background-position: 0 0, 20px 20px;
-  background-attachment: fixed;
-  opacity: 0.98;
-  /* Keep it very subtle */
+  /* Removed radial pattern for cleaner workspace as requested */
 }
 
 /* Style all required fields */
