@@ -19,21 +19,25 @@
 
 .visualization-header {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-start;
   align-items: flex-end;
-  gap: 6px;
+  gap: 12px;
   padding: 2px 0;
+  min-width: 0;
 }
 
 .visualization-header-left,
 .visualization-header-right {
   display: flex;
   align-items: flex-end;
+  min-width: 0;
 }
 
 .visualization-header-right {
-  margin-left: 8px;
-  width: min(420px, 38vw);
+  flex: 1 1 240px;
+  width: 100%;
+  max-width: 350px;
 }
 
 .visualization-header-right app-search-bar {
@@ -42,8 +46,8 @@
 
 .visualization-parameters-row {
   display: grid;
-  grid-template-columns: minmax(0, 800px) minmax(240px, 1fr);
-  gap: 16px;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
   align-items: stretch;
 }
 
@@ -51,17 +55,20 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  min-width: 0;
 }
 
 .right-column {
-  display: grid;
-  grid-template-rows: auto auto;
+  display: flex;
+  flex-direction: column;
   gap: 16px;
 }
 
 /* Left: bubble chart “canvas” */
 .bubble-chart-section {
-  height: 800px;
+  height: 720px;
+  flex: 1;
+  min-height: 500px;
   background: var(--studio-card-bg, rgba(255, 255, 255, 0.72));
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -193,17 +200,13 @@
   z-index: 10;
 }
 
-@media (max-width: 1400px) {
+@media (max-width: 1200px) {
   .visualization-parameters-row {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: 1fr;
   }
 
   .bubble-chart-section {
     height: 600px;
-  }
-
-  .right-column {
-    grid-template-rows: auto;
   }
 }
 

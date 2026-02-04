@@ -71,39 +71,7 @@ export class SearchBarComponent implements OnInit, OnChanges {
     }
   }
 
-  // extractVariablesAndGroups(hierarchy: any): void {
-  //   this.variables = [];
-  //   this.groups = [];
-  //   this.variableTypes = [];
-
-  //   const traverse = (node: any, path: string) => {
-  //     if (!node) return;
-  //     const currentPath = path ? `${path} > ${node.label}` : node.label;
-
-  //     // If no children, it's a group
-  //     if (Array.isArray(node.children) && node.children.length > 0) {
-  //       this.groups.push({ label: node.label, code: node.code, path: currentPath });
-  //       node.children.forEach((child: any) => traverse(child, currentPath));
-
-  //       // If no children but has type, it's a variable
-  //     } else if (typeof node.type === 'string' || Array.isArray(node.type)) {
-  //       this.variables.push({
-  //         code: node.code,
-  //         label: node.label,
-  //         type: node.type as string,
-  //         path: currentPath
-  //       });
-  //       if (!this.variableTypes.includes(node.type as string)) {
-  //         this.variableTypes.push(node.type as string);
-  //       }
-  //     }
-  //   };
-
-  //   traverse(hierarchy, '');
-  // }
-
-  //  Handles the search query input.
-
+  // Handles the search query input.
   extractVariablesAndGroups(hierarchy: any): void {
     this.variables = [];
     this.groups = [];
