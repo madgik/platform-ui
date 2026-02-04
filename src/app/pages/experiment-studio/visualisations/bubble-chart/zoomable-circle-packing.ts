@@ -134,16 +134,7 @@ export function createZoomableCirclePacking(
   const tooltip = d3
     .select('body')
     .append('div')
-    .attr('class', 'tooltip')
-    .style('position', 'absolute')
-    .style('pointer-events', 'none')
-    .style('padding', '6px 8px')
-    .style('background', 'rgba(255,255,255,0.95)')
-    .style('border', '1px solid rgba(0,0,0,0.2)')
-    .style('border-radius', '4px')
-    .style('font-size', '12px')
-    .style('color', '#0f172a')
-    .style('opacity', 0);
+    .attr('class', 'tooltip');
 
   function decodeUnicode(str: string): string {
     try {
@@ -169,8 +160,8 @@ export function createZoomableCirclePacking(
 
     tooltip
       .html(html)
-      .style('left', `${event.pageX + 10}px`)
-      .style('top', `${event.pageY + 10}px`)
+      .style('left', `${event.clientX + 10}px`)
+      .style('top', `${event.clientY + 10}px`)
       .transition()
       .duration(150)
       .style('opacity', 1);
@@ -178,8 +169,8 @@ export function createZoomableCirclePacking(
 
   function moveTooltip(event: MouseEvent) {
     tooltip
-      .style('left', `${event.pageX + 10}px`)
-      .style('top', `${event.pageY + 10}px`);
+      .style('left', `${event.clientX + 10}px`)
+      .style('top', `${event.clientY + 10}px`);
   }
 
   function hideTooltip() {
@@ -461,5 +452,11 @@ export function createZoomableCirclePacking(
     return approxTextWidth <= radius * 2.1;
   }
 
-  return { zoomToNode, refreshColors, destroy: () => { } };
+  return {
+    zoomToNode,
+    refreshColors,
+    destroy: () => {
+      tooltip.remove();
+    }
+  };
 }

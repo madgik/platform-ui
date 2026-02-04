@@ -1,5 +1,4 @@
 .experiments-dashboard {
-  min-height: 100vh;
   padding: 20px 24px;
   background: radial-gradient(circle at top left, #f8fafc, #edf2f7);
   color: var(--text-main);
