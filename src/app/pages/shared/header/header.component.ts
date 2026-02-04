@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { NavbarComponent } from '../navbar/navbar.component';
-import {NavigationEnd, Router, RouterModule} from '@angular/router';
+import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
-import {Component, OnInit} from "@angular/core";
-import {filter} from "rxjs";
+import { ThemeService } from '../../../services/theme.service';
+import { Component, OnInit } from "@angular/core";
+import { filter } from "rxjs";
 
 @Component({
   selector: 'app-header',
@@ -14,7 +15,11 @@ import {filter} from "rxjs";
 })
 export class HeaderComponent implements OnInit {
   currentRoute: string | undefined;
-  constructor(private router: Router, public authService: AuthService) {}
+  constructor(
+    private router: Router,
+    public authService: AuthService,
+    public themeService: ThemeService
+  ) { }
 
   ngOnInit(): void {
     // Listen to changes in the route
