@@ -324,12 +324,15 @@ export function createZoomableCirclePacking(
       .attr('filter', (d: any) => (d === selectedDataNode ? 'url(#node-glow)' : 'none'));
   }
 
-  function zoom(event: MouseEvent, d: any) {
+  function zoom(event: MouseEvent | null, d: any) {
+    if (focus === d) return;
     focus = d;
     onNodeClick(d.data);
 
+    const isFast = event && event.altKey;
+
     svg.transition()
-      .duration(event.altKey ? 7500 : 750)
+      .duration(isFast ? 7500 : 750)
       .tween('zoom', () => {
         const i = d3.interpolateZoom(view, [d.x, d.y, d.r * 2]);
         return (t: number) => zoomTo(i(t));
@@ -349,6 +352,12 @@ export function createZoomableCirclePacking(
     // if group -> zoom to group
     // if leaf  -> zoom to parent
     const group = target.children ? target : (target.parent ?? root);
+
+    if (focus === group) {
+      selectedDataNode = target.children ? null : target;
+      updateSelection();
+      return;
+    }
 
     const zoomTarget: [number, number, number] = [group.x, group.y, group.r * 2];
 

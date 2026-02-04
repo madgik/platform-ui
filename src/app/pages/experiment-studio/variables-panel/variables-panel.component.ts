@@ -366,6 +366,23 @@ export class VariablesPanelComponent implements OnDestroy {
   }
 
   onSelectedNodeChange(node: any): void {
+    if (!node) {
+      this.selectedNode = null;
+      this.cdr.detectChanges();
+      this.errorMessage.set(null);
+      this.distributionData.set(null);
+      this.groupHistogramData.set(null);
+      this.groupHistogramMeta.set(null);
+      this.isLoadingHistogram.set(false);
+      this.errorMessage.set('No variable selected.');
+      return;
+    }
+
+    // Guard against redundant clicks on the already selected node
+    if (this.selectedNode?.code === node.code && this.selectedNode?.label === node.label) {
+      return;
+    }
+
     this.selectedNode = { ...node };
     this.cdr.detectChanges();
     this.errorMessage.set(null);
