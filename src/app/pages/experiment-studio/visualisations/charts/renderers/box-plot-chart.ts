@@ -23,13 +23,22 @@ export function buildBoxPlotChart(result: any): EChartsOption[] {
     return mean != null ? [idx, mean] : null;
   }).filter(Boolean) as [number, number][];
 
+  const isDark = document.body.classList.contains('theme-dark');
+  const textColor = isDark ? '#f1f5f9' : '#0f172a';
+  const axisColor = isDark ? 'rgba(255, 255, 255, 0.3)' : '#475569';
+  const splitLineColor = isDark ? 'rgba(255, 255, 255, 0.05)' : '#e2e8f0';
+
   const chart: EChartsOption = {
     title: {
       text: `Distribution for ${firstVariable}`,
       left: 'center',
+      textStyle: { color: textColor }
     },
     tooltip: {
       trigger: 'item',
+      backgroundColor: isDark ? '#1c253d' : '#fff',
+      borderColor: isDark ? 'rgba(255,255,255,0.1)' : '#ccc',
+      textStyle: { color: textColor },
       formatter: (p: any) => {
         if (Array.isArray(p.value)) {
           const [min, q1, median, q3, max] = p.value;
@@ -54,12 +63,19 @@ export function buildBoxPlotChart(result: any): EChartsOption[] {
       name: 'Dataset',
       nameLocation: 'middle',
       nameGap: 25,
+      axisLabel: { color: textColor },
+      axisLine: { lineStyle: { color: axisColor } },
+      nameTextStyle: { color: textColor }
     },
     yAxis: {
       type: 'value',
       name: 'Value',
       nameLocation: 'middle',
       nameGap: 35,
+      axisLabel: { color: textColor },
+      axisLine: { lineStyle: { color: axisColor } },
+      splitLine: { lineStyle: { color: splitLineColor } },
+      nameTextStyle: { color: textColor }
     },
     series: [
       {
@@ -67,8 +83,8 @@ export function buildBoxPlotChart(result: any): EChartsOption[] {
         type: 'boxplot',
         data: boxData,
         itemStyle: {
-          color: 'rgba(43, 51, 233, 0.3)',      // MIP primary with transparency
-          borderColor: '#2b33e9',               // MIP dark_blue
+          color: isDark ? 'rgba(127, 156, 232, 0.2)' : 'rgba(43, 51, 233, 0.3)',
+          borderColor: isDark ? '#7f9ce8' : '#2b33e9',
         },
         boxWidth: [20, 30],
       },

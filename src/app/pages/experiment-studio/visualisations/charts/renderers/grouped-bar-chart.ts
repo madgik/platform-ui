@@ -96,6 +96,11 @@ export function buildGroupedBarChart(
         };
     });
 
+    const isDark = document.body.classList.contains('theme-dark');
+    const textColor = isDark ? '#f1f5f9' : '#0f172a';
+    const axisColor = isDark ? 'rgba(255, 255, 255, 0.3)' : '#475569';
+    const splitLineColor = isDark ? 'rgba(255, 255, 255, 0.05)' : '#e2e8f0';
+
     const chart: EChartsOption = {
         title: {
             text: variableLabel,
@@ -104,10 +109,14 @@ export function buildGroupedBarChart(
             textStyle: {
                 fontSize: 14,
                 fontWeight: 600,
+                color: textColor
             },
         },
         tooltip: {
             trigger: 'axis',
+            backgroundColor: isDark ? '#1c253d' : '#fff',
+            borderColor: isDark ? 'rgba(255,255,255,0.1)' : '#ccc',
+            textStyle: { color: textColor },
             axisPointer: {
                 type: 'shadow',
             },
@@ -127,7 +136,9 @@ export function buildGroupedBarChart(
             type: 'scroll',
             textStyle: {
                 fontSize: 11,
+                color: textColor
             },
+            pageTextStyle: { color: textColor }
         },
         grid: {
             left: '10%',
@@ -142,10 +153,13 @@ export function buildGroupedBarChart(
             axisLabel: {
                 rotate: datasets.length > 4 ? 20 : 0,
                 fontSize: 11,
+                color: textColor
             },
+            axisLine: { lineStyle: { color: axisColor } },
             name: 'Dataset',
             nameLocation: 'middle',
             nameGap: 35,
+            nameTextStyle: { color: textColor }
         },
         yAxis: {
             type: 'value',
@@ -155,7 +169,11 @@ export function buildGroupedBarChart(
             max: 100,
             axisLabel: {
                 formatter: '{value}%',
+                color: textColor
             },
+            axisLine: { lineStyle: { color: axisColor } },
+            splitLine: { lineStyle: { color: splitLineColor } },
+            nameTextStyle: { color: textColor }
         },
         series,
     };

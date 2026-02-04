@@ -18,38 +18,7 @@
             (click)="applyColorMode('default')">Default</button>
           <button class="mode-btn" [class.active]="colorMode === 'colorBlind'"
             (click)="applyColorMode('colorBlind')">Color Blind</button>
-          <button class="mode-btn" [class.active]="colorMode === 'custom'" (click)="applyColorMode('custom')">My
-            Setup</button>
         </div>
-
-        @if (colorMode === 'custom') {
-        <div class="bubble-color-controls">
-          <label>
-            Var.
-            <input type="color" [(ngModel)]="colors.variable" (input)="onColorChange()" />
-          </label>
-          <label>
-            Covar.
-            <input type="color" [(ngModel)]="colors.covariate" (input)="onColorChange()" />
-          </label>
-          <label>
-            Filt.
-            <input type="color" [(ngModel)]="colors.filter" (input)="onColorChange()" />
-          </label>
-          <label>
-            Selected
-            <input type="color" [(ngModel)]="colors.selected" (input)="onColorChange()" />
-          </label>
-          <label>
-            Group Start
-            <input type="color" [(ngModel)]="colors.groupStart" (input)="onColorChange()" />
-          </label>
-          <label>
-            Group End
-            <input type="color" [(ngModel)]="colors.groupEnd" (input)="onColorChange()" />
-          </label>
-        </div>
-        }
       </div>
       }
     </div>

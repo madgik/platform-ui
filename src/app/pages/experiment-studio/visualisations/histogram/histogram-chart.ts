@@ -14,9 +14,15 @@ export function createHistogram(
     skipEveryOtherLabel?: boolean;
   } = {}
 ): void {
+  const isDark = document.body.classList.contains('theme-dark');
+  const textColor = isDark ? '#f1f5f9' : '#475569';
+  const mutedTextColor = isDark ? '#94a3b8' : '#64748b';
+  const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : '#e2e8f0';
+  const domainColor = isDark ? 'rgba(255, 255, 255, 0.2)' : '#cbd5e1';
+  const barColor = isDark ? '#7f9ce8' : (config.color || '#2b33e9');
+
   const { bins, counts } = data;
   const {
-    color = '#2b33e9',  // MIP dark_blue
     skipEveryOtherLabel = false,
   } = config;
 
@@ -115,7 +121,7 @@ export function createHistogram(
     )
     .call(g => g.select('.domain').remove())
     .call(g => g.selectAll('.tick line')
-      .attr('stroke', '#e2e8f0')
+      .attr('stroke', gridColor)
       .attr('stroke-dasharray', '3,3')
     );
 
@@ -132,7 +138,7 @@ export function createHistogram(
     .attr('height', (d) => innerHeight - yScale(d))
     .attr('rx', 4) // Rounded corners
     .attr('ry', 4)
-    .attr('fill', color)
+    .attr('fill', barColor)
     .attr('opacity', 0.85)
     .on('mouseover', function () {
       d3.select(this).attr('opacity', 1).attr('filter', 'brightness(1.1)');
@@ -167,12 +173,13 @@ export function createHistogram(
     .append('g')
     .attr('transform', `translate(0, ${innerHeight})`)
     .call(xAxis)
-    .call(g => g.select('.domain').attr('stroke', '#cbd5e1'));
+    .call(g => g.select('.domain').attr('stroke', domainColor));
 
   const tickText = xAxisGroup
     .selectAll<SVGTextElement, any>('text')
-    .attr('font-size', '12px')
-    .attr('fill', '#475569')
+    .attr('font-size', '13px')
+    .attr('font-weight', '500')
+    .attr('fill', textColor)
     .style('text-anchor', needsRotate ? 'end' : 'middle');
 
   if (needsRotate) {
@@ -191,8 +198,9 @@ export function createHistogram(
     .call(yAxis)
     .call(g => g.select('.domain').remove())
     .selectAll('text')
-    .attr('font-size', '12px')
-    .attr('fill', '#475569');
+    .attr('font-size', '13px')
+    .attr('font-weight', '500')
+    .attr('fill', textColor);
 
   // Y label
   const yLabelPaddingFromAxis = 32;
@@ -204,9 +212,9 @@ export function createHistogram(
     .attr('y', -margin.left + yLabelPaddingFromAxis)
     .attr('text-anchor', 'middle')
     .text(yLabelText)
-    .style('font-size', '13px')
-    .style('font-weight', '600')
-    .style('fill', '#64748b')
-    .style('letter-spacing', '0.05em')
+    .style('font-size', '12px')
+    .style('font-weight', '700')
+    .style('fill', mutedTextColor)
+    .style('letter-spacing', '0.08em')
     .style('text-transform', 'uppercase');
 }

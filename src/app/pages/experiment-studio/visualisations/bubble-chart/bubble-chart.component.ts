@@ -47,21 +47,21 @@ export class BubbleChartComponent implements OnInit, OnChanges, AfterViewInit, O
 
   error: string | null = null; // Holds the current error message
   readonly DEFAULT_PALETTE = {
-    variable: '#2b33e9',     // MIP dark_blue for variables
-    covariate: '#ffeeba',    // Muted pastel orange for covariates
-    filter: '#c5d4f0',       // Muted pastel blue for filters
-    selected: '#1b21a3',     // MIP dark_blue darker for selection
-    groupStart: '#dfefe4',   // MIP light_green for group start
-    groupEnd: '#2b33e9',     // MIP dark_blue for group end
+    variable: '#2b33e9',     // Brand Blue (--variable-color)
+    covariate: '#ccb692',    // Muted Sand (--covariate-color)
+    filter: '#94a3b8',       // Muted Slate (--filter-color)
+    selected: '#1b21a3',     // Brand Blue darker
+    groupStart: '#dfefe4',   // Light green for groups
+    groupEnd: '#2b33e9',     // Brand Blue for groups
   };
 
   readonly COLORBLIND_PALETTE = {
-    variable: '#648fff',     // Blue for colorblind
-    covariate: '#ffba08',    // MIP orange (good for colorblind)
-    filter: '#dc267f',       // Magenta for colorblind
-    selected: '#fe6100',     // Orange-red for selection
-    groupStart: '#dfefe4',   // MIP light_green
-    groupEnd: '#1b21a3',     // MIP dark_blue darker
+    variable: '#ffba08',     // MIP golden yellow (from portal-frontend)
+    covariate: '#bba66f',    // MIP tan/beige (from portal-frontend)
+    filter: '#483300',       // MIP dark brown (from portal-frontend)
+    selected: '#3f6078',     // MIP steel blue (from portal-frontend)
+    groupStart: '#c8d5f0',   // Light pale blue (from portal-frontend)
+    groupEnd: '#3340e8',     // Deep blue (from portal-frontend)
   };
 
   colorMode: 'default' | 'colorBlind' | 'custom' = 'default';
@@ -85,8 +85,12 @@ export class BubbleChartComponent implements OnInit, OnChanges, AfterViewInit, O
     this.colorMode = mode;
     if (mode === 'default') {
       this.colors = { ...this.DEFAULT_PALETTE };
+      document.body.classList.remove('colorblind-mode');
     } else if (mode === 'colorBlind') {
       this.colors = { ...this.COLORBLIND_PALETTE };
+      document.body.classList.add('colorblind-mode');
+    } else {
+      document.body.classList.remove('colorblind-mode');
     }
     this.saveSettings();
     this.onColorChange();
@@ -107,7 +111,15 @@ export class BubbleChartComponent implements OnInit, OnChanges, AfterViewInit, O
     if (saved) {
       try {
         const settings = JSON.parse(saved);
-        if (settings.mode) this.colorMode = settings.mode;
+        if (settings.mode) {
+          this.colorMode = settings.mode;
+          // Apply colorblind class if mode was saved as colorBlind
+          if (settings.mode === 'colorBlind') {
+            document.body.classList.add('colorblind-mode');
+          } else {
+            document.body.classList.remove('colorblind-mode');
+          }
+        }
         if (settings.colors) this.colors = { ...settings.colors };
       } catch (e) {
         console.error('Failed to load chart settings', e);
@@ -259,7 +271,12 @@ export class BubbleChartComponent implements OnInit, OnChanges, AfterViewInit, O
 
   onColorChange(): void {
     if (this.refreshColorsFn) {
-      this.refreshColorsFn({ colors: this.colors });
+      this.refreshColorsFn({
+        selectedVariables: this.selectedVariables,
+        selectedCovariates: this.selectedCovariates,
+        selectedFilters: this.selectedFilters,
+        colors: this.colors,
+      });
     }
     this.saveSettings();
   }

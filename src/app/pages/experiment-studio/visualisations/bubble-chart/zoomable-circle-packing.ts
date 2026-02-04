@@ -69,12 +69,12 @@ type BubbleColorConfig = {
 };
 
 const defaultColors: BubbleColorConfig = {
-  variable: '#2b33e9',     // MIP dark_blue
-  covariate: '#ffeeba',    // Muted pastel orange
-  filter: '#c5d4f0',       // Muted pastel blue
-  selected: '#1b21a3',     // MIP dark_blue darker
-  groupStart: '#dfefe4',   // MIP light_green
-  groupEnd: '#2b33e9',     // MIP dark_blue
+  variable: '#2b33e9',     // Brand Blue (matches --variable-color)
+  covariate: '#ccb692',    // Muted Sand (matches --covariate-color)
+  filter: '#94a3b8',       // Muted Slate (matches --filter-color)
+  selected: '#1b21a3',     // Brand Blue darker
+  groupStart: '#dfefe4',   // Light green for groups
+  groupEnd: '#2b33e9',     // Brand Blue for groups
 };
 
 // Calculate leaf color
