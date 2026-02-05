@@ -97,9 +97,14 @@ export function createZoomableCirclePacking(
   let colors: BubbleColorConfig = { ...defaultColors, ...(options?.colors ?? {}) };
 
   const bounds = container.getBoundingClientRect();
-  const width = Math.max(320, Math.floor(bounds.width || 0)) || 700;
-  const height = Math.max(320, Math.floor(bounds.height || 0)) || 728;
-  const size = Math.min(width, height);
+  const width = Math.floor(bounds.width || 0) || 700;
+  const height = Math.floor(bounds.height || 0) || 728;
+  const paddingLabel = 10;
+  const availableHeight = height - paddingLabel;
+  const size = Math.min(width, availableHeight);
+  // Calculate offset to center the square packing within the rectangle
+  const offsetX = (width - size) / 2;
+  const offsetY = paddingLabel + (availableHeight - size) / 2;
   let groupColor = d3.scaleLinear<string>()
     .domain([0, 5])
     .range([colors.groupStart, colors.groupEnd])
@@ -158,11 +163,11 @@ export function createZoomableCirclePacking(
     tooltip.transition().duration(150).style('opacity', 0);
   }
 
-  // Create the pack layout with a precise vertical margin for labels
-  const packSize = 932;
-  const topMargin = 25;
-  const bottomMargin = 5;
-  const packHeight = packSize - topMargin - bottomMargin;
+  // Create a perfectly square pack layout
+  // Create a perfectly square pack layout based on the minimum dimension
+  const packSize = size;
+  const packHeight = packSize;
+  const topMargin = 0; // Handled by zoom radius buffer now
 
   const root = d3.pack<any>().size([packSize, packHeight]).padding(3)(
     d3.hierarchy<any>(data, (d: any) => d.children)
@@ -171,13 +176,14 @@ export function createZoomableCirclePacking(
   );
 
   let focus = root;
-  let view: [number, number, number] = [focus.x, focus.y, focus.r * 2];
+  // Use a 2.3x radius to provide a ~15% safety buffer on all sides for labels
+  let view: [number, number, number] = [focus.x, focus.y, focus.r * 2.3];
   let selectedDataNode: d3.HierarchyNode<any> | null = null;
 
   const svg = d3
     .create('svg')
     .attr('preserveAspectRatio', 'xMidYMid meet')
-    .attr('viewBox', `0 0 ${packSize} ${packSize}`)
+    .attr('viewBox', `0 0 ${width} ${height}`)
     .attr('width', width)
     .attr('height', height)
     .style('display', 'block')
@@ -268,15 +274,15 @@ export function createZoomableCirclePacking(
 
   // Functions
   function zoomTo(v: [number, number, number]) {
-    const k = packSize / v[2];
+    const k = size / v[2];
     view = v;
 
-    node.attr('transform', (d: any) => `translate(${(d.x - v[0]) * k + packSize / 2}, ${(d.y - v[1]) * k + packHeight / 2 + topMargin})`);
+    node.attr('transform', (d: any) => `translate(${(d.x - v[0]) * k + size / 2 + offsetX}, ${(d.y - v[1]) * k + size / 2 + offsetY})`);
     node.attr('r', (d: any) => d.r * k);
 
     labelNodes.attr('transform', (d: any) => {
-      const x = (d.x - v[0]) * k + packSize / 2;
-      const y = (d.y - v[1]) * k + packHeight / 2 + topMargin;
+      const x = (d.x - v[0]) * k + size / 2 + offsetX;
+      const y = (d.y - v[1]) * k + size / 2 + offsetY;
       const offset = d.children ? d.r * k + 8 : 0;
       return `translate(${x}, ${y - offset})`;
     })

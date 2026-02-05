@@ -20,11 +20,12 @@
 .visualization-header {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-start;
+  justify-content: space-between;
   align-items: flex-end;
   gap: 12px;
   padding: 2px 0;
   min-width: 0;
+  width: 100%;
 }
 
 .visualization-header-left,
@@ -35,10 +36,10 @@
 }
 
 .visualization-header-right {
-  flex: 1 1 240px;
-  width: 100%;
+  flex: 0 1 350px;
   max-width: 350px;
 }
+
 
 .visualization-header-right app-search-bar {
   width: 100%;
@@ -46,9 +47,9 @@
 
 .visualization-parameters-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 32px;
-  align-items: start;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 24px;
+  align-items: stretch;
 }
 
 .bubble-column {
@@ -57,22 +58,27 @@
   gap: 12px;
   min-width: 0;
   width: 100%;
-  align-items: center;
+  align-items: stretch;
+  height: 100%;
 }
 
 .right-column {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  height: 100%;
 }
 
 /* Left: bubble chart “canvas” */
 .bubble-chart-section {
   width: 100%;
   max-width: 100%;
-  max-height: calc(100vh - 300px);
-  aspect-ratio: 1 / 1;
+  /* Removed max-height calc to allow filling the container */
+  /* max-height: calc(100vh - 300px); */
+  /* aspect-ratio: 1 / 1; REMOVED square constraint */
   min-height: 400px;
+  flex-grow: 1;
+  /* Allow it to grow to fill remaining space in the column */
   display: flex;
   flex-direction: column;
   background: var(--studio-card-bg, rgba(255, 255, 255, 0.72));
