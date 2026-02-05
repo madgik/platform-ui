@@ -8,18 +8,46 @@ import * as d3 from 'd3';
 function createLabelGroup(group: d3.Selection<SVGGElement, any, any, any>, d: any) {
   group.selectAll('*').remove();
 
-  group
+  const label = d.data.label || '';
+  const maxCharsPerLine = 20;
+
+  // Split label into lines
+  const words = label.split(/\s+/);
+  const lines: string[] = [];
+  let currentLine: string[] = [];
+
+  words.forEach((word: string) => {
+    const potentialLine = [...currentLine, word].join(' ');
+    if (potentialLine.length <= maxCharsPerLine) {
+      currentLine.push(word);
+    } else {
+      if (currentLine.length > 0) lines.push(currentLine.join(' '));
+      currentLine = [word];
+    }
+  });
+  if (currentLine.length > 0) lines.push(currentLine.join(' '));
+
+  const fontSize = d.children ? 15 : 10;
+
+  const textNode = group
     .append('text')
     .attr('class', 'label')
     .attr('text-anchor', 'middle')
-    .style('font-size', d.children ? '15px' : '10px')
+    .style('font-size', `${fontSize}px`)
     .style('font-weight', '600')
     .style('fill', '#0f172a')
     .style('paint-order', 'stroke')
     .style('stroke', 'rgba(255,255,255,0.9)')
     .style('stroke-width', 2)
-    .style('stroke-linejoin', 'round')
-    .text(d.data.label || '');
+    .style('stroke-linejoin', 'round');
+
+  // Add tspans
+  lines.forEach((lineStr, i) => {
+    textNode.append('tspan')
+      .attr('x', 0)
+      .attr('dy', i === 0 ? (lines.length === 1 ? '0.35em' : `-${(lines.length - 1) * 0.6}em`) : '1.2em')
+      .text(lineStr);
+  });
 
   if (!d.children) return;
 }
@@ -99,7 +127,7 @@ export function createZoomableCirclePacking(
   const bounds = container.getBoundingClientRect();
   const width = Math.floor(bounds.width || 0) || 700;
   const height = Math.floor(bounds.height || 0) || 728;
-  const paddingLabel = 10;
+  const paddingLabel = 20;
   const availableHeight = height - paddingLabel;
   const size = Math.min(width, availableHeight);
   // Calculate offset to center the square packing within the rectangle
@@ -460,9 +488,7 @@ export function createZoomableCirclePacking(
   function shouldShowLabel(d: any, k: number): boolean {
     const radius = d.r * k;
     if (radius < 16) return false;
-    const label = d.data.label || '';
-    const approxTextWidth = label.length * 6;
-    return approxTextWidth <= radius * 2.2;
+    return true;
   }
 
   return {
