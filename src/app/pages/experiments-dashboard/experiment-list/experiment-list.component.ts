@@ -1,5 +1,6 @@
 import { Component, Output, EventEmitter, computed, signal, Input } from '@angular/core';
 import { ExperimentsDashboardService } from '../../../services/experiments-dashboard.service';
+import { ExperimentStudioService } from '../../../services/experiment-studio.service';
 import { Experiment } from '../../../models/experiments-dashboard.model';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -26,8 +27,20 @@ export class ExperimentsListComponent {
 
   constructor(
     public experimentsService: ExperimentsDashboardService,
+    private expStudio: ExperimentStudioService,
     private router: Router
-  ) { }
+  ) {
+    this.expStudio.loadAllDataModels().subscribe(models => {
+      const map: Record<string, string> = {};
+      models.forEach(m => {
+        if (m.code) {
+          const key = m.version ? `${m.code}:${m.version}` : m.code;
+          map[key] = m.label || m.code;
+        }
+      });
+      this.modelLabels.set(map);
+    });
+  }
 
   // toggle
   readonly onlyMine = signal(true);
@@ -50,6 +63,8 @@ export class ExperimentsListComponent {
     status: 'any',
     shared: 'any',
   });
+
+  private modelLabels = signal<Record<string, string>>({});
 
   patchFilters(patch: Partial<ExperimentFilters>) {
     this.filters.update(f => ({ ...f, ...patch }));
@@ -164,5 +179,16 @@ export class ExperimentsListComponent {
 
   onDeleteRequested(id: string) {
     this.deleteRequested.emit(id);
+  }
+
+  getAlgorithmLabel(code: string | null | undefined): string {
+    if (!code) return 'Unknown algorithm';
+    const algoConfig = this.expStudio.backendAlgorithms()[code];
+    return algoConfig?.label || code;
+  }
+
+  getDomainLabel(code: string | null | undefined): string | null {
+    if (!code) return null;
+    return this.modelLabels()[code] || code;
   }
 }

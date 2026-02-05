@@ -76,13 +76,9 @@ export class ExperimentDetailsComponent {
     return domain ? this.labelMap()[domain] || domain : 'Not specified';
   });
 
-  datasetsWithLabels = computed(() => {
-    const datasets = this.selectedExperiment()?.datasets || [];
-    return datasets.map(code => ({
-      code,
-      label: this.labelMap()[code] || code
-    }));
-  });
+  readonly datasetsWithLabels = computed(() =>
+    this.withLabels(this.selectedExperiment()?.datasets)
+  );
 
   algorithmLabel = computed(() => {
     const algoCode = this.selectedExperiment()?.algorithmName;
