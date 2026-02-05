@@ -185,11 +185,8 @@ export class ExperimentStudioComponent implements OnInit, OnDestroy, AfterViewIn
     });
   }
 
-  // Clean create mode. resets all of the studio's state
+  // Clean create mode.
   private initCreateMode(): void {
-    // Reset service state (variables, datasets, filters, algo)
-    this.expStudioService.resetStudioState();
-
     this.expStudioService.setEditingExistingExperiment(false);
   }
 

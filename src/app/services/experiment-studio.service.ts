@@ -26,9 +26,9 @@ export class ExperimentStudioService {
   private dataModels: any[] = [];
   private dataModelsLoaded = false;
 
-  private selectedVariablesSignal = signal<any[]>([]);
-  private selectedCovariatesSignal = signal<any[]>([]);
-  private selectedFiltersSignal = signal<any[]>([]);
+  private selectedVariablesSignal = signal<any[]>(this.sessionStorage.getItem('selectedVariables') || []);
+  private selectedCovariatesSignal = signal<any[]>(this.sessionStorage.getItem('selectedCovariates') || []);
+  private selectedFiltersSignal = signal<any[]>(this.sessionStorage.getItem('selectedFilters') || []);
 
   readonly selectedVariables = computed(() => this.selectedVariablesSignal());
   readonly selectedCovariates = computed(() => this.selectedCovariatesSignal());
@@ -67,13 +67,13 @@ export class ExperimentStudioService {
     return maps;
   }
 
-  private selectedDatasetsSignal = signal<string[]>([]);
+  private selectedDatasetsSignal = signal<string[]>(this.sessionStorage.getItem('selectedDatasets') || []);
   private transientUrl = '/services/experiments/transient';
 
   lastUsedAlgorithm = signal<string | null>(null);
   selectedDatasets = computed(() => this.selectedDatasetsSignal());
   backendAlgorithms = signal<Record<string, AlgorithmConfig>>({});
-  selectedDataModel = signal<DataModel | null>(null);
+  selectedDataModel = signal<DataModel | null>(this.sessionStorage.getItem('selectedDataModel'));
   readonly crossSectionalModels = signal<DataModel[]>([]);
   readonly longitudinalModels = signal<DataModel[]>([]);
   readonly availableDatasets = signal<{ code: string; label: string }[]>([]);
@@ -169,6 +169,27 @@ export class ExperimentStudioService {
         this.clearSelectedAlgorithm();
       }
     }, { allowSignalWrites: true });
+
+    // --- State Persistence ---
+    effect(() => {
+      this.sessionStorage.setItem('selectedVariables', this.selectedVariablesSignal());
+    });
+
+    effect(() => {
+      this.sessionStorage.setItem('selectedCovariates', this.selectedCovariatesSignal());
+    });
+
+    effect(() => {
+      this.sessionStorage.setItem('selectedFilters', this.selectedFiltersSignal());
+    });
+
+    effect(() => {
+      this.sessionStorage.setItem('selectedDatasets', this.selectedDatasetsSignal());
+    });
+
+    effect(() => {
+      this.sessionStorage.setItem('selectedDataModel', this.selectedDataModel());
+    });
   }
 
   setSelectedDataModel(model: DataModel | null): void {
@@ -1079,6 +1100,15 @@ export class ExperimentStudioService {
 
     // share flag for safety
     this.isShared.set(false);
+
+    // Clear session storage
+    this.sessionStorage.removeItem('selectedVariables');
+    this.sessionStorage.removeItem('selectedCovariates');
+    this.sessionStorage.removeItem('selectedFilters');
+    this.sessionStorage.removeItem('selectedDatasets');
+    this.sessionStorage.removeItem('selectedDataModel');
+    this.sessionStorage.removeItem('selectedAlgorithm');
+    this.sessionStorage.removeItem('algorithmConfigurations');
 
     // cancel any in-flight transient requests
     this.destroy$.next();
