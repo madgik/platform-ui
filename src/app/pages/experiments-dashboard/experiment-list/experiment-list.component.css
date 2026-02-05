@@ -94,13 +94,13 @@
 .experiments-list {
   list-style: none;
   margin: 4px 0 0;
-  padding: 4px 4px 12px 0;
+  padding: 10px 12px 20px 12px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
   max-height: 100%;
   overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: visible;
 }
 
 /* Discreet scrollbar */
@@ -134,17 +134,19 @@
   cursor: pointer;
   text-align: left;
   box-shadow: var(--glass-shadow);
+  position: relative;
+  z-index: 1;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .experiment-row:hover {
   background: rgba(255, 255, 255, 0.95);
   border-color: var(--primary-light);
-  transform: translateY(-4px) scale(1.02);
+  transform: translateY(-4px) scale(1.015);
   box-shadow:
-    0 30px 60px rgba(43, 51, 233, 0.15),
-    0 0 0 4px rgba(43, 51, 233, 0.05),
-    inset 0 0 20px rgba(127, 156, 232, 0.1);
+    0 20px 40px rgba(43, 51, 233, 0.15),
+    0 0 0 4px rgba(43, 51, 233, 0.05);
+  z-index: 10;
 }
 
 .experiment-row.selected {
