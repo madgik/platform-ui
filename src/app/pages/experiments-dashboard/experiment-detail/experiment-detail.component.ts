@@ -2,6 +2,7 @@ import { Component, ElementRef, EventEmitter, Output, ViewChild } from '@angular
 import { CommonModule } from '@angular/common';
 import { input, computed, effect, signal } from '@angular/core';
 import { ExperimentsDashboardService } from '../../../services/experiments-dashboard.service';
+import { ExperimentStudioService } from '../../../services/experiment-studio.service';
 import { Experiment } from '../../../models/experiments-dashboard.model';
 import { BackendExperimentWithResult } from '../../../models/backend-experiment.model';
 import { AlgorithmResultComponent } from '../../experiment-studio/algorithm-panel/algorithm-result/algorithm-result.component';
@@ -70,8 +71,29 @@ export class ExperimentDetailsComponent {
     () => getOutputSchema(this.experimentalAlgorithmName()) ?? []
   );
 
+  domainLabel = computed(() => {
+    const domain = this.selectedExperiment()?.domain;
+    return domain ? this.labelMap()[domain] || domain : 'Not specified';
+  });
+
+  datasetsWithLabels = computed(() => {
+    const datasets = this.selectedExperiment()?.datasets || [];
+    return datasets.map(code => ({
+      code,
+      label: this.labelMap()[code] || code
+    }));
+  });
+
+  algorithmLabel = computed(() => {
+    const algoCode = this.selectedExperiment()?.algorithmName;
+    if (!algoCode) return 'Unknown';
+    const algoConfig = this.expStudioService.backendAlgorithms()[algoCode];
+    return algoConfig?.label || algoCode;
+  });
+
   constructor(
     private dashboardService: ExperimentsDashboardService,
+    private expStudioService: ExperimentStudioService,
     private pdfExport: PdfExportService,
     private router: Router,
     private labelService: ExperimentLabelService
@@ -212,20 +234,41 @@ export class ExperimentDetailsComponent {
     const baseName = this.selectedExperiment()?.name?.trim() || 'experiment results';
     const filename = baseName.replace(/\s+/g, '_');
 
+    const paramData = fullExperiment?.algorithm?.parameters || {};
+    const transObj = (paramData as any)?.data_transformation || {};
+    const transLines: string[] = [];
+    const transTypes = ['standardize', 'center', 'exp'];
+
+    transTypes.forEach(type => {
+      const vars = transObj[type];
+      if (Array.isArray(vars) && vars.length > 0) {
+        vars.forEach(v => {
+          const label = this.labelMap()[v] || v;
+          transLines.push(`${label}: ${type}`);
+        });
+      }
+    });
+    const transformations = transLines.length > 0 ? transLines : null;
+
+    const algoCode = fullExperiment?.algorithm?.name ?? this.experimentalAlgorithmName();
+    const algoConfig = this.expStudioService.backendAlgorithms()[algoCode];
+    const algoLabel = algoConfig?.label || algoCode;
+
     this.pdfExport.exportExperimentPdf({
       filename,
       details: {
         experimentName: baseName,
         createdBy: this.selectedExperiment()?.author ?? null,
         createdAt: this.selectedExperiment()?.dateCreated ?? null,
-        algorithm: fullExperiment?.algorithm?.name ?? this.experimentalAlgorithmName(),
+        algorithm: algoLabel,
         params: fullExperiment?.algorithm?.parameters ?? null,
         preprocessing: 'none',
-        domain: this.selectedExperiment()?.domain ?? null,
-        datasets: this.selectedExperiment()?.datasets ?? [],
+        domain: this.domainLabel(),
+        datasets: (this.selectedExperiment()?.datasets ?? []).map(code => this.labelMap()[code] || code),
         variables: this.variablesWithLabels().map((v) => v.label),
         covariates: this.covariatesWithLabels().map((c) => c.label),
         filters: this.filtersWithLabels().map((f) => f.label),
+        transformations,
       },
       algorithmKey: fullExperiment?.algorithm?.name ?? this.experimentalAlgorithmName(),
       result,

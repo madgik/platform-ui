@@ -16,6 +16,8 @@ export interface ExperimentPdfDetails {
   variables?: string[] | null;
   covariates?: string[] | null;
   filters?: string[] | null;
+  interactions?: string | string[] | null;
+  transformations?: string | string[] | null;
 }
 
 export interface ExperimentPdfPayload {
@@ -175,10 +177,19 @@ export class PdfExportService {
       { label: 'Variables', value: this.formatList(details.variables) },
       { label: 'Covariates', value: this.formatList(details.covariates) },
       { label: 'Filter', value: this.formatList(details.filters) },
-    ];
+    ].filter(e => e.value && e.value !== 'none' && (!Array.isArray(e.value) || e.value.length > 0));
 
     const normalizeLines = (value: string | string[]) => {
-      if (Array.isArray(value)) return value.map((line) => String(line));
+      if (Array.isArray(value)) {
+        return value.flatMap((item: string) => {
+          const bullet = '• ';
+          const bulletWidth = doc.getTextWidth(bullet);
+          const wrapped = doc.splitTextToSize(String(item), columnWidth - 4 - bulletWidth);
+          return wrapped.map((line: string, index: number) =>
+            index === 0 ? bullet + line : '  ' + line
+          );
+        });
+      }
       return doc.splitTextToSize(String(value), columnWidth - 4);
     };
 
@@ -254,30 +265,40 @@ export class PdfExportService {
     }
 
     y = cardTop + cardHeight + 10;
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(0);
-    doc.text('Formula', margin.left, y);
-    doc.setDrawColor(230);
-    doc.setLineWidth(0.4);
-    doc.line(margin.left, y + 2, margin.left + 26, y + 2);
-    y += 8;
-    doc.setFont('helvetica', 'normal');
 
-    y = this.renderKeyValue(doc, {
-      label: 'Interactions',
-      value: 'none',
-      x: margin.left,
-      y,
-      maxWidth: contentWidth,
-    });
+    const hasInteractions = details.interactions && details.interactions !== 'none' && (!Array.isArray(details.interactions) || details.interactions.length > 0);
+    const hasTransformations = details.transformations && details.transformations !== 'none' && (!Array.isArray(details.transformations) || details.transformations.length > 0);
 
-    this.renderKeyValue(doc, {
-      label: 'Transformations',
-      value: 'none',
-      x: margin.left,
-      y,
-      maxWidth: contentWidth,
-    });
+    if (hasInteractions || hasTransformations) {
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(0);
+      doc.text('Formula', margin.left, y);
+      doc.setDrawColor(230);
+      doc.setLineWidth(0.4);
+      doc.line(margin.left, y + 2, margin.left + 26, y + 2);
+      y += 8;
+      doc.setFont('helvetica', 'normal');
+
+      if (hasInteractions) {
+        y = this.renderKeyValue(doc, {
+          label: 'Interactions',
+          value: details.interactions ?? 'none',
+          x: margin.left,
+          y,
+          maxWidth: contentWidth,
+        });
+      }
+
+      if (hasTransformations) {
+        y = this.renderKeyValue(doc, {
+          label: 'Transformations',
+          value: details.transformations ?? 'none',
+          x: margin.left,
+          y,
+          maxWidth: contentWidth,
+        });
+      }
+    }
   }
 
   private renderTablePage(
@@ -424,6 +445,21 @@ export class PdfExportService {
         return currentY + 6;
       }
 
+      if (Array.isArray(value)) {
+        const bullet = '• ';
+        const bulletWidth = doc.getTextWidth(bullet);
+        value.forEach((item) => {
+          const innerLines = doc.splitTextToSize(String(item), availableWidth - bulletWidth);
+          innerLines.forEach((line: string, index: number) => {
+            const lineX = index === 0 ? startX : startX + 3;
+            const prefix = index === 0 ? bullet : '';
+            doc.text(prefix + line, lineX, currentY);
+            currentY += 6;
+          });
+        });
+        return currentY;
+      }
+
       lines.forEach((line, index) => {
         const lineX = index === 0 ? startX : startX + indent;
         doc.text(String(line), lineX, currentY);
@@ -444,9 +480,9 @@ export class PdfExportService {
     });
   }
 
-  private formatList(list?: string[] | null): string {
+  private formatList(list?: string[] | null): string[] | 'none' {
     if (!list || list.length === 0) return 'none';
-    return list.join(', ');
+    return list;
   }
 
   private formatValue(value: unknown): string {

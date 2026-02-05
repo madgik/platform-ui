@@ -989,16 +989,24 @@ export class AlgorithmPanelComponent {
       this.experimentStudioService.selectedAlgorithm()?.name ||
       'experiment';
 
-    const algoLabel =
-      this.experimentStudioService.selectedAlgorithm()?.label ||
-      this.experimentStudioService.selectedAlgorithm()?.name ||
-      algoKey;
+    const algoConfig = this.experimentStudioService.backendAlgorithms()[algoKey];
+    const algoLabel = algoConfig?.label || algoKey;
 
     const currentUser = this.authService.currentUser;
     const createdBy =
       currentUser?.fullname || currentUser?.username || currentUser?.email || null;
 
     const filename = info.experimentName;
+
+    const transformations = this.transformationEnabled()
+      ? Object.entries(this.transformationAssignments)
+        .filter(([_, choice]) => choice && choice !== 'none')
+        .map(([code, choice]) => {
+          const label = this.labelMap()[code] || code;
+          return `${label}: ${choice}`;
+        })
+        .join(', ')
+      : null;
 
     this.pdfExport.exportExperimentPdf({
       filename,
@@ -1010,10 +1018,14 @@ export class AlgorithmPanelComponent {
         params: info.algorithmConfigs,
         preprocessing: 'none',
         domain: this.experimentStudioService.selectedDataModel()?.code ?? null,
-        datasets: info.datasets ?? [],
+        datasets: (info.datasets ?? []).map(code => {
+          const ds = this.experimentStudioService.availableDatasets().find(d => d.code === code);
+          return ds?.label || code;
+        }),
         variables: (info.variables ?? []).map((v: any) => v.label || v.name || v.code),
         covariates: (info.covariates ?? []).map((c: any) => c.label || c.name || c.code),
         filters: (info.filters ?? []).map((f: any) => f.label || f.name || f.code),
+        transformations,
       },
       algorithmKey: algoKey,
       result,

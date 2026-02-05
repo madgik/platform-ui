@@ -67,7 +67,7 @@
         <div class="meta-item">
           <span class="label">Algorithm</span>
           <span class="value">
-            {{ selectedExperiment()?.algorithmName || "Unknown" }}
+            {{ algorithmLabel() }}
           </span>
         </div>
       </div>
@@ -121,29 +121,29 @@
           <!-- Domain -->
           <div class="config-field">
             <span class="label">Domain</span>
-            <div class="domain-value" [class.domain-value--empty]="!exp.domain">
+            <div class="domain-value" [class.domain-value--empty]="!selectedExperiment()?.domain">
               <i class="fas fa-layer-group"></i>
               <span class="domain-text">{{
-                exp.domain || "Not specified"
+                domainLabel()
                 }}</span>
-            </div>
-          </div>
-
-          <!-- Datasets -->
-          <div class="config-field">
-            <span class="label">Datasets</span>
-            <div class="datasets-value">
-              <i class="fas fa-database"></i>
-              <span class="datasets-text">
-                @if (exp.datasets?.length) {
-                {{ exp.datasets?.join(", ") }}
-                } @else { Not specified }
-              </span>
             </div>
           </div>
         </div>
       </div>
 
+      @if (datasetsWithLabels().length) {
+      <div class="config-tags-row">
+        <span class="label">Datasets</span>
+        <div class="tag-list">
+          @for (d of datasetsWithLabels(); track d.code) {
+          <span class="tag">
+            <i class="fas fa-database" style="margin-right: 4px; font-size: 0.7rem; opacity: 0.8;"></i>
+            {{ d.label }}
+          </span>
+          }
+        </div>
+      </div>
+      }
       @if (variablesWithLabels().length) {
       <div class="config-tags-row">
         <span class="label">Variables (Y)</span>

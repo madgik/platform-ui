@@ -132,7 +132,7 @@ export class PdfExportService {
             if (!imgData) {
                 const canvas = await html2canvas(element, {
                     backgroundColor: '#ffffff',
-                    scale: 1.25,
+                    scale: 2.0,
                     useCORS: true,
                     logging: false,
                 });
@@ -143,7 +143,7 @@ export class PdfExportService {
 
             const pageWidth = 210;
             const margin = 12;
-            const maxWidth = pageWidth - margin * 2;
+            const maxWidth = 150; // Reduced from 186 for better proportion and quality
             const imgHeight = rawWidth && rawHeight ? (rawHeight * maxWidth) / rawWidth : 120;
             const startY = cursorY;
             const maxHeight = 297 - startY - margin;
@@ -155,7 +155,8 @@ export class PdfExportService {
                 renderWidth = rawWidth && rawHeight ? (rawWidth * renderHeight) / rawHeight : maxWidth;
             }
 
-            doc.addImage(imgData, 'PNG', margin, startY, renderWidth, renderHeight);
+            const renderX = (pageWidth - renderWidth) / 2;
+            doc.addImage(imgData, 'PNG', renderX, startY, renderWidth, renderHeight);
             doc.save(`${nodeLabel ? nodeLabel.replace(/[^\w\s-]/g, '').trim() : 'distribution'}_summary.pdf`);
         } catch (err) {
             console.error('Distribution PDF export failed:', err);
@@ -232,7 +233,7 @@ export class PdfExportService {
                     try {
                         const canvas = await html2canvas(chartEl, {
                             backgroundColor: '#ffffff',
-                            scale: 1,
+                            scale: 2,
                             useCORS: true,
                             logging: false,
                         });

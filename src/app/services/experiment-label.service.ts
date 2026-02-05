@@ -11,7 +11,7 @@ export class ExperimentLabelService {
   private enumCache = new Map<string, EnumMaps>();
   private enumInflight = new Map<string, Promise<EnumMaps>>();
 
-  constructor(private expStudio: ExperimentStudioService) {}
+  constructor(private expStudio: ExperimentStudioService) { }
 
   private findDataModelByCodeVersion(codeVersion: string, models: DataModel[]): DataModel | null {
     if (!codeVersion) return null;
@@ -36,10 +36,22 @@ export class ExperimentLabelService {
         if (!model) return {};
 
         const converted = this.expStudio.convertToD3Hierarchy(model);
-        const map: Record<string, string> = {};
+        const map: Record<string, string> = {
+          [domain]: model.label || domain
+        };
 
         converted.allVariables.forEach((v: any) => {
-          if (v?.code) map[v.code] = v.label || v.code;
+          if (v?.code) {
+            map[v.code] = v.label || v.code;
+
+            // Also add enumerations to the flat map (especially useful for datasets)
+            if (v.code.toLowerCase() === 'dataset' && Array.isArray(v.enumerations)) {
+              v.enumerations.forEach((e: any) => {
+                const eCode = e?.code ?? e?.label ?? e?.name;
+                if (eCode) map[eCode] = e.label || e.name || eCode;
+              });
+            }
+          }
         });
 
         return map;
