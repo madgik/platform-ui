@@ -134,6 +134,9 @@ export class AlgorithmPanelComponent {
     n_splits: 5,
     k: 4,
     tol: 0.01,
+    sstype: 2,
+    conf_level: 0.95,
+    iterations: 1000,
   };
 
   constructor() {
@@ -273,6 +276,7 @@ export class AlgorithmPanelComponent {
         // extra validation: integer-only for numeric fields
         const isNumeric = prettyField.type === 'number';
         const allowsDecimal =
+          prettyField.types?.includes('real') ||
           prettyField.key === 'alpha' ||
           prettyField.key === 'tol' ||
           prettyField.key === 'mu';

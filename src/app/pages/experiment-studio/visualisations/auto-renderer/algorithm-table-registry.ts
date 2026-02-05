@@ -2,6 +2,7 @@ export interface TableSpec {
   title?: string;
   columns: string[];
   rows: any[][];
+  layout?: 'compact' | 'full';
 }
 
 export type TableBuilder = (result: any) => TableSpec[];
@@ -31,6 +32,20 @@ function formatDecimal(value: any): string {
   if (formatted === '-0') formatted = '0';
 
   return formatted;
+}
+
+function formatTTestKey(key: string): string {
+  const map: Record<string, string> = {
+    mean_diff: 'Mean difference',
+    se_difference: 'Std.Err. difference',
+    std_err_diff: 'Std.Err. difference',
+    ci_upper: 'ci upper',
+    ci_lower: 'ci lower',
+    t_stat: 't statistic',
+    p_value: 'p value',
+    dof: 'degrees of freedom',
+  };
+  return map[key] || key.replace(/_/g, ' ');
 }
 
 export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
@@ -122,6 +137,7 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
           title: 'Model Summary',
           columns: ['Name', 'Value'],
           rows: infoRows,
+          layout: 'full',
         },
       ];
     }
@@ -194,17 +210,29 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
     if (!summary) return [];
 
     const metrics = ['accuracy', 'precision', 'recall', 'fscore'];
+    // Ensure we have data for the first metric to detect classes
+    if (!summary.accuracy) return [];
+
     const classes = Object.keys(summary.accuracy); // e.g. F, M
+    if (!classes.length) return [];
+
     const folds = Object.keys(summary.accuracy[classes[0]]).filter(k => k !== 'average' && k !== 'stdev');
 
     const rows = [...folds, 'average', 'stdev'].map(fold => {
       const row: any[] = [fold];
       for (const metric of metrics) {
+        // Guard against missing metrics
+        if (!summary[metric]) {
+          for (const cls of classes) row.push('');
+          continue;
+        }
         for (const cls of classes) {
           row.push(formatDecimal(summary[metric][cls]?.[fold]));
         }
       }
-      row.push(formatDecimal(summary.n_obs?.[fold]));
+      // n_obs is usually adjacent to accuracy/precision objects, check both locations
+      const nObsVal = summary.n_obs?.[fold] ?? summary[classes[0]]?.n_obs?.[fold];
+      row.push(formatDecimal(nObsVal));
       return row;
     });
 
@@ -222,6 +250,7 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
         title: 'Classification Metrics per Fold',
         columns,
         rows,
+        layout: 'full'
       },
     ];
   },
@@ -275,6 +304,7 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
         title: 'Model Summary',
         columns: ['Metric', 'Value'],
         rows: modelInfoRows,
+        layout: 'full',
       },
     ];
   },
@@ -428,11 +458,62 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
   },
 
   naive_bayes_categorical_cv: (result) => {
-    const metrics = result?.metrics;
-    if (!Array.isArray(metrics)) return [];
-    const columns = Object.keys(metrics[0]);
-    const rows = metrics.map((m: any) => columns.map(col => m[col]));
-    return [{ title: 'Categorical Naive Bayes CV Metrics', columns, rows }];
+    // Reuse the logic from Gaussian if the structure is the same (classification_summary)
+    const summary = result?.classification_summary;
+
+    // Fallback: old 'metrics' array support
+    if (!summary) {
+      const metrics = result?.metrics;
+      if (!Array.isArray(metrics)) return [];
+      const columns = Object.keys(metrics[0]);
+      const rows = metrics.map((m: any) => columns.map(col => m[col]));
+      return [{ title: 'Categorical Naive Bayes CV Metrics', columns, rows, layout: 'full' }];
+    }
+
+    const metrics = ['accuracy', 'precision', 'recall', 'fscore'];
+    // Ensure we have data for the first metric to detect classes
+    if (!summary.accuracy) return [];
+
+    const classes = Object.keys(summary.accuracy); // e.g. F, M
+    if (!classes.length) return [];
+
+    const folds = Object.keys(summary.accuracy[classes[0]]).filter(k => k !== 'average' && k !== 'stdev');
+
+    const rows = [...folds, 'average', 'stdev'].map(fold => {
+      const row: any[] = [fold];
+      for (const metric of metrics) {
+        // Guard against missing metrics
+        if (!summary[metric]) {
+          for (const cls of classes) row.push('');
+          continue;
+        }
+        for (const cls of classes) {
+          row.push(formatDecimal(summary[metric][cls]?.[fold]));
+        }
+      }
+      // n_obs is usually adjacent to accuracy/precision objects, check both locations
+      const nObsVal = summary.n_obs?.[fold] ?? summary[classes[0]]?.n_obs?.[fold];
+      row.push(formatDecimal(nObsVal));
+      return row;
+    });
+
+    const columns = ['Fold'];
+    for (const metric of metrics) {
+      for (const cls of classes) {
+        const name = `${metric.charAt(0).toUpperCase() + metric.slice(1)} (${cls})`;
+        columns.push(name);
+      }
+    }
+    columns.push('Number of observations');
+
+    return [
+      {
+        title: 'Categorical Naive Bayes CV Metrics',
+        columns,
+        rows,
+        layout: 'full'
+      },
+    ];
   },
 
   anova_oneway: (result) => {
@@ -464,7 +545,7 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
       },
     ];
 
-    const summaryCols = ['Source', 'DF', 'SS', 'MS', 'F ratio', 'P value'];
+    const summaryCols = ['Source', 'DF', 'Sum of Squares', 'Mean Square', 'F ratio', 'P value'];
     const summaryRows = summaryData.map((row) => [
       row.label,
       formatDecimal(row.df),
@@ -554,7 +635,7 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
       return [
         {
           title: 'Two-Way ANOVA Results',
-          columns: ['Source', 'DF', 'SS', 'MS', 'F', 'P value'],
+          columns: ['Source', 'DF', 'Sum of Squares', 'Mean Square', 'F', 'P value'],
           rows,
         },
       ];
@@ -586,7 +667,7 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
       ]);
     }
 
-    const columns = ['Source', 'DF', 'SS', 'MS', 'F', 'P value'];
+    const columns = ['Source', 'DF', 'Sum of Squares', 'Mean Square', 'F', 'P value'];
 
     return [
       {
@@ -599,7 +680,7 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
 
   ttest_onesample: (result) => {
     if (!result || typeof result !== 'object') return [];
-    const rows = Object.entries(result);
+    const rows = Object.entries(result).map(([k, v]) => [formatTTestKey(k), v]);
     return [
       {
         title: 'One-Sample T-Test',
@@ -611,7 +692,7 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
 
   ttest_independent: (result) => {
     if (!result || typeof result !== 'object') return [];
-    const rows = Object.entries(result);
+    const rows = Object.entries(result).map(([k, v]) => [formatTTestKey(k), v]);
     return [
       {
         title: 'Independent T-Test',
@@ -623,7 +704,7 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
 
   ttest_paired: (result) => {
     if (!result || typeof result !== 'object') return [];
-    const rows = Object.entries(result);
+    const rows = Object.entries(result).map(([k, v]) => [formatTTestKey(k), v]);
     return [
       {
         title: 'Paired T-Test',

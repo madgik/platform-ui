@@ -52,6 +52,10 @@ export class AutoRendererComponent implements OnChanges {
   isCompactTable(table: TableSpec | null | undefined): boolean {
     if (!table) return false;
 
+    // Explicit override from config
+    if (table.layout === 'full') return false;
+    if (table.layout === 'compact') return true;
+
     const colCount = table.columns?.length ?? 0;
     const rowCount = table.rows?.length ?? 0;
 

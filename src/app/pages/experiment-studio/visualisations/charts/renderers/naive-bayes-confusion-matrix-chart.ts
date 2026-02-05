@@ -29,8 +29,9 @@ export function buildNaiveBayesConfusionChart(result: any): EChartsOption[] {
       grid: {
         height: '80%',
         top: '10%',
-        left: '25%',
+        left: '20%', // Increased to prevent overlap
         right: '10%',
+        containLabel: true, // Ensures labels are calculated in grid size
       },
       xAxis: {
         type: 'category',
@@ -39,18 +40,24 @@ export function buildNaiveBayesConfusionChart(result: any): EChartsOption[] {
         nameLocation: 'middle',
         nameGap: 30,
         splitArea: { show: true },
+        axisLabel: {
+          fontSize: 14,
+          rotate: 30,
+          interval: 0 // Force show all
+        },
       },
       yAxis: {
         type: 'category',
         data: labels,
         name: 'Actual',
         nameLocation: 'middle',
-        nameGap: 40,
+        nameGap: 70, // Increased gap
         splitArea: { show: true },
-      },
-      axisLabels: {
-        fontSize: 14,
-        rotate: 30
+        axisLabel: {
+          fontSize: 14,
+          rotate: 30,
+          interval: 0 // Force show all
+        }
       },
       visualMap: {
         min: 0,

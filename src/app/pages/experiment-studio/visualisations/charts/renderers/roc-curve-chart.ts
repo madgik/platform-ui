@@ -43,15 +43,23 @@ export function buildRocCurveChart(result: any): EChartsOption[] {
         text: 'ROC Curve',
         left: 'center',
       },
+      grid: {
+        containLabel: true,
+        bottom: '20%',
+      },
       xAxis: {
         type: 'value',
         name: 'False Positive Rate',
+        nameLocation: 'middle',
+        nameGap: 30,
         min: 0,
         max: 1,
       },
       yAxis: {
         type: 'value',
         name: 'True Positive Rate',
+        nameLocation: 'middle',
+        nameGap: 40,
         min: 0,
         max: 1,
       },
