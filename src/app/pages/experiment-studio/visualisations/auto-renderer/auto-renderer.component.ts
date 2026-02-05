@@ -186,4 +186,41 @@ export class AutoRendererComponent implements OnChanges {
     }
     return rows;
   }
+
+  exportToCSV(table: TableSpec) {
+    if (!table || !table.columns || !table.rows) return;
+
+    const headers = table.columns.map(c => this.escapeCSV(c)).join(',');
+    const csvRows = table.rows.map(row =>
+      row.map(cell => this.escapeCSV(this.formatValue(cell))).join(',')
+    );
+
+    const csvContent = [headers, ...csvRows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+
+    const fileName = (table.title || this.algorithm || 'export')
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, '_')
+      .replace(/[^\w-]/g, '');
+
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${fileName}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
+  private escapeCSV(val: any): string {
+    const str = String(val ?? '');
+    if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+      return `"${str.replace(/"/g, '""')}"`;
+    }
+    return str;
+  }
 }
+
