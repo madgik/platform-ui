@@ -59,8 +59,8 @@ function buildConfigSchema(parameters: Record<string, RawParameter>): Array<any>
         options: Array.isArray(param.enums?.source)
           ? param.enums.source
           : Array.isArray(param.enums)
-          ? param.enums
-          : [],
+            ? param.enums
+            : [],
       });
       continue;
     }
@@ -97,7 +97,7 @@ export function mapRawAlgorithmToAlgorithmConfig(raw: RawAlgorithmDefinition): A
   return {
     name: raw.name,
     label: raw.label,
-    description: raw.desc ??  '',
+    description: raw.desc ?? '',
     inputdata: raw.inputdata ?? {},
     requiredVariable: raw.inputdata?.y?.types || [],
     covariate: raw.inputdata?.x?.types || [],

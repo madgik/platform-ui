@@ -1,15 +1,24 @@
 # Step 1: Build the Angular app
 FROM node:20-alpine AS build
 WORKDIR /app
+
+# Install dependencies with cache mount for npm cache
 COPY package.json package-lock.json ./
 RUN npm config set fetch-retries 5 \
     && npm config set fetch-retry-mintimeout 20000 \
-    && npm config set fetch-retry-maxtimeout 120000 \
-    && npm ci --legacy-peer-deps --no-audit --no-fund
+    && npm config set fetch-retry-maxtimeout 120000
+
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --legacy-peer-deps --no-audit --no-fund
+
+# Copy source code
 COPY . .
+
+# Build the app with cache mount for Angular cache
 ARG BUILD_CONFIGURATION=production
 ENV NG_BUILD_SKIP_FONT_GENERATION=1
-RUN npm run build -- --configuration ${BUILD_CONFIGURATION}
+RUN --mount=type=cache,target=/app/.angular/cache \
+    npm run build -- --configuration ${BUILD_CONFIGURATION}
 
 # Step 2: Use Nginx to serve the Angular app
 FROM nginx:alpine
