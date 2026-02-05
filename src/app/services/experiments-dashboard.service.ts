@@ -14,20 +14,34 @@ export class ExperimentsDashboardService {
 
   // WritableSignal
   experiments: WritableSignal<Experiment[]> = signal<Experiment[]>([]);
+  totalExperiments = signal<number>(0);
+  totalPages = signal<number>(0);
+  currentPage = signal<number>(0);
 
   constructor(private http: HttpClient) { }
 
   private errorService = inject(ErrorService);
 
   // Fetch all experiments from the backend and update the signal
-  getUserExperiments(): void {
+  getUserExperiments(page: number = 0, size: number = 10, onlyMine: boolean = false): void {
+    const params: any = {
+      page: page.toString(),
+      size: size.toString(),
+      mine: onlyMine.toString()
+    };
+
     this.http
-      .get<{ experiments: BackendExperiment[] }>(this.apiUrl)
+      .get<{ experiments: BackendExperiment[], totalExperiments: number, totalPages: number, currentPage: number }>(this.apiUrl, {
+        params: params
+      })
       .subscribe({
         next: (response) => {
           if (response?.experiments) {
             const mappedExperiments = response.experiments.map(mapBackendToFrontend);
             this.experiments.set(mappedExperiments);
+            this.totalExperiments.set(response.totalExperiments || 0);
+            this.totalPages.set(response.totalPages || 0);
+            this.currentPage.set(response.currentPage || 0);
           } else {
             console.error('Unexpected response format:', response);
             this.experiments.set([]);

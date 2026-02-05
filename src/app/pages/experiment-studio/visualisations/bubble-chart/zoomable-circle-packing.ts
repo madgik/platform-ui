@@ -2,45 +2,24 @@ import * as d3 from 'd3';
 
 // helpers
 // Splits labels
-function splitText(text: string, max = 13): string[] {
-  if (!text) return [];
-  const bits = text.split(/[\s_]+/);
-  const out: string[] = [];
-  let cur = '';
-  for (const w of bits) {
-    if (!cur) cur = w;
-    else if ((cur + ' ' + w).length <= max) cur = cur + ' ' + w;
-    else { out.push(cur); cur = w; }
-  }
-  if (cur) out.push(cur);
-  return out;
-}
+
 
 // Creates label + background rect
 function createLabelGroup(group: d3.Selection<SVGGElement, any, any, any>, d: any) {
   group.selectAll('*').remove();
 
-  const text = group
+  group
     .append('text')
     .attr('class', 'label')
     .attr('text-anchor', 'middle')
-    .style('font-size', '10px')
+    .style('font-size', d.children ? '15px' : '10px')
     .style('font-weight', '600')
     .style('fill', '#0f172a')
     .style('paint-order', 'stroke')
     .style('stroke', 'rgba(255,255,255,0.9)')
     .style('stroke-width', 2)
-    .style('stroke-linejoin', 'round');
-
-  text.selectAll('tspan')
-    .data(splitText(d.data.label || ''))
-    .join('tspan')
-    .attr('x', 0)
-    .attr('y', (_: any, i: number, nodes: unknown) => {
-      const arr = nodes as any[];
-      return `${i - arr.length / 2 + 0.8}em`;
-    })
-    .text((l: string) => l);
+    .style('stroke-linejoin', 'round')
+    .text(d.data.label || '');
 
   if (!d.children) return;
 }
@@ -103,6 +82,8 @@ export function createZoomableCirclePacking(
     selectedCovariates?: any[];
     selectedFilters?: any[];
     colors?: Partial<BubbleColorConfig>;
+    onAnimationStart?: () => void;
+    onAnimationEnd?: () => void;
   }
 ): { zoomToNode: (d: any) => void; refreshColors: (opts?: any) => void; destroy?: () => void } {
 
@@ -177,7 +158,13 @@ export function createZoomableCirclePacking(
     tooltip.transition().duration(150).style('opacity', 0);
   }
 
-  const root = d3.pack<any>().size([width, height]).padding(3)(
+  // Create the pack layout with a precise vertical margin for labels
+  const packSize = 932;
+  const topMargin = 25;
+  const bottomMargin = 5;
+  const packHeight = packSize - topMargin - bottomMargin;
+
+  const root = d3.pack<any>().size([packSize, packHeight]).padding(3)(
     d3.hierarchy<any>(data, (d: any) => d.children)
       .sum((d: any) => d.value ?? 0)
       .sort((a: any, b: any) => (b.value ?? 0) - (a.value ?? 0))
@@ -190,7 +177,7 @@ export function createZoomableCirclePacking(
   const svg = d3
     .create('svg')
     .attr('preserveAspectRatio', 'xMidYMid meet')
-    .attr('viewBox', `-${width / 2} -${height / 2} ${width} ${height}`)
+    .attr('viewBox', `0 0 ${packSize} ${packSize}`)
     .attr('width', width)
     .attr('height', height)
     .style('display', 'block')
@@ -281,19 +268,18 @@ export function createZoomableCirclePacking(
 
   // Functions
   function zoomTo(v: [number, number, number]) {
-    const k = size / v[2];
+    const k = packSize / v[2];
     view = v;
 
-    node
-      .attr('transform', (d: any) => `translate(${(d.x - v[0]) * k},${(d.y - v[1]) * k})`)
-      .attr('r', (d: any) => d.r * k);
+    node.attr('transform', (d: any) => `translate(${(d.x - v[0]) * k + packSize / 2}, ${(d.y - v[1]) * k + packHeight / 2 + topMargin})`);
+    node.attr('r', (d: any) => d.r * k);
 
-    labelNodes
-      .attr('transform', (d: any) =>
-        d.children
-          ? `translate(${(d.x - v[0]) * k},${(d.y - v[1]) * k - d.r * k - 8})`
-          : `translate(${(d.x - v[0]) * k},${(d.y - v[1]) * k})`
-      )
+    labelNodes.attr('transform', (d: any) => {
+      const x = (d.x - v[0]) * k + packSize / 2;
+      const y = (d.y - v[1]) * k + packHeight / 2 + topMargin;
+      const offset = d.children ? d.r * k + 8 : 0;
+      return `translate(${x}, ${y - offset})`;
+    })
       .each(function (d: any) {
         const el = d3.select(this as SVGGElement);
         if (d.parent === focus && shouldShowLabel(d, k)) {
@@ -331,6 +317,8 @@ export function createZoomableCirclePacking(
 
     const isFast = event && event.altKey;
 
+    options?.onAnimationStart?.();
+
     svg.transition()
       .duration(isFast ? 7500 : 750)
       .tween('zoom', () => {
@@ -340,6 +328,10 @@ export function createZoomableCirclePacking(
       .on('end', () => {
         selectedDataNode = null;
         updateSelection();
+        options?.onAnimationEnd?.();
+      })
+      .on('interrupt', () => {
+        options?.onAnimationEnd?.();
       });
   }
 
@@ -378,6 +370,8 @@ export function createZoomableCirclePacking(
       updateSelection();
     }
 
+    options?.onAnimationStart?.();
+
     svg.transition()
       .duration(750)
       .tween('zoom', () => {
@@ -398,6 +392,11 @@ export function createZoomableCirclePacking(
               .style('fill-opacity', 0.92);
           } else el.style('display', 'none').style('fill-opacity', 0);
         });
+
+        options?.onAnimationEnd?.();
+      })
+      .on('interrupt', () => {
+        options?.onAnimationEnd?.();
       });
   }
 
@@ -455,10 +454,9 @@ export function createZoomableCirclePacking(
   function shouldShowLabel(d: any, k: number): boolean {
     const radius = d.r * k;
     if (radius < 16) return false;
-    const lines = splitText(d.data.label || '');
-    const maxLine = lines.reduce((acc, l) => Math.max(acc, l.length), 0);
-    const approxTextWidth = maxLine * 6;
-    return approxTextWidth <= radius * 2.1;
+    const label = d.data.label || '';
+    const approxTextWidth = label.length * 6;
+    return approxTextWidth <= radius * 2.2;
   }
 
   return {

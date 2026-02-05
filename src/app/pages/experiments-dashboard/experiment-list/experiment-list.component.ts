@@ -33,8 +33,7 @@ export class ExperimentsListComponent {
   readonly onlyMine = signal(true);
 
   // pagination
-  readonly pageSize = 5;
-  readonly currentPage = signal(1);
+  readonly pageSize = 10;
 
   // share toast
   readonly copyToastVisible = signal<boolean>(false);
@@ -52,76 +51,9 @@ export class ExperimentsListComponent {
     shared: 'any',
   });
 
-  readonly filteredExperiments = computed(() => {
-    const f = this.filters();
-    const q = (f.query || '').toLowerCase().trim();
-    const list = this.experimentsService.experiments();
-
-    let filtered = list;
-
-    if (this.onlyMine() && this.currentUserEmail) {
-      filtered = filtered.filter(exp => exp.authorEmail === this.currentUserEmail);
-    }
-
-    // date preset
-    if (f.datePreset !== 'any') {
-      const now = new Date();
-      const from = new Date(now);
-
-      if (f.datePreset === 'today') from.setHours(0, 0, 0, 0);
-      if (f.datePreset === '7d') from.setDate(now.getDate() - 7);
-      if (f.datePreset === '30d') from.setDate(now.getDate() - 30);
-
-      filtered = filtered.filter(exp => {
-        const d = exp.dateCreated ? new Date(exp.dateCreated) : null;
-        return d ? d >= from && d <= now : false;
-      });
-    }
-
-    // algorithm filter
-    if (f.algorithm) {
-      const a = f.algorithm.toLowerCase();
-      filtered = filtered.filter(exp => (exp.algorithmName ?? '').toLowerCase().includes(a));
-    }
-
-    // author filter
-    if (f.author) {
-      const a = f.author.toLowerCase();
-      filtered = filtered.filter(exp => (exp.authorEmail ?? '').toLowerCase().includes(a));
-    }
-
-    // status filter (optional now, but supported)
-    if (f.status !== 'any') {
-      filtered = filtered.filter(exp => exp.status === f.status);
-    }
-
-    // shared filter (optional now, but supported)
-    if (f.shared !== 'any') {
-      const wantShared = f.shared === 'shared';
-      filtered = filtered.filter(exp => !!exp.isShared === wantShared);
-    }
-
-    // free text query
-    if (q) {
-      filtered = filtered.filter(exp => {
-        const haystack = [
-          exp.name,
-          exp.description,
-          exp.authorEmail,
-          (exp as any).authorName,
-          exp.algorithmName,
-        ].filter(Boolean).join(' ').toLowerCase();
-
-        return haystack.includes(q);
-      });
-    }
-
-    return filtered;
-  });
-
   patchFilters(patch: Partial<ExperimentFilters>) {
     this.filters.update(f => ({ ...f, ...patch }));
-    this.currentPage.set(1);
+    this.experimentsService.getUserExperiments(0, this.pageSize, this.onlyMine());
   }
 
   // compare helper
@@ -131,7 +63,7 @@ export class ExperimentsListComponent {
 
   toggleOnlyMine() {
     this.onlyMine.update(v => !v);
-    this.currentPage.set(1);
+    this.experimentsService.getUserExperiments(0, this.pageSize, this.onlyMine());
   }
 
   // ---- share logic (unchanged) ----
@@ -194,25 +126,15 @@ export class ExperimentsListComponent {
   }
 
   // counts
-  readonly totalExperiments = computed(() => this.experimentsService.experiments().length);
-  readonly visibleExperiments = computed(() => this.filteredExperiments().length);
+  readonly totalExperiments = computed(() => this.experimentsService.totalExperiments());
+  readonly visibleExperiments = computed(() => this.experimentsService.experiments().length);
 
   // pages
-  readonly totalPages = computed(() => {
-    const total = this.filteredExperiments().length;
-    if (!total) return 1;
-    return Math.ceil(total / this.pageSize);
-  });
+  readonly totalPages = computed(() => this.experimentsService.totalPages());
+  readonly currentPage = computed(() => this.experimentsService.currentPage() + 1);
 
   readonly pagedExperiments = computed<Experiment[]>(() => {
-    const list = this.filteredExperiments();
-    const page = this.currentPage();
-    const size = this.pageSize;
-
-    const start = (page - 1) * size;
-    const end = start + size;
-
-    return list.slice(start, end);
+    return this.experimentsService.experiments();
   });
 
   // pagination helpers
@@ -220,15 +142,15 @@ export class ExperimentsListComponent {
     const max = this.totalPages();
     if (page < 1) page = 1;
     if (page > max) page = max;
-    this.currentPage.set(page);
+    this.experimentsService.getUserExperiments(page - 1, this.pageSize, this.onlyMine());
   }
 
   nextPage() {
-    this.goToPage(this.currentPage() + 1);
+    this.goToPage(this.experimentsService.currentPage() + 2);
   }
 
   prevPage() {
-    this.goToPage(this.currentPage() - 1);
+    this.goToPage(this.experimentsService.currentPage());
   }
 
   // selection / delete (unchanged)

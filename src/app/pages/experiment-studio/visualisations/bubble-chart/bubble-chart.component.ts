@@ -1,4 +1,4 @@
-import { Input, OnChanges, OnInit, SimpleChanges, AfterViewInit, ViewChild, OnDestroy } from '@angular/core';
+import { Input, OnChanges, OnInit, SimpleChanges, AfterViewInit, ViewChild, OnDestroy, NgZone } from '@angular/core';
 import { Component, EventEmitter, Output, ElementRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { createZoomableCirclePacking } from './zoomable-circle-packing';
@@ -43,6 +43,7 @@ export class BubbleChartComponent implements OnInit, OnChanges, AfterViewInit, O
   private resizeObserver?: ResizeObserver;
   private resizeRaf = 0;
   private lastSize = { width: 0, height: 0 };
+  private isAnimating = false;
 
 
   error: string | null = null; // Holds the current error message
@@ -127,7 +128,10 @@ export class BubbleChartComponent implements OnInit, OnChanges, AfterViewInit, O
     }
   }
 
-  constructor(private elementRef: ElementRef) { }
+  constructor(
+    private elementRef: ElementRef,
+    private ngZone: NgZone
+  ) { }
 
   ngOnInit(): void {
     this.loadSettings();
@@ -136,19 +140,39 @@ export class BubbleChartComponent implements OnInit, OnChanges, AfterViewInit, O
 
   ngAfterViewInit(): void {
     this.viewReady = true;
-    this.renderChart();
     const canvas = this.chartCanvas?.nativeElement;
+
+    // Initialize lastSize BEFORE starting the observer to prevent immediate double-render
+    if (canvas) {
+      const rect = canvas.getBoundingClientRect();
+      this.lastSize = { width: Math.floor(rect.width), height: Math.floor(rect.height) };
+    }
+
+    this.renderChart();
+
     if (canvas && typeof ResizeObserver !== 'undefined') {
-      this.resizeObserver = new ResizeObserver(entries => {
-        const entry = entries[0];
-        if (!entry) return;
-        const { width, height } = entry.contentRect;
-        if (Math.floor(width) === this.lastSize.width && Math.floor(height) === this.lastSize.height) return;
-        this.lastSize = { width: Math.floor(width), height: Math.floor(height) };
-        if (this.resizeRaf) cancelAnimationFrame(this.resizeRaf);
-        this.resizeRaf = requestAnimationFrame(() => this.renderChart());
+      this.ngZone.runOutsideAngular(() => {
+        this.resizeObserver = new ResizeObserver(entries => {
+          const entry = entries[0];
+          if (!entry) return;
+
+          // contentRect is more accurate for size changes than getBoundingClientRect in many cases
+          const { width, height } = entry.contentRect;
+          const roundedW = Math.floor(width);
+          const roundedH = Math.floor(height);
+
+          if (roundedW === this.lastSize.width && roundedH === this.lastSize.height) return;
+          if (this.isAnimating) return;
+
+          this.lastSize = { width: roundedW, height: roundedH };
+
+          if (this.resizeRaf) cancelAnimationFrame(this.resizeRaf);
+          this.resizeRaf = requestAnimationFrame(() => {
+            this.ngZone.run(() => this.renderChart());
+          });
+        });
+        this.resizeObserver.observe(canvas);
       });
-      this.resizeObserver.observe(canvas);
     }
   }
 
@@ -215,6 +239,8 @@ export class BubbleChartComponent implements OnInit, OnChanges, AfterViewInit, O
         selectedCovariates: this.selectedCovariates,
         selectedFilters: this.selectedFilters,
         colors: this.colors,
+        onAnimationStart: () => this.isAnimating = true,
+        onAnimationEnd: () => this.isAnimating = false,
       }
     );
     this.zoomToNodeFn = zoomToNode;

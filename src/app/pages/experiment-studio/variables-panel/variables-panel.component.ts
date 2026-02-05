@@ -235,12 +235,6 @@ export class VariablesPanelComponent implements OnDestroy {
         : null;
       this.selectedDataModel.set(next ?? models[0] ?? null);
       this.experimentStudioService.selectedDataModel.set(this.selectedDataModel() ?? null);
-      if (this.selectedDataModel()) {
-        this.loadVisualizationData();
-        if (this.d3Data) {
-          this.onSelectedNodeChange(this.d3Data);
-        }
-      }
     }
   }
 
@@ -320,9 +314,6 @@ export class VariablesPanelComponent implements OnDestroy {
 
     // reload new model data
     this.loadVisualizationData();
-    if (this.d3Data) {
-      this.onSelectedNodeChange(this.d3Data);
-    }
   }
 
   // search bar functions

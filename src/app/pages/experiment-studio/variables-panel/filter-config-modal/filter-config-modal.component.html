@@ -3,45 +3,50 @@
 
   <div class="filter-modal">
     <div class="filter-modal-header">
-      <h3>Filters & formula</h3>
-      <button class="close-btn" (click)="close()">✖</button>
+      <div class="header-left">
+        <i class="fas fa-filter header-icon"></i>
+        <h3>Filters & Formula</h3>
+      </div>
+      <button class="close-top-btn" (click)="close()" aria-label="Close modal">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
 
     <div class="filter-helper">
-      <p>
-        Define filter rules to include only the records you want before running
-        an experiment
-      </p>
+      <div class="helper-content">
+        <i class="fas fa-info-circle info-icon"></i>
+        <p>Define rules to filter your dataset before running the experiment. Combined rules form the final Cohort
+          Selection.</p>
+      </div>
     </div>
 
     <div class="filter-modal-body">
       @if(config().fields && Object.keys(config().fields).length) {
-      <ngx-query-builder
-        [config]="config()"
-        [ngModel]="filterLogicModel()"
-        (ngModelChange)="filterLogicModel.set($event)"
-        [attr.key]="configKey()"
-      ></ngx-query-builder>
+      <ngx-query-builder [config]="config()" [ngModel]="filterLogicModel()"
+        (ngModelChange)="filterLogicModel.set($event)" [attr.key]="configKey()">
+        <!-- Adding some custom templates for buttons if needed, but styling usually suffices -->
+      </ngx-query-builder>
       }
     </div>
 
-    <!-- Filter Info -->
     <div class="filter-modal-footer">
-      <div class="filter-summary">
+      <div class="footer-left">
         @if (activeRulesCount() > 0) {
-        <span class="summary-pill">
-          {{ activeRulesCount() }} active rule{{
-            activeRulesCount() === 1 ? "" : "s"
-          }}
-        </span>
+        <div class="status-badge">
+          <span class="pulse-dot"></span>
+          {{ activeRulesCount() }} Active Rule{{ activeRulesCount() === 1 ? "" : "s" }}
+        </div>
         } @else {
-        <span class="summary-pill muted">No active rules</span>
+        <span class="status-text muted">No filters applied</span>
         }
       </div>
 
       <div class="filter-actions">
-        <button class="save-btn" (click)="saveFilters()">Save</button>
-        <button class="cancel-btn" (click)="close()">Cancel</button>
+        <button class="btn-secondary" (click)="close()">Cancel</button>
+        <button class="btn-primary-gradient" (click)="saveFilters()">
+          <i class="fas fa-check icon-left"></i>
+          Apply Filters
+        </button>
       </div>
     </div>
   </div>

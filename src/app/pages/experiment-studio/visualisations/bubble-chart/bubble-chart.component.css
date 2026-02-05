@@ -35,16 +35,16 @@ circle.selected {
 
 /* Chart container styling */
 #chart-container {
-  padding: 5px;
-  background-color: var(--bg-color, #f8fafc);
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  overflow-x: auto;
-  overflow-y: auto;
-  height: auto;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: visible;
+  height: 100%;
   width: 100%;
-  display: inline-block;
-  vertical-align: top;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 .error-message {

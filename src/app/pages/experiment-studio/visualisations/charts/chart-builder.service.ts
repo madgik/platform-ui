@@ -11,7 +11,7 @@ function getByPath(obj: any, path: string): any {
 
 @Injectable({ providedIn: 'root' })
 export class ChartBuilderService {
-  constructor(private experimentService: ExperimentStudioService) {}
+  constructor(private experimentService: ExperimentStudioService) { }
 
   getChartsForAlgorithm(algorithm: string, result: any): EChartsOption[] {
     const config = AlgorithmChartRegistry[algorithm] || AlgorithmChartRegistry['default'];
@@ -41,23 +41,30 @@ export class ChartBuilderService {
       return match?.name || match?.label || raw;
     };
 
-    if (input?.anova_table) {
-      return {
-        ...input,
-        anova_table: {
-          ...input.anova_table,
-          x_label: replaceLabel(input.anova_table.x_label),
-          y_label: replaceLabel(input.anova_table.y_label),
-        }
-      };
+    // If it's a string, try to replace it if it's a variable code
+    if (typeof input === 'string') {
+      return replaceLabel(input);
     }
 
+    // If it's an object (but not null/array), process its entries
     if (typeof input === 'object' && !Array.isArray(input)) {
-      return Object.fromEntries(
-        Object.entries(input).map(([k, v]) => [k, this.enrichLabels(v)])
-      );
+      // Special case: if we are in anova_table, we specifically want to replace x_label and y_label
+      // but we should also check other fields. The recursive approach below handles this 
+      // by checking if keys or values match codes.
+
+      const newObj: any = {};
+      for (const [k, v] of Object.entries(input)) {
+        // If the key is 'variable' or ends with '_label', its value is likely a code
+        if (k === 'variable' || k.endsWith('_label')) {
+          newObj[k] = typeof v === 'string' ? replaceLabel(v) : this.enrichLabels(v);
+        } else {
+          newObj[k] = this.enrichLabels(v);
+        }
+      }
+      return newObj;
     }
 
+    // If it's an array, process its elements
     if (Array.isArray(input)) {
       return input.map(v => this.enrichLabels(v));
     }

@@ -7,14 +7,20 @@ export function buildBoxPlotChart(result: any): EChartsOption[] {
   if (!Array.isArray(variable_based) || variable_based.length === 0) return [];
 
   const firstVariable = variable_based[0]?.variable ?? 'Variable';
-  const filtered = variable_based.filter(v => v.variable === firstVariable);
+  // Filter for the first variable and exclude 'all datasets' as per request
+  const filtered = variable_based.filter(v =>
+    v.variable === firstVariable &&
+    v.dataset !== 'all datasets'
+  );
 
   // datasets (x-axis)
-  const datasets = filtered.map(v => v.dataset ?? 'all datasets');
+  const datasets = filtered.map(v => v.dataset || 'Dataset');
 
   // Extract Q1, Q3, median, min, max, mean
   const boxData = filtered.map(v => {
     const d = v.data ?? {};
+    // Only include in boxplot if we have essential quartiles
+    if (d.q1 == null || d.q3 == null) return [];
     return [d.min, d.q1, d.q2, d.q3, d.max];
   });
 
@@ -40,19 +46,25 @@ export function buildBoxPlotChart(result: any): EChartsOption[] {
       borderColor: isDark ? 'rgba(255,255,255,0.1)' : '#ccc',
       textStyle: { color: textColor },
       formatter: (p: any) => {
-        if (Array.isArray(p.value)) {
-          const [min, q1, median, q3, max] = p.value;
+        const fmt = (v: any) => (v === null || v === undefined) ? 'N/A' : (typeof v === 'number' ? v.toFixed(2) : v);
+
+        if (p.seriesType === 'boxplot') {
+          // ECharts might prepend category index to p.value on category axes
+          const vals = p.value.length === 6 ? p.value.slice(1) : p.value;
+          const [min, q1, median, q3, max] = vals;
           return `
             <b>${datasets[p.dataIndex]}</b><br/>
-            Min: ${min}<br/>
-            Q1: ${q1}<br/>
-            Median: ${median}<br/>
-            Q3: ${q3}<br/>
-            Max: ${max}
+            Min: ${fmt(min)}<br/>
+            Q1: ${fmt(q1)}<br/>
+            Median: ${fmt(median)}<br/>
+            Q3: ${fmt(q3)}<br/>
+            Max: ${fmt(max)}
           `;
-        } else {
-          return `${datasets[p.value[0]]}<br/>Mean: ${p.value[1]}`;
+        } else if (p.seriesType === 'scatter') {
+          // p.value for scatter is [index, mean]
+          return `${datasets[p.value[0]]}<br/>Mean: ${fmt(p.value[1])}`;
         }
+        return '';
       },
     },
     grid: { left: '10%', right: '10%', bottom: '10%', top: '15%' },
@@ -81,7 +93,7 @@ export function buildBoxPlotChart(result: any): EChartsOption[] {
       {
         name: 'Boxplot',
         type: 'boxplot',
-        data: boxData,
+        data: boxData as any[],
         itemStyle: {
           color: isDark ? 'rgba(127, 156, 232, 0.2)' : 'rgba(43, 51, 233, 0.3)',
           borderColor: isDark ? '#7f9ce8' : '#2b33e9',

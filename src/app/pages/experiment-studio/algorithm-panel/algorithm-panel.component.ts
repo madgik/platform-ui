@@ -158,7 +158,7 @@ export class AlgorithmPanelComponent {
         ? stored
         : this.experimentStudioService.isCrossValidationAlgorithm(algorithm.name);
       this.crossValidationEnabled.set(defaultValue);
-    });
+    }, { allowSignalWrites: true });
 
     effect(() => {
       const algorithm = this.selectedAlgorithm();
@@ -196,7 +196,7 @@ export class AlgorithmPanelComponent {
 
       const hasAny = Object.values(next).some(v => v && v !== 'none');
       this.transformationEnabled.set(hasAny);
-    });
+    }, { allowSignalWrites: true });
 
     effect(() => {
       // Establish dependencies
@@ -208,7 +208,8 @@ export class AlgorithmPanelComponent {
       this.result.set(null);
       this.saveAsMode.set(false);
       this.saveAsName.set('');
-    });
+    }, { allowSignalWrites: true });
+
     effect(() => {
       const groups = this.experimentStudioService.availableGroupedAlgorithms();
       if (!groups) return;
