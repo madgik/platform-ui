@@ -22,6 +22,18 @@ export class ChartBuilderService {
     // enrich with display names
     const enrichedInput = this.enrichLabels(input);
 
+    // PCA specific enrichment: inject actual variable names for the heatmap
+    if (algorithm === 'pca' || algorithm === 'pca_with_transformation') {
+      const vars = this.experimentService.selectedVariables();
+      const covs = this.experimentService.selectedCovariates();
+      const allSelected = [...vars, ...covs];
+
+      if (allSelected.length > 0) {
+        // We use a unique property name to avoid collisions
+        (enrichedInput as any).variable_names = allSelected.map(v => v.label || v.name || v.code);
+      }
+    }
+
     return config.build(enrichedInput);
   }
 

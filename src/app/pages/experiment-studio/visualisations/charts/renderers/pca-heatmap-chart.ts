@@ -16,7 +16,19 @@ export function buildPCAHeatmapChart(result: any): EChartsOption[] {
     return [];
   }
 
-  const variableNames = Array.from({ length: nVariables }, (_, i) => `Var${i + 1}`);
+  let variableNames = result?.variable_names;
+  if (!Array.isArray(variableNames) || variableNames.length === 0) {
+    variableNames = Array.from({ length: nVariables }, (_, i) => `Var${i + 1}`);
+  } else if (variableNames.length !== nVariables) {
+    console.warn(`[PCAHeatmap] Label count mismatch: expected ${nVariables}, got ${variableNames.length}`);
+    // If we have more labels than variables, truncate. If less, pad.
+    if (variableNames.length > nVariables) {
+      variableNames = variableNames.slice(0, nVariables);
+    } else {
+      const padding = Array.from({ length: nVariables - variableNames.length }, (_, i) => `Var${variableNames.length + i + 1}`);
+      variableNames = [...variableNames, ...padding];
+    }
+  }
   const componentNames = Array.from({ length: nComponents }, (_, i) => `PC${i + 1}`);
 
   const heatmapData: [number, number, number][] = [];
