@@ -36,8 +36,10 @@
 }
 
 .visualization-header-right {
-  flex: 0 1 350px;
-  max-width: 350px;
+  flex: 0 1 400px;
+  max-width: 400px;
+  margin-right: 20px;
+  /* Pull slightly left to prevent overflow */
 }
 
 
