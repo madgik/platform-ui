@@ -12,13 +12,13 @@
     </div>
 
     <div class="filter-right">
-      @if (onlyMine()) {
       <span class="count-label">
         {{ visibleExperiments() }} / {{ totalExperiments() }} shown
       </span>
-      }
 
-      <button type="button" class="toggle-switch" [class.on]="onlyMine()" (click)="toggleOnlyMine()">
+      <span class="filter-label" style="margin-right: 8px;">all</span>
+
+      <button type="button" class="toggle-switch" [class.on]="!onlyMine()" (click)="toggleOnlyMine()">
         <span class="toggle-thumb"></span>
       </button>
     </div>
