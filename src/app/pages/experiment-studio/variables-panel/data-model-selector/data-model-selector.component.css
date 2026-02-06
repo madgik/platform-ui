@@ -17,7 +17,7 @@
 
 /* Styled select, more in line with dashboard pills */
 .data-model-select {
-  min-width: 170px;
+  width: 170px;
   padding: 6px 30px 6px 10px;
   font-size: 0.82rem;
   font-weight: 600;

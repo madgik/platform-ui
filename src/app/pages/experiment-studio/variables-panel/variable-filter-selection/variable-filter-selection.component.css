@@ -79,12 +79,12 @@
 
 .panel-title--covariate {
   background: var(--covariate-color, #ccb692);
-  color: #1e293b;
+  color: #ffffff;
 }
 
 .panel-title--filter {
   background: var(--filter-color, #94a3b8);
-  color: #1e293b;
+  color: #ffffff;
 }
 
 /* ===== BUTTONS & COUNTERS ===== */
@@ -115,12 +115,12 @@
 
 .covariate-btn {
   background: var(--covariate-color, #ccb692);
-  color: #1e293b;
+  color: #ffffff;
 }
 
 .filter-btn {
   background: var(--filter-color, #94a3b8);
-  color: #1e293b;
+  color: #ffffff;
 }
 
 .variable-btn:hover,
@@ -228,7 +228,7 @@
 .panel {
   width: 100%;
   min-height: 8.5rem;
-  max-height: 8.5rem;
+  max-height: 20rem;
   overflow-y: auto;
   position: relative;
 }
