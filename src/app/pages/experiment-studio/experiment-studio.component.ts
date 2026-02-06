@@ -10,6 +10,7 @@ import { SpinnerComponent } from '../shared/spinner/spinner.component';
 import { ErrorService } from '../../services/error.service';
 import { StatisticAnalysisPanelComponent } from './statistic-analysis-panel/statistic-analysis-panel.component';
 import { Subject, takeUntil } from 'rxjs';
+import { FilterConfigModalComponent } from './variables-panel/filter-config-modal/filter-config-modal.component';
 
 @Component({
   selector: 'app-experiment-studio',
@@ -20,7 +21,8 @@ import { Subject, takeUntil } from 'rxjs';
     AlgorithmPanelComponent,
     SpinnerComponent,
     StatisticAnalysisPanelComponent,
-    RouterLink
+    RouterLink,
+    FilterConfigModalComponent
   ],
   templateUrl: './experiment-studio.component.html',
   styleUrls: ['./experiment-studio.component.css'],

@@ -23,7 +23,6 @@ export class VariableFilterSelectionComponent implements OnInit {
   variables: any[] = [];
   covariates: any[] = [];
   filters: any[] = [];
-  isFilterConfigOpen = false;
 
   constructor(private expStudioService: ExperimentStudioService) {
     effect(() => {
@@ -181,13 +180,7 @@ export class VariableFilterSelectionComponent implements OnInit {
   }
 
   openFilterConfig(): void {
-    const saved = this.expStudioService.filterLogic();
-    this.filterLogic = saved ? structuredClone(saved) : { condition: 'AND', rules: [] };
-    this.isFilterConfigOpen = true;
-  }
-
-  closeFilterConfig(): void {
-    this.isFilterConfigOpen = false;
+    this.expStudioService.toggleFilterConfigModal(true);
   }
 
 
@@ -206,8 +199,7 @@ export class VariableFilterSelectionComponent implements OnInit {
   }
 
   onModalClose(): void {
-    // Close the modal when the close event is triggered
-    this.isFilterConfigOpen = false;
+    this.expStudioService.toggleFilterConfigModal(false);
   }
 
   // Helper service for VariabeHandlingService

@@ -45,6 +45,8 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  max-height: 90vh;
+  /* Ensure modal never exceeds viewport */
   animation: modalSlide 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -147,8 +149,9 @@
   padding: 24px;
   background: #ffffff;
   overflow-y: auto;
-  max-height: calc(88vh - 70px - 75px - 45px);
-  /* adjusted for header/footer/helper */
+  flex: 1;
+  /* Take up remaining space */
+  min-height: 200px;
 }
 
 /* ===== FOOTER ===== */
@@ -384,4 +387,27 @@
 :host ::ng-deep .query-builder .btn-danger:hover {
   background: #fecaca !important;
   transform: scale(1.05) !important;
+}
+
+/* Numeric Range Inputs */
+.numeric-input-container {
+  display: flex;
+  align-items: center;
+}
+
+.between-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.between-inputs input {
+  width: 80px !important;
+}
+
+.and-separator {
+  font-size: 0.85rem;
+  color: #64748b;
+  font-weight: 500;
+  text-transform: lowercase;
 }

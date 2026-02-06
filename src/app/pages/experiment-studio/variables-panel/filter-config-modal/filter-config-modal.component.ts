@@ -74,7 +74,19 @@ export class FilterConfigModalComponent implements OnInit, OnChanges {
       this.config.set({
         fields: builtConfig,
         allowEmptyRulesets: true,
+        coerceValueForOperator: (operator, value, rule) => {
+          if (operator === 'between' || operator === 'not_between') {
+            if (!Array.isArray(value)) {
+              return [value || 0, value || 0];
+            }
+            if (value.length !== 2) {
+              return [value[0] || 0, value[1] || 0];
+            }
+          }
+          return value;
+        }
       });
+
 
     }, { allowSignalWrites: true });
   }

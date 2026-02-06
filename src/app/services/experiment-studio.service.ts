@@ -88,6 +88,7 @@ export class ExperimentStudioService {
 
   private readonly _isRunning = signal(false);
   readonly isRunning = this._isRunning.asReadonly();
+  readonly isFilterConfigOpen = signal<boolean>(false);
 
   // teardown for transient requests
   private destroy$ = new Subject<void>();
@@ -1121,6 +1122,10 @@ export class ExperimentStudioService {
   clearSelectedAlgorithm(): void {
     this.selectedAlgorithm.set(null);
     this.sessionStorage.removeItem('selectedAlgorithm');
+  }
+
+  toggleFilterConfigModal(open: boolean): void {
+    this.isFilterConfigOpen.set(open);
   }
 
   ngOnDestroy(): void {

@@ -78,4 +78,9 @@
       </section>
     </div>
   </div>
+
+  @if (expStudioService.isFilterConfigOpen()) {
+  <app-filter-config-modal (closeModal)="expStudioService.toggleFilterConfigModal(false)"
+    [filterLogic]="expStudioService.filterLogic()"></app-filter-config-modal>
+  }
 </div>

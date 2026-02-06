@@ -24,8 +24,23 @@
       @if(config().fields && Object.keys(config().fields).length) {
       <ngx-query-builder [config]="config()" [ngModel]="filterLogicModel()"
         (ngModelChange)="filterLogicModel.set($event)" [attr.key]="configKey()">
-        <!-- Adding some custom templates for buttons if needed, but styling usually suffices -->
+        <ng-container *queryInput="let rule; type: 'number'">
+          <div class="numeric-input-container">
+            @if (rule.operator === 'between' || rule.operator === 'not_between') {
+            <div class="between-inputs">
+              <input type="number" [(ngModel)]="rule.value[0]"
+                (ngModelChange)="filterLogicModel.set(filterLogicModel())">
+              <span class="and-separator">and</span>
+              <input type="number" [(ngModel)]="rule.value[1]"
+                (ngModelChange)="filterLogicModel.set(filterLogicModel())">
+            </div>
+            } @else {
+            <input type="number" [(ngModel)]="rule.value" (ngModelChange)="filterLogicModel.set(filterLogicModel())">
+            }
+          </div>
+        </ng-container>
       </ngx-query-builder>
+
       }
     </div>
 
