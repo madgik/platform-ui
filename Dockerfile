@@ -4,12 +4,13 @@ WORKDIR /app
 
 # Install dependencies with cache mount for npm cache
 COPY package.json package-lock.json ./
-RUN npm config set fetch-retries 5 \
-    && npm config set fetch-retry-mintimeout 20000 \
-    && npm config set fetch-retry-maxtimeout 120000
+RUN npm config set fetch-retries 10 \
+    && npm config set fetch-retry-mintimeout 30000 \
+    && npm config set fetch-retry-maxtimeout 300000
 
 RUN --mount=type=cache,target=/root/.npm \
-    npm ci --legacy-peer-deps --no-audit --no-fund
+    npm ci --legacy-peer-deps --no-audit --no-fund --registry=https://registry.npmjs.org/
+
 
 # Copy source code
 COPY . .
@@ -24,9 +25,12 @@ RUN --mount=type=cache,target=/app/.angular/cache \
 FROM nginx:alpine
 RUN apk add --no-cache gettext
 ENV PORTAL_BACKEND_SERVER=portalbackend:8080 \
-    PORTAL_BACKEND_CONTEXT=services
+    PORTAL_BACKEND_CONTEXT=services \
+    FRONTEND_VERSION=10.0.1 \
+    BACKEND_VERSION=8.2.0 \
+    EXAFLOW_VERSION=0.28.0
 COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 RUN rm -rf /usr/share/nginx/html/*
 COPY --from=build /app/dist/fl-platform/browser /usr/share/nginx/html
 EXPOSE 80
-CMD ["/bin/sh", "-c", "envsubst '$$PORTAL_BACKEND_SERVER $$PORTAL_BACKEND_CONTEXT' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"]
+CMD ["/bin/sh", "-c", "envsubst '$$PORTAL_BACKEND_SERVER $$PORTAL_BACKEND_CONTEXT' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && envsubst '$$FRONTEND_VERSION $$BACKEND_VERSION $$EXAFLOW_VERSION' < /usr/share/nginx/html/assets/env.template.js > /usr/share/nginx/html/assets/env.js && exec nginx -g 'daemon off;'"]
