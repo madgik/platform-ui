@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, HostListener, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, HostListener, inject, OnDestroy, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { VariablesPanelComponent } from './variables-panel/variables-panel.component';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -24,16 +24,18 @@ import { FilterConfigModalComponent } from './variables-panel/filter-config-moda
     FilterConfigModalComponent
   ],
   templateUrl: './experiment-studio.component.html',
-  styleUrls: ['./experiment-studio.component.css']
+  styleUrls: ['./experiment-studio.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '(window:resize)': 'onResize()'
+  }
 })
 export class ExperimentStudioComponent implements OnInit, OnDestroy, AfterViewInit {
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private dashboardService: ExperimentsDashboardService,
-    public auth: AuthService,
-    private errorService: ErrorService
-  ) { }
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private dashboardService = inject(ExperimentsDashboardService);
+  public auth = inject(AuthService);
+  private errorService = inject(ErrorService);
 
   // Public service for telemetry/ribbon signals
   public expStudioService = inject(ExperimentStudioService);
@@ -51,16 +53,15 @@ export class ExperimentStudioComponent implements OnInit, OnDestroy, AfterViewIn
     return this.algorithmPanel?.isRunButtonDisabled() ?? true;
   }
   private destroy$ = new Subject<void>();
-  errorMessage = '';
-  activeSection = 'variables-top';
-  sidebarCollapsed = false;
+  errorMessage = signal('');
+  activeSection = signal('variables-top');
+  sidebarCollapsed = signal(false);
   private sectionObserver?: IntersectionObserver;
 
 
 
 
 
-  @HostListener('window:resize')
   onResize() {
     this.checkSidebarCollapse();
   }
@@ -69,13 +70,13 @@ export class ExperimentStudioComponent implements OnInit, OnDestroy, AfterViewIn
     const width = window.innerWidth;
     if (width >= 1440) {
       // Large Desktop: User can toggle, default to expanded
-      this.sidebarCollapsed = false;
+      this.sidebarCollapsed.set(false);
     } else if (width >= 1200) {
       // Medium Screens: Force Icon Rail
-      this.sidebarCollapsed = true;
+      this.sidebarCollapsed.set(true);
     } else {
       // Narrow screens: Fully hidden (handled via CSS), sidebar itself is expanded in drawer
-      this.sidebarCollapsed = false;
+      this.sidebarCollapsed.set(false);
     }
   }
 
@@ -87,7 +88,7 @@ export class ExperimentStudioComponent implements OnInit, OnDestroy, AfterViewIn
 
     this.errorService.error$
       .pipe(takeUntil(this.destroy$))
-      .subscribe((msg) => this.errorMessage = msg ?? '');
+      .subscribe((msg) => this.errorMessage.set(msg ?? ''));
 
     this.route.queryParamMap.subscribe((params) => {
       const experimentId = params.get('experimentId');
@@ -123,7 +124,7 @@ export class ExperimentStudioComponent implements OnInit, OnDestroy, AfterViewIn
   dismissError(): void {
     this.errorService.clearError();
     this.expStudioService.loadAndCategorizeModels().subscribe();
-    this.errorMessage = '';
+    this.errorMessage.set('');
   }
 
   private setupSectionObserver(): void {
@@ -148,7 +149,7 @@ export class ExperimentStudioComponent implements OnInit, OnDestroy, AfterViewIn
         .sort((a, b) => a.top - b.top);
 
       const firstBelowTop = inView.find((entry) => entry.top >= 0);
-      this.activeSection = (firstBelowTop ?? inView[0]).id;
+      this.activeSection.set((firstBelowTop ?? inView[0]).id);
     };
 
     // Retry setup for dynamic content

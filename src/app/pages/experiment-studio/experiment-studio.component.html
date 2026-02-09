@@ -1,9 +1,9 @@
 <div class="experiment-studio-page full-bleed" id="studio-top">
-  @if (errorMessage) {
+  @if (errorMessage()) {
   <div class="global-error-banner" role="alert" aria-live="assertive" aria-atomic="true">
     <div class="banner-content">
       <i class="fas fa-exclamation-triangle"></i>
-      <span>{{ errorMessage }}</span>
+      <span>{{ errorMessage() }}</span>
     </div>
     <button type="button" class="banner-close" (click)="dismissError()">
       &times;
@@ -14,11 +14,11 @@
 
 
   <div class="studio-inner studio-layout">
-    <nav class="studio-sidenav" [class.is-collapsed]="sidebarCollapsed" aria-label="Studio navigation">
+    <nav class="studio-sidenav" [class.is-collapsed]="sidebarCollapsed()" aria-label="Studio navigation">
       <div class="studio-rail-context">
         <div class="studio-rail-context-title">Experiment Studio</div>
         <a class="studio-rail-context-link" routerLink="/experiments-dashboard"
-          [attr.title]="sidebarCollapsed ? 'Back to dashboard' : null">
+          [attr.title]="sidebarCollapsed() ? 'Back to dashboard' : null">
           <i class="fas fa-arrow-left"></i>
           <span class="studio-rail-context-text">Back to dashboard</span>
         </a>
@@ -29,12 +29,12 @@
       <div class="studio-rail-scroll">
         <div class="studio-rail-section">
           <div class="studio-rail-section-title"
-            [class.is-active]="activeSection === 'variables-top' || activeSection === 'data-model-visualization'">
+            [class.is-active]="activeSection() === 'variables-top' || activeSection() === 'data-model-visualization'">
             Studio
           </div>
           <a routerLink="." [fragment]="'studio-top'" queryParamsHandling="preserve" class="studio-rail-item"
-            [class.is-active]="activeSection === 'variables-top'"
-            [attr.aria-current]="activeSection === 'variables-top' ? 'page' : null">
+            [class.is-active]="activeSection() === 'variables-top'"
+            [attr.aria-current]="activeSection() === 'variables-top' ? 'page' : null">
             <span class="studio-rail-icon"><i class="fas fa-database"></i></span>
             <span class="studio-rail-label">Datasets & Variables</span>
           </a>
@@ -42,18 +42,18 @@
 
         <div class="studio-rail-section">
           <div class="studio-rail-section-title"
-            [class.is-active]="activeSection === 'statistics-section' || activeSection === 'algorithm-section'">
+            [class.is-active]="activeSection() === 'statistics-section' || activeSection() === 'algorithm-section'">
             Analysis
           </div>
           <a routerLink="." [fragment]="'statistics-section'" queryParamsHandling="preserve" class="studio-rail-item"
-            [class.is-active]="activeSection === 'statistics-section'"
-            [attr.aria-current]="activeSection === 'statistics-section' ? 'page' : null">
+            [class.is-active]="activeSection() === 'statistics-section'"
+            [attr.aria-current]="activeSection() === 'statistics-section' ? 'page' : null">
             <span class="studio-rail-icon"><i class="fas fa-chart-line"></i></span>
             <span class="studio-rail-label">Statistics</span>
           </a>
           <a routerLink="." [fragment]="'algorithm-section'" queryParamsHandling="preserve" class="studio-rail-item"
-            [class.is-active]="activeSection === 'algorithm-section'"
-            [attr.aria-current]="activeSection === 'algorithm-section' ? 'page' : null">
+            [class.is-active]="activeSection() === 'algorithm-section'"
+            [attr.aria-current]="activeSection() === 'algorithm-section' ? 'page' : null">
             <span class="studio-rail-icon"><i class="fas fa-cogs"></i></span>
             <span class="studio-rail-label">Algorithm</span>
           </a>
@@ -62,7 +62,7 @@
 
     </nav>
 
-    <div class="studio-main" [class.sidebar-collapsed]="sidebarCollapsed">
+    <div class="studio-main" [class.sidebar-collapsed]="sidebarCollapsed()">
       <!-- TOP: Variables -->
       <section class="studio-section studio-section--variables">
         <app-variables-panel></app-variables-panel>
