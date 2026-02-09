@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { CanActivate, Router, RouterStateSnapshot, ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs';
 import { map, take } from 'rxjs/operators';
@@ -7,11 +7,11 @@ import { TermsService } from '../services/terms.service';
 
 @Injectable({ providedIn: 'root' })
 export class TermsGuard implements CanActivate {
-  constructor(
-    private termsService: TermsService,
-    private authService: AuthService,
-    private router: Router
-  ) {}
+  private termsService = inject(TermsService);
+  private authService = inject(AuthService);
+  private router = inject(Router);
+
+  constructor() { }
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> {
     return this.authService.onAuthResolved().pipe(

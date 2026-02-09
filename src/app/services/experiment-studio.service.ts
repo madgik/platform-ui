@@ -736,7 +736,7 @@ export class ExperimentStudioService {
 
   private buildDescriptiveRequestBody(variableCodes: string[]): any {
     const filters = this.filterLogic();
-    const hasFilters = (filters?.rules?.length ?? 0) > 0;
+    const hasFilters = !!(filters && Array.isArray(filters.rules) && filters.rules.length > 0);
 
     return {
       name: `experiment_descriptive_stats_${variableCodes.join('_')}`,

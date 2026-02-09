@@ -17,7 +17,6 @@ import { FilterConfigModalComponent } from './variables-panel/filter-config-moda
     CommonModule,
     VariablesPanelComponent,
     AlgorithmPanelComponent,
-    AlgorithmPanelComponent,
     StatisticAnalysisPanelComponent,
     RouterLink,
     FilterConfigModalComponent

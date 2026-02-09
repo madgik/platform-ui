@@ -84,10 +84,6 @@ export class AlgorithmRulesService {
 
         const hasRole = (role: string) => Object.prototype.hasOwnProperty.call(algo.inputdata, role);
 
-        if (!hasRole(AlgorithmRoles.Y) && selections[AlgorithmRoles.Y as SelectionRole].length > 0) return false;
-        if (!hasRole(AlgorithmRoles.X) && selections[AlgorithmRoles.X as SelectionRole].length > 0) return false;
-
-        // Filters are treated as optional; if the algo doesn't declare them, keep the algo available.
         const filterReq = hasRole(AlgorithmRoles.FILTERS)
             ? (algo.inputdata as any).filters
             : hasRole(AlgorithmRoles.FILTER)
@@ -102,10 +98,12 @@ export class AlgorithmRulesService {
             const multiple = this.normalizeBool((req as any)?.multiple);
 
             if (notBlank && sel.length === 0) {
+                console.warn(`✘ ${name}: role ${role} is required (notblank) but selection is empty.`);
                 return false;
             }
 
             if (multiple === false && sel.length > 1) {
+                console.warn(`✘ ${name}: role ${role} only allows single selection but has ${sel.length}.`);
                 return false;
             }
 
@@ -113,15 +111,15 @@ export class AlgorithmRulesService {
 
             // type check
             if ((req as any).types?.length) {
-                const reqTypes = (req as any).types as string[];
+                const reqTypes = ((req as any).types as string[]).map(t => this.normalizeType(t));
                 const selTypes = sel
                     .map(v => this.normalizeType(v.type))
                     .filter((t): t is string => !!t);
 
-                const badType = selTypes.find(t => !reqTypes.includes(t));
-                if (badType) {
+                const badTypeIndex = selTypes.findIndex(t => !reqTypes.includes(t));
+                if (badTypeIndex !== -1) {
                     console.warn(
-                        `✘ ${name}: invalid type on role ${role}: ${badType} not in [${reqTypes.join(', ')}]`
+                        `✘ ${name}: invalid type on role ${role}: "${selTypes[badTypeIndex]}" (from variable "${sel[badTypeIndex].label}") not in [${reqTypes.join(', ')}]`
                     );
                     return false;
                 }
@@ -133,21 +131,13 @@ export class AlgorithmRulesService {
             const notBlank = this.normalizeBool(filterReq.notblank) === true;
             const multiple = this.normalizeBool(filterReq.multiple);
 
-            if (notBlank && sel.length === 0) return false;
-            if (multiple === false && sel.length > 1) return false;
-
-            if (filterReq.types?.length) {
-                const selTypes = sel
-                    .map(v => this.normalizeType(v.type))
-                    .filter((t): t is string => !!t);
-
-                const badType = selTypes.find(t => !filterReq.types.includes(t));
-                if (badType) {
-                    console.warn(
-                        `✘ ${name}: invalid type on role filters: ${badType} not in [${filterReq.types.join(', ')}]`
-                    );
-                    return false;
-                }
+            if (notBlank && sel.length === 0) {
+                console.warn(`✘ ${name}: filters are required but none selected.`);
+                return false;
+            }
+            if (multiple === false && sel.length > 1) {
+                console.warn(`✘ ${name}: filters role only allows single selection but has ${sel.length}.`);
+                return false;
             }
         }
 
@@ -193,6 +183,8 @@ export class AlgorithmRulesService {
         switch (t) {
             case VariableTypes.NOMINAL: return VariableTypes.TEXT;
             case VariableTypes.INTEGER: return VariableTypes.INT;
+            case 'polynominal': return VariableTypes.TEXT;
+            case 'ordinal': return VariableTypes.TEXT;
             default: return t; // real, text, binary...
         }
     }

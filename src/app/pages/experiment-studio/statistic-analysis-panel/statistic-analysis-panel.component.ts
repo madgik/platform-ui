@@ -28,10 +28,10 @@ interface ModelTableBlock {
 }
 
 @Component({
-    selector: 'app-statistic-analysis-panel',
-    imports: [ChartRendererComponent, SpinnerComponent],
-    templateUrl: './statistic-analysis-panel.component.html',
-    styleUrls: ['./statistic-analysis-panel.component.css']
+  selector: 'app-statistic-analysis-panel',
+  imports: [ChartRendererComponent, SpinnerComponent],
+  templateUrl: './statistic-analysis-panel.component.html',
+  styleUrls: ['./statistic-analysis-panel.component.css']
 })
 export class StatisticAnalysisPanelComponent implements OnChanges {
   @Input() processedData: any[] = [];
@@ -163,11 +163,10 @@ export class StatisticAnalysisPanelComponent implements OnChanges {
     const uniqueVariables = Array.from(new Map(variables.map(v => [v.code, v])).values());
     const uniqueCovariates = Array.from(new Map(covariates.map(c => [c.code, c])).values());
 
-    // merged variables + covariates + filters
+    // merged variables + covariates
     const merged = [
-      ...uniqueVariables.filter(v => !filterCodes.has(v.code)),
-      ...uniqueCovariates.filter(c => !filterCodes.has(c.code)),
-      ...filters
+      ...uniqueVariables,
+      ...uniqueCovariates
     ];
 
     const items = Array.from(new Map(merged.map(v => [v.code, v])).values());

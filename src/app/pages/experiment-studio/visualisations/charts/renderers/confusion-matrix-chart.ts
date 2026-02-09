@@ -92,7 +92,10 @@ export function buildConfusionMatrixChart(result: any): EChartsOption[] {
       },
       visualMap: {
         min: 0,
-        max: Math.max(...matrix.flat()),
+        max: (() => {
+          const flat = matrix.flat().filter(v => typeof v === 'number' && !isNaN(v));
+          return flat.length > 0 ? Math.max(...flat) : 1;
+        })(),
         calculable: true,
         orient: 'vertical',
         right: 0,

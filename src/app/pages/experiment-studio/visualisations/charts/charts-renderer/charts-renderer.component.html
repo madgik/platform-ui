@@ -1,13 +1,13 @@
 @if(charts.length) {
-  <div>
-    @for(chart of charts; track chart) {
-      <div class="chart-container">
-        <div echarts [options]="chart" class="chart"></div>
-      </div>
-    }
+<div>
+  @for(chart of charts; track chart) {
+  <div class="chart-container">
+    <div echarts [options]="chart" [initOpts]="{ renderer: 'canvas' }" class="chart"></div>
   </div>
+  }
+</div>
 } @else {
-  <ng-template #noCharts>
-    <p>No charts to display.</p>
-  </ng-template>
+<ng-template #noCharts>
+  <p>No charts to display.</p>
+</ng-template>
 }

@@ -1,8 +1,9 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
+import { toObservable } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, of } from 'rxjs';
-import { catchError, filter, map, tap } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { catchError, map, tap, filter } from 'rxjs/operators';
 import { User } from '../models/user.interface';
 
 export type AuthStatus = 'checking' | 'authenticated' | 'unauthenticated';
@@ -16,16 +17,18 @@ export interface AuthState {
   providedIn: 'root'
 })
 export class AuthService {
+  private http = inject(HttpClient);
+  private router = inject(Router);
   private readonly redirectUrlKey = 'redirect_url';
 
-  private readonly authStateSubject = new BehaviorSubject<AuthState>({ status: 'checking' });
-  readonly authState$ = this.authStateSubject.asObservable();
-  readonly isAuthenticated$ = this.authState$.pipe(map((state) => state.status === 'authenticated'));
+  private readonly authStateSignal = signal<AuthState>({ status: 'checking' });
+  readonly authState = this.authStateSignal.asReadonly();
+  readonly authState$ = toObservable(this.authState);
 
   private initialized = false;
   private hasRedirectedAfterLogin = false;
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor() { }
 
   initialize(): void {
     if (this.initialized) {
@@ -36,7 +39,7 @@ export class AuthService {
   }
 
   refreshAuthState(): void {
-    this.authStateSubject.next({ status: 'checking' });
+    this.authStateSignal.set({ status: 'checking' });
     this.refreshUser().subscribe();
   }
 
@@ -45,7 +48,7 @@ export class AuthService {
 
     return this.http.get<User>('/services/activeUser').pipe(
       tap((user) => {
-        this.authStateSubject.next({ status: 'authenticated', user });
+        this.authStateSignal.set({ status: 'authenticated', user });
         if (!wasAuthenticated && !this.hasRedirectedAfterLogin) {
           this.hasRedirectedAfterLogin = true;
           this.consumeRedirect();
@@ -55,7 +58,8 @@ export class AuthService {
         if (error.status !== 401 && error.status !== 403) {
           console.error('Error fetching active user:', error);
         }
-        this.authStateSubject.next({ status: 'unauthenticated' });
+        // Changed from this.authStateSubject.next to this.authStateSignal.set
+        this.authStateSignal.set({ status: 'unauthenticated' });
         return of(null);
       })
     );
@@ -72,18 +76,18 @@ export class AuthService {
 
   logout(): void {
     localStorage.removeItem(this.redirectUrlKey);
-    this.authStateSubject.next({ status: 'unauthenticated' });
+    this.authStateSignal.set({ status: 'unauthenticated' });
 
     // Use a full-page redirect so the backend/IdP can clear SSO cookies.
     window.location.href = '/services/logout';
   }
 
   isLoggedIn(): boolean {
-    return this.authStateSubject.value.status === 'authenticated';
+    return this.authState().status === 'authenticated';
   }
 
   get currentUser(): User | null {
-    return this.authStateSubject.value.user ?? null;
+    return this.authState().user ?? null;
   }
 
   onAuthResolved(): Observable<AuthState> {

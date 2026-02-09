@@ -78,7 +78,13 @@ export class VariableFilterSelectionComponent implements OnInit {
     if (!this.selectedNode) return;
 
     // Select all leaves from selected node
-    const itemsToAdd = this.selectedNode.children ? this.getLeafNodes(this.selectedNode) : [this.selectedNode];
+    let itemsToAdd = this.selectedNode.children ? this.getLeafNodes(this.selectedNode) : [this.selectedNode];
+
+    // Safety: don't add hundreds of filters at once if a group is selected by mistake
+    if (listName === 'filters' && itemsToAdd.length > 5) {
+      console.warn(`[VariableFilterSelection] Blocking bulk filter addition (${itemsToAdd.length} items). Please select individual variables.`);
+      return;
+    }
 
     const list = this[listName];
     const updated = [

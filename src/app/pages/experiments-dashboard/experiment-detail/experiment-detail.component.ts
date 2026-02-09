@@ -14,10 +14,10 @@ import { ExperimentLabelService } from '../../../services/experiment-label.servi
 import { EnumMaps } from '../../../core/algorithm-result-enum-mapper';
 
 @Component({
-    selector: 'app-experiment-details',
-    templateUrl: './experiment-detail.component.html',
-    styleUrls: ['./experiment-detail.component.css'],
-    imports: [CommonModule, AlgorithmResultComponent, SpinnerComponent]
+  selector: 'app-experiment-details',
+  templateUrl: './experiment-detail.component.html',
+  styleUrls: ['./experiment-detail.component.css'],
+  imports: [CommonModule, AlgorithmResultComponent, SpinnerComponent]
 })
 export class ExperimentDetailsComponent {
   selectedExperiment = input<Experiment | null>(null);
@@ -36,6 +36,17 @@ export class ExperimentDetailsComponent {
   readonly experimentResult = this.resultSignal.asReadonly();
   readonly isLoading = this.loading.asReadonly();
   readonly loadError = this.error.asReadonly();
+
+  // Use input instead of direct injection to keep it consistent with list component
+  currentUserEmail = input<string | null>(null);
+
+  isOwner = computed(() => {
+    const exp = this.selectedExperiment();
+    const email = this.currentUserEmail();
+    if (!exp?.authorEmail || !email) return false;
+    return exp.authorEmail === email;
+  });
+
   readonly isShared = signal<boolean>(false);
 
   readonly copyToastVisible = signal<boolean>(false);
@@ -324,32 +335,44 @@ export class ExperimentDetailsComponent {
     });
   }
 
+  onCopyLink(): void {
+    const exp = this.selectedExperiment();
+    if (!exp) return;
+
+    const url = this.buildShareUrl(exp.id);
+
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(url).then(
+        () => this.showCopyToast('Link copied to clipboard'),
+        (err) => {
+          console.warn('Failed to copy share URL:', err);
+          this.showCopyToast('Could not copy link — check console.');
+        }
+      );
+    } else {
+      console.warn('Clipboard API not available, share URL:', url);
+      this.showCopyToast('Clipboard not available — check console log.');
+    }
+  }
+
   onToggleShare(): void {
     const exp = this.selectedExperiment();
     if (!exp) return;
+
+    // Safety check
+    if (!this.isOwner()) {
+      console.warn('Cannot share/unshare experiment owned by someone else.');
+      return;
+    }
 
     const newShared = !this.isShared();
 
     this.dashboardService.toggleExperimentShare(exp.id, newShared).subscribe({
       next: () => {
         this.isShared.set(newShared);
-
-        if (newShared) {
-          const url = this.buildShareUrl(exp.id);
-
-          if (navigator.clipboard?.writeText) {
-            navigator.clipboard.writeText(url).then(
-              () => this.showCopyToast('Link copied to clipboard'),
-              (err) => {
-                console.warn('Failed to copy share URL:', err);
-                this.showCopyToast('Could not copy link — check console.');
-              }
-            );
-          } else {
-            console.warn('Clipboard API not available, share URL:', url);
-            this.showCopyToast('Clipboard not available — check console log.');
-          }
-        }
+        // Toast message update
+        const msg = newShared ? 'Experiment is now shared' : 'Experiment is no longer shared';
+        this.showCopyToast(msg);
       },
       error: (err) => {
         console.error('Failed to toggle share:', err);

@@ -18,7 +18,7 @@
 
       <span class="filter-label" style="margin-right: 8px;">all</span>
 
-      <button type="button" class="toggle-switch" [class.on]="!onlyMine()" (click)="toggleOnlyMine()">
+      <button type="button" class="toggle-switch" [class.on]="onlyMine()" (click)="toggleOnlyMine()">
         <span class="toggle-thumb"></span>
       </button>
     </div>
@@ -86,10 +86,18 @@
 
       <!-- RIGHT: actions -->
       <div class="row-actions">
+        <!-- 1. Copy Link (Always visible) -->
+        <button class="icon-btn" title="Copy link" (click)="onCopyLinkClicked(exp, $event)">
+          <i class="fas fa-link"></i>
+        </button>
+
+        <!-- 2. Share/Unshare (Only for owner) -->
+        @if (isOwner(exp)) {
         <button class="icon-btn" [class.shared]="exp.isShared"
-          [title]="exp.isShared ? 'Shared – copy link' : 'Share with others'" (click)="onShareClicked(exp, $event)">
+          [title]="exp.isShared ? 'Make private' : 'Share with others'" (click)="onToggleShare(exp, $event)">
           <i class="fas fa-share-alt"></i>
         </button>
+        }
 
         @if (copyToastVisible() && lastSharedExperimentId() === exp.id) {
         <span class="copy-chip">
@@ -101,9 +109,11 @@
           <i class="far fa-edit"></i>
         </button>
 
+        @if (isOwner(exp)) {
         <button class="icon-btn danger" title="Delete" (click)="onDeleteRequested(exp.id); $event.stopPropagation()">
           <i class="far fa-trash-alt"></i>
         </button>
+        }
       </div>
     </li>
     }

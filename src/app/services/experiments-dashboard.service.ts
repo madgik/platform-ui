@@ -18,17 +18,28 @@ export class ExperimentsDashboardService {
   totalPages = signal<number>(0);
   currentPage = signal<number>(0);
 
-  constructor(private http: HttpClient) { }
+  private http = inject(HttpClient);
+
+  constructor() { }
 
   private errorService = inject(ErrorService);
 
   // Fetch all experiments from the backend and update the signal
-  getUserExperiments(page: number = 0, size: number = 10, onlyMine: boolean = false): void {
+  getUserExperiments(page: number = 0, size: number = 10, onlyMine: boolean = false, filters?: any): void {
     const params: any = {
       page: page.toString(),
       size: size.toString(),
-      mine: onlyMine.toString()
+      mine: onlyMine,
+      includeShared: (!onlyMine).toString()
     };
+    console.log('getUserExperiments params:', params);
+
+    if (filters) {
+      if (filters.query) params.name = filters.query;
+      if (filters.algorithm) params.algorithm = filters.algorithm;
+      if (filters.shared === 'shared') params.shared = 'true';
+      if (filters.shared === 'private') params.shared = 'false';
+    }
 
     this.http
       .get<{ experiments: BackendExperiment[], totalExperiments: number, totalPages: number, currentPage: number }>(this.apiUrl, {

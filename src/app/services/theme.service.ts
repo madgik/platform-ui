@@ -11,12 +11,12 @@ export class ThemeService {
     // Reactive signal for current theme
     theme = signal<Theme>(this.getInitialTheme());
 
-    constructor() {
-        // Apply theme class to body whenever theme changes
-        effect(() => {
-            this.applyTheme(this.theme());
-        });
-    }
+    // Apply theme class to body whenever theme changes
+    private _themeEffect = effect(() => {
+        this.applyTheme(this.theme());
+    });
+
+    constructor() { }
 
     private getInitialTheme(): Theme {
         // Check localStorage first

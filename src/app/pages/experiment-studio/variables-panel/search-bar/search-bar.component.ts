@@ -1,15 +1,18 @@
-import { Component, EventEmitter, Input, Output, OnInit, ElementRef, HostListener, SimpleChanges, OnChanges } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit, ElementRef, HostListener, SimpleChanges, OnChanges, inject, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from "@angular/forms";
 
 @Component({
-    selector: 'app-search-bar',
-    templateUrl: './search-bar.component.html',
-    imports: [
-        FormsModule,
-    ],
-    styleUrls: ['./search-bar.component.css']
+  selector: 'app-search-bar',
+  templateUrl: './search-bar.component.html',
+  imports: [
+    FormsModule,
+  ],
+  styleUrls: ['./search-bar.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SearchBarComponent implements OnInit, OnChanges {
+  private eRef = inject(ElementRef);
+
   @Input() dataModelHierarchy: any;
   @Output() searchResultSelected = new EventEmitter<string>();
 
@@ -23,7 +26,7 @@ export class SearchBarComponent implements OnInit, OnChanges {
   variableTypeFilter: string = ''; // Additional variable type filter
   variableTypes: string[] = []; // List of available variable types
 
-  constructor(private eRef: ElementRef) { }
+  constructor() { }
 
   ngOnInit(): void {
     if (this.dataModelHierarchy) {

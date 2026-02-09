@@ -379,9 +379,9 @@
       </div>
 
       } @if (enrichedConfigSchema().length) {
-      <form [formGroup]="configForm" class="config-form flex flex-col gap-4">
+      <form [formGroup]="configForm()" class="config-form flex flex-col gap-4">
         @for (field of enrichedConfigSchema(); track field.key) { @if
-        (configForm.get(field.key)) {
+        (configForm().get(field.key)) {
         <div class="config-field">
           <label class="font-semibold mb-1 text-[var(--primary-color)] flex items-center gap-2">
             {{ prettyFieldLabel(field) }}
@@ -405,7 +405,7 @@
 
           } @else if (field.type === 'select') {
           <select [formControlName]="field.key" class="config-select">
-            <option [ngValue]="null" [selected]="!configForm.get(field.key)?.value" disabled value="">
+            <option [ngValue]="null" [selected]="!configForm().get(field.key)?.value" disabled value="">
               -- Select --
             </option>
 
@@ -437,16 +437,16 @@
             }
           </div>
 
-          @if (configForm.get(field.key)?.invalid &&
-          configForm.get(field.key)?.touched) {
+          @if (configForm().get(field.key)?.invalid &&
+          configForm().get(field.key)?.touched) {
           <div class="validation-message config-error">
-            @if (configForm.get(field.key)?.hasError('required')) {
+            @if (configForm().get(field.key)?.hasError('required')) {
             <small>This field is required.</small>
-            } @if (configForm.get(field.key)?.hasError('min')) {
+            } @if (configForm().get(field.key)?.hasError('min')) {
             <small>Value too small.</small>
-            } @if (configForm.get(field.key)?.hasError('max')) {
+            } @if (configForm().get(field.key)?.hasError('max')) {
             <small>Value too large.</small>
-            } @if (configForm.get(field.key)?.hasError('pattern')) {
+            } @if (configForm().get(field.key)?.hasError('pattern')) {
             <small>Invalid value.</small>
             }
           </div>

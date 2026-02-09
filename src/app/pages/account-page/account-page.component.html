@@ -23,8 +23,8 @@
           <img src="assets/user-icon.png" alt="User Profile" />
         </div>
         <div class="user-info">
-          <h2>{{ userName || 'User' }}</h2>
-          <p class="user-email">{{ userEmail }}</p>
+          <h2>{{ userName() || 'User' }}</h2>
+          <p class="user-email">{{ userEmail() }}</p>
         </div>
       </div>
 
@@ -35,11 +35,11 @@
         <div class="info-grid">
           <div class="info-item">
             <span class="label">Full name</span>
-            <span class="value">{{ userName || '—' }}</span>
+            <span class="value">{{ userName() || '—' }}</span>
           </div>
           <div class="info-item">
             <span class="label">Email</span>
-            <span class="value">{{ userEmail || '—' }}</span>
+            <span class="value">{{ userEmail() || '—' }}</span>
           </div>
         </div>
       </section>

@@ -4,6 +4,7 @@ import { provideHttpClient, withInterceptors, withXsrfConfiguration } from '@ang
 
 import { appRoutes } from './app.routes';
 import { withCredentialsInterceptor } from './services/auth.interceptor';
+import { provideEchartsCore } from 'ngx-echarts';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -19,5 +20,8 @@ export const appConfig: ApplicationConfig = {
       withInterceptors([withCredentialsInterceptor]),
       withXsrfConfiguration({ cookieName: 'XSRF-TOKEN', headerName: 'X-XSRF-TOKEN' })
     ),
+    provideEchartsCore({
+      echarts: () => import('echarts'),
+    }),
   ],
 };

@@ -49,7 +49,7 @@
         </div>
         <div class="pane-content">
           <app-experiments-list [selectedExperimentId]="selectedExperiment()?.id ?? null"
-            [currentUserEmail]="currentUserEmail" [compareIds]="compareIds()" [compareMode]="compareMode()"
+            [currentUserEmail]="currentUserEmail()" [compareIds]="compareIds()" [compareMode]="compareMode()"
             (experimentSelected)="onExperimentSelected($event)" (editRequested)="onEditExperiment($event)"
             (deleteRequested)="onDeleteFromList($event)" />
         </div>
@@ -58,8 +58,9 @@
       <!-- CENTER: MAIN WORKSPACE -->
       <main class="main-pane">
         @if (!compareMode()) {
-        <app-experiment-details [selectedExperiment]="selectedExperiment()" (run)="onRunExperiment($event)"
-          (deleteExperiment)="onDeleteRequested()" (nameUpdated)="onNameUpdated($event)" />
+        <app-experiment-details [selectedExperiment]="selectedExperiment()" [currentUserEmail]="currentUserEmail()"
+          (run)="onRunExperiment($event)" (deleteExperiment)="onDeleteRequested()"
+          (nameUpdated)="onNameUpdated($event)" />
         } @else {
         <div class="compare-workspace">
           @if (experimentsForCompare().length < 2) { <div class="compare-placeholder">

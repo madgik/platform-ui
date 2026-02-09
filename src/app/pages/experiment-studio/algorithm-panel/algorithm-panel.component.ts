@@ -15,17 +15,17 @@ import { SpinnerComponent } from '../../shared/spinner/spinner.component';
 
 
 @Component({
-    selector: 'app-algorithm-panel',
-    imports: [
-        CommonModule,
-        FormsModule,
-        ReactiveFormsModule,
-        AlgorithmResultComponent,
-        EchartsxModule,
-        SpinnerComponent
-    ],
-    templateUrl: './algorithm-panel.component.html',
-    styleUrls: ['./algorithm-panel.component.css']
+  selector: 'app-algorithm-panel',
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    AlgorithmResultComponent,
+    EchartsxModule,
+    SpinnerComponent
+  ],
+  templateUrl: './algorithm-panel.component.html',
+  styleUrls: ['./algorithm-panel.component.css']
 })
 
 export class AlgorithmPanelComponent {
@@ -224,7 +224,7 @@ export class AlgorithmPanelComponent {
 
       if (!algorithm) {
         // if no algorithm,clean form
-        this.configForm = new FormGroup({});
+        this.configForm.set(new FormGroup({}));
         return;
       }
 
@@ -295,9 +295,9 @@ export class AlgorithmPanelComponent {
         group[field.key] = control;
       });
 
-      this.configForm = new FormGroup(group, { updateOn: 'change' });
+      this.configForm.set(new FormGroup(group, { updateOn: 'change' }));
 
-      Object.values(this.configForm.controls).forEach(control => {
+      Object.values(this.configForm().controls).forEach(control => {
         if (control.valid) {
           control.markAsTouched({ onlySelf: true });
         }
@@ -341,7 +341,7 @@ export class AlgorithmPanelComponent {
   }
 
 
-  configForm: FormGroup = new FormGroup({});
+  configForm = signal<FormGroup>(new FormGroup({}));
   formKey = 0;
 
   enrichedConfigSchema = computed(() => {
@@ -512,8 +512,8 @@ export class AlgorithmPanelComponent {
     this.errorService.clearError();
 
     // algorithm does not run if form is invalid
-    if (this.configForm && this.configForm.invalid) {
-      this.configForm.markAllAsTouched();
+    if (this.configForm() && this.configForm().invalid) {
+      this.configForm().markAllAsTouched();
       console.warn('[AlgorithmPanel] Run blocked – configForm invalid');
       return;
     }
@@ -558,7 +558,7 @@ export class AlgorithmPanelComponent {
     this.experimentStudioService.lastUsedAlgorithm.set(finalAlgorithmName);
     this.errorMsg.set(null);
 
-    const configValues = this.configForm.getRawValue();
+    const configValues = this.configForm().getRawValue();
     if (!shouldIncludeSplits && configValues['n_splits'] !== undefined) {
       delete configValues['n_splits'];
     }
@@ -637,8 +637,8 @@ export class AlgorithmPanelComponent {
       return true;
     }
 
-    if (this.configForm && Object.keys(this.configForm.controls).length > 0) {
-      return this.configForm.invalid;
+    if (this.configForm() && Object.keys(this.configForm().controls).length > 0) {
+      return this.configForm().invalid;
     }
 
     return false;
@@ -669,8 +669,8 @@ export class AlgorithmPanelComponent {
     this.crossValidationEnabled.set(enabled);
 
     if (!enabled) {
-      if (this.configForm?.contains('n_splits')) {
-        this.configForm.removeControl('n_splits');
+      if (this.configForm()?.contains('n_splits')) {
+        this.configForm().removeControl('n_splits');
       }
 
       const configs = this.experimentStudioService.algorithmConfigurations();

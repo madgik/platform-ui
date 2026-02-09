@@ -16,22 +16,22 @@ import { catchError, map, of, Subject, switchMap, takeUntil } from 'rxjs';
 import { PdfExportService } from '../../../services/pdf-export.service';
 
 @Component({
-    selector: 'app-variables-panel',
-    templateUrl: './variables-panel.component.html',
-    styleUrls: ['./variables-panel.component.css'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [
-        CommonModule,
-        MatChipsModule,
-        MatIconModule,
-        BubbleChartComponent,
-        DistributionGraphComponent,
-        DataModelSelectorComponent,
-        DatasetSelectorComponent,
-        SearchBarComponent,
-        VariableFilterSelectionComponent,
-        SpinnerComponent,
-    ]
+  selector: 'app-variables-panel',
+  templateUrl: './variables-panel.component.html',
+  styleUrls: ['./variables-panel.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    CommonModule,
+    MatChipsModule,
+    MatIconModule,
+    BubbleChartComponent,
+    DistributionGraphComponent,
+    DataModelSelectorComponent,
+    DatasetSelectorComponent,
+    SearchBarComponent,
+    VariableFilterSelectionComponent,
+    SpinnerComponent,
+  ]
 })
 export class VariablesPanelComponent implements OnDestroy {
   @Input() defaultModel: DataModel | null = null;
@@ -479,7 +479,12 @@ export class VariablesPanelComponent implements OnDestroy {
           this.distributionData.set(dataWithName);
           this.errorMessage.set(null);
         } else {
-          this.errorMessage.set('No histogram data found for this selection.');
+          const resultData = response?.result?.data || response?.data;
+          if (typeof resultData === 'string' && resultData.includes('insufficient data')) {
+            this.errorMessage.set(resultData);
+          } else {
+            this.errorMessage.set('No histogram data found for this selection.');
+          }
         }
       });
   }

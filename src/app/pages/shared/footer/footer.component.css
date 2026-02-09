@@ -65,9 +65,14 @@
 }
 
 .athena-logo {
-  filter: brightness(0) invert(1);
-  /* Make it white for high contrast */
+  background-color: white;
+  padding: 1px;
+  border-radius: 2px;
+  box-sizing: border-box;
+  height: 20px;
 }
+
+
 
 .logo-link:hover .footer-logo {
   opacity: 1;

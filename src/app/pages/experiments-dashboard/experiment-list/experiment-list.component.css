@@ -276,8 +276,8 @@
 }
 
 .icon-btn {
-  border: 1px solid var(--border-color);
-  background: #ffffff;
+  border: 1px solid transparent;
+  background: transparent;
   border-radius: 8px;
   width: 32px;
   height: 32px;

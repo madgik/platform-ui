@@ -92,15 +92,27 @@
         </div>
 
         <div class="action-group secondary-actions">
+          <!-- Copy Link (Always visible) -->
+          <button type="button" class="ghost-btn copy-btn" (click)="onCopyLink()" title="Copy link">
+            <i class="fas fa-link"></i>
+            <span>Copy Link</span>
+          </button>
+
+          <!-- Share (Owner only) -->
+          @if (isOwner()) {
           <button type="button" class="ghost-btn share-btn" [class.shared]="isShared()" (click)="onToggleShare()"
             [title]="isShared() ? 'Stop sharing' : 'Share with others'">
-            <i class="fas" [class.fa-link]="isShared()" [class.fa-share-alt]="!isShared()"></i>
+            <i class="fas" [class.fa-eye]="isShared()" [class.fa-share-alt]="!isShared()"></i>
             <span>{{ isShared() ? "Shared" : "Share" }}</span>
           </button>
+          }
+
+          @if (isOwner()) {
           <button type="button" class="ghost-btn danger delete-btn" (click)="onDelete()">
             <i class="far fa-trash-alt"></i>
             <span>Delete</span>
           </button>
+          }
         </div>
       </div>
     </section>

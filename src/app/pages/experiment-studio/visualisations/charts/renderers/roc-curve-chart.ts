@@ -16,7 +16,7 @@ export function buildRocCurveChart(result: any): EChartsOption[] {
     const tpr = fold.tpr;
     const auc = fold.auc;
     const name = fold.name || `Fold`;
-    const label = auc ? `${name} (AUC: ${auc.toFixed(3)})` : name;
+    const label = (typeof auc === 'number' && !isNaN(auc)) ? `${name} (AUC: ${auc.toFixed(3)})` : name;
 
     if (!Array.isArray(fpr) || !Array.isArray(tpr) || fpr.length !== tpr.length) {
       console.warn(`[ROC Chart] Invalid data for ${name}`);

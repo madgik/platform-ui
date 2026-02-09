@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { ExperimentStudioService } from './experiment-studio.service';
 import { DataModel } from '../models/data-model.interface';
 import { firstValueFrom } from 'rxjs';
@@ -11,7 +11,9 @@ export class ExperimentLabelService {
   private enumCache = new Map<string, EnumMaps>();
   private enumInflight = new Map<string, Promise<EnumMaps>>();
 
-  constructor(private expStudio: ExperimentStudioService) { }
+  private expStudio = inject(ExperimentStudioService);
+
+  constructor() { }
 
   private findDataModelByCodeVersion(codeVersion: string, models: DataModel[]): DataModel | null {
     if (!codeVersion) return null;
@@ -30,7 +32,7 @@ export class ExperimentLabelService {
 
     const p = (async () => {
       try {
-        const models = await firstValueFrom(this.expStudio.loadAllDataModels());
+        const models = await firstValueFrom(this.expStudio.loadAllDataModels()) as DataModel[];
         const model = this.findDataModelByCodeVersion(domain, models);
 
         if (!model) return {};
@@ -81,7 +83,7 @@ export class ExperimentLabelService {
 
     const p = (async () => {
       try {
-        const models = await firstValueFrom(this.expStudio.loadAllDataModels());
+        const models = await firstValueFrom(this.expStudio.loadAllDataModels()) as DataModel[];
         const model = this.findDataModelByCodeVersion(domain, models);
 
         if (!model) return {};

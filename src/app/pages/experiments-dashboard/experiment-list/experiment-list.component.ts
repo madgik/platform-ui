@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, computed, signal, Input } from '@angular/core';
+import { Component, Output, EventEmitter, computed, signal, Input, effect } from '@angular/core';
 import { ExperimentsDashboardService } from '../../../services/experiments-dashboard.service';
 import { ExperimentStudioService } from '../../../services/experiment-studio.service';
 import { Experiment } from '../../../models/experiments-dashboard.model';
@@ -9,10 +9,10 @@ import { Router } from '@angular/router';
 import { ExperimentFilters } from '../experiment-search/experiment-filter.model';
 
 @Component({
-    selector: 'app-experiments-list',
-    imports: [CommonModule, FormsModule, ExperimentSearchComponent],
-    templateUrl: './experiment-list.component.html',
-    styleUrls: ['./experiment-list.component.css']
+  selector: 'app-experiments-list',
+  imports: [CommonModule, FormsModule, ExperimentSearchComponent],
+  templateUrl: './experiment-list.component.html',
+  styleUrls: ['./experiment-list.component.css']
 })
 export class ExperimentsListComponent {
   @Output() experimentSelected = new EventEmitter<Experiment>();
@@ -39,6 +39,15 @@ export class ExperimentsListComponent {
       });
       this.modelLabels.set(map);
     });
+
+    effect(() => {
+      this.experimentsService.getUserExperiments(
+        this.pageIndex(),
+        this.pageSize,
+        this.onlyMine(),
+        this.filters()
+      );
+    }, { allowSignalWrites: true });
   }
 
   // toggle
@@ -46,6 +55,7 @@ export class ExperimentsListComponent {
 
   // pagination
   readonly pageSize = 10;
+  readonly pageIndex = signal(0);
 
   // share toast
   readonly copyToastVisible = signal<boolean>(false);
@@ -67,7 +77,7 @@ export class ExperimentsListComponent {
 
   patchFilters(patch: Partial<ExperimentFilters>) {
     this.filters.update(f => ({ ...f, ...patch }));
-    this.experimentsService.getUserExperiments(0, this.pageSize, this.onlyMine());
+    this.pageIndex.set(0);
   }
 
   // compare helper
@@ -77,7 +87,7 @@ export class ExperimentsListComponent {
 
   toggleOnlyMine() {
     this.onlyMine.update(v => !v);
-    this.experimentsService.getUserExperiments(0, this.pageSize, this.onlyMine());
+    this.pageIndex.set(0);
   }
 
   // ---- share logic (unchanged) ----
@@ -104,8 +114,38 @@ export class ExperimentsListComponent {
     return origin + relative;
   }
 
-  onShareClicked(exp: Experiment, event: MouseEvent) {
+  isOwner(exp: Experiment): boolean {
+    const currentEmail = this.currentUserEmail;
+    if (!currentEmail || !exp.authorEmail) return false;
+    return currentEmail === exp.authorEmail;
+  }
+
+  onCopyLinkClicked(exp: Experiment, event: MouseEvent) {
     event.stopPropagation();
+    const url = this.buildShareUrl(exp.id);
+
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(url).then(
+        () => this.showCopyToast('Link copied to clipboard', exp.id),
+        (err) => {
+          console.warn('Failed to copy share URL:', err);
+          this.showCopyToast('Could not copy link — check console.', exp.id);
+        }
+      );
+    } else {
+      console.warn('Clipboard API not available, share URL:', url);
+      this.showCopyToast('Clipboard not available — check console log.', exp.id);
+    }
+  }
+
+  onToggleShare(exp: Experiment, event: MouseEvent) {
+    event.stopPropagation();
+
+    // Extra safety update check
+    if (!this.isOwner(exp)) {
+      console.warn('Cannot share/unshare experiment owned by someone else.');
+      return;
+    }
 
     const newShared = !exp.isShared;
 
@@ -114,20 +154,9 @@ export class ExperimentsListComponent {
       .subscribe({
         next: () => {
           if (newShared) {
-            const url = this.buildShareUrl(exp.id);
-
-            if (navigator.clipboard?.writeText) {
-              navigator.clipboard.writeText(url).then(
-                () => this.showCopyToast('Link copied to clipboard', exp.id),
-                (err) => {
-                  console.warn('Failed to copy share URL:', err);
-                  this.showCopyToast('Could not copy link — check console.', exp.id);
-                }
-              );
-            } else {
-              console.warn('Clipboard API not available, share URL:', url);
-              this.showCopyToast('Clipboard not available — check console log.', exp.id);
-            }
+            this.showCopyToast('Experiment is now shared', exp.id);
+            // Auto-copy link when enabling share? User request implies separation, but usually convenient.
+            // Requirement says "split the button". I will keep them separate as requested.
           } else {
             this.showCopyToast('Experiment is no longer shared', exp.id);
           }
@@ -145,7 +174,7 @@ export class ExperimentsListComponent {
 
   // pages
   readonly totalPages = computed(() => this.experimentsService.totalPages());
-  readonly currentPage = computed(() => this.experimentsService.currentPage() + 1);
+  readonly currentPage = computed(() => this.pageIndex() + 1);
 
   readonly pagedExperiments = computed<Experiment[]>(() => {
     return this.experimentsService.experiments();
@@ -156,15 +185,15 @@ export class ExperimentsListComponent {
     const max = this.totalPages();
     if (page < 1) page = 1;
     if (page > max) page = max;
-    this.experimentsService.getUserExperiments(page - 1, this.pageSize, this.onlyMine());
+    this.pageIndex.set(page - 1);
   }
 
   nextPage() {
-    this.goToPage(this.experimentsService.currentPage() + 2);
+    this.goToPage(this.pageIndex() + 2);
   }
 
   prevPage() {
-    this.goToPage(this.experimentsService.currentPage());
+    this.goToPage(this.pageIndex());
   }
 
   // selection / delete (unchanged)

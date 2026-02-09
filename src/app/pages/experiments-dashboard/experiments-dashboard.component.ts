@@ -1,5 +1,5 @@
 import { AuthService } from './../../services/auth.service';
-import { Component, OnInit, OnDestroy, computed, effect, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, computed, effect, signal, inject, ChangeDetectionStrategy } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -14,42 +14,46 @@ import { ErrorService } from '../../services/error.service';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
-    selector: 'app-experiments-dashboard',
-    templateUrl: './experiments-dashboard.component.html',
-    styleUrls: ['./experiments-dashboard.component.css'],
-    imports: [
-        RouterModule,
-        CommonModule,
-        FormsModule,
-        ExperimentDetailsComponent,
-        ExperimentsListComponent,
-        ExperimentsCompareComponent
-    ]
+  selector: 'app-experiments-dashboard',
+  templateUrl: './experiments-dashboard.component.html',
+  styleUrls: ['./experiments-dashboard.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    RouterModule,
+    CommonModule,
+    FormsModule,
+    ExperimentDetailsComponent,
+    ExperimentsListComponent,
+    ExperimentsCompareComponent
+  ]
 })
 export class ExperimentsDashboardComponent implements OnInit, OnDestroy {
+  private router = inject(Router);
+  public experimentsService = inject(ExperimentsDashboardService);
+  private authService = inject(AuthService);
+  private route = inject(ActivatedRoute);
+  private errorService = inject(ErrorService);
+
   selectedExperiment = signal<Experiment | null>(null);
 
   isConfirmingDelete = false;
   experimentToDeleteId: string | null = null;
 
-  currentUserEmail: string | null = null;
+  currentUserEmail = computed(() => this.authService.authState().user?.email ?? null);
   compareIds = signal<string[]>([]);
   compareMode = signal(false);
   private sharedExperimentId = signal<string | null>(null);
   private sharedFetchInFlight = signal<string | null>(null);
 
   // Greeting name: default "researcher"
-  greetingName = signal<string>('researcher');
+  greetingName = computed(() => {
+    const user = this.authService.authState().user;
+    return this.deriveGreetingName(user);
+  });
   errorMessage = signal<string | null>(null);
   private destroy$ = new Subject<void>();
 
-  constructor(
-    private router: Router,
-    public experimentsService: ExperimentsDashboardService,
-    private authService: AuthService,
-    private route: ActivatedRoute,
-    private errorService: ErrorService
-  ) { }
+  constructor() { }
 
   ngOnInit(): void {
     this.errorService.clearError();
@@ -57,16 +61,7 @@ export class ExperimentsDashboardComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((msg) => this.errorMessage.set(msg));
 
-    this.experimentsService.getUserExperiments();
-
-    const user = this.authService.currentUser;
-    this.updateUserInfo(user);
-
-    this.authService.onAuthResolved().subscribe((state) => {
-      this.updateUserInfo(state.user ?? null);
-    });
-
-    this.route.queryParamMap.subscribe(params => {
+    this.route.queryParamMap.pipe(takeUntil(this.destroy$)).subscribe(params => {
       const expId = params.get('experiment');
       if (expId) {
         this.sharedExperimentId.set(expId);
@@ -124,13 +119,6 @@ export class ExperimentsDashboardComponent implements OnInit, OnDestroy {
 
   dismissError() {
     this.errorService.clearError();
-  }
-
-
-  // USER INFO / GREETING
-  private updateUserInfo(user: any | null) {
-    this.currentUserEmail = user?.email ?? null;
-    this.greetingName.set(this.deriveGreetingName(user));
   }
 
   private deriveGreetingName(user: any | null): string {

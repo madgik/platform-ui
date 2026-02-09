@@ -1,6 +1,5 @@
-import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -8,12 +7,19 @@ import { AuthService } from '../../services/auth.service';
 import { TermsService } from '../../services/terms.service';
 
 @Component({
-    selector: 'app-terms-page',
-    imports: [CommonModule, FormsModule],
-    templateUrl: './terms-page.component.html',
-    styleUrls: ['./terms-page.component.css']
+  selector: 'app-terms-page',
+  imports: [FormsModule],
+  templateUrl: './terms-page.component.html',
+  styleUrls: ['./terms-page.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class TermsPageComponent {
+export class TermsPageComponent implements OnInit {
+  private http = inject(HttpClient);
+  private sanitizer = inject(DomSanitizer);
+  private termsService = inject(TermsService);
+  private authService = inject(AuthService);
+  private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
   tosHtml: SafeHtml | null = null;
   accepted = false;
   loading = true;
@@ -21,13 +27,7 @@ export class TermsPageComponent {
   acceptError = false;
   submitting = false;
 
-  constructor(
-    private http: HttpClient,
-    private sanitizer: DomSanitizer,
-    private termsService: TermsService,
-    private authService: AuthService,
-    private router: Router
-  ) {}
+  constructor() { }
 
   ngOnInit(): void {
     this.accepted = Boolean(this.authService.currentUser?.agreeNDA);
@@ -37,10 +37,12 @@ export class TermsPageComponent {
         const html = this.markdownToHtml(cleaned);
         this.tosHtml = this.sanitizer.bypassSecurityTrustHtml(html);
         this.loading = false;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.loading = false;
         this.loadError = true;
+        this.cdr.markForCheck();
       }
     });
   }

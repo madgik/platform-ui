@@ -14,6 +14,11 @@ export const appRoutes: Routes = [
     pathMatch: 'full'
   },
   {
+    path: 'home',
+    redirectTo: 'experiments-dashboard',
+    pathMatch: 'full'
+  },
+  {
     path: 'terms',
     loadComponent: () => import('./pages/terms-page/terms-page.component').then(m => m.TermsPageComponent),
     canActivate: [AuthGuard],
