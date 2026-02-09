@@ -6,7 +6,6 @@ import { ExperimentStudioService } from '../../services/experiment-studio.servic
 import { AlgorithmPanelComponent } from './algorithm-panel/algorithm-panel.component';
 import { AuthService } from '../../services/auth.service';
 import { ExperimentsDashboardService } from '../../services/experiments-dashboard.service';
-import { SpinnerComponent } from '../shared/spinner/spinner.component';
 import { ErrorService } from '../../services/error.service';
 import { StatisticAnalysisPanelComponent } from './statistic-analysis-panel/statistic-analysis-panel.component';
 import { Subject, takeUntil } from 'rxjs';
@@ -18,7 +17,7 @@ import { FilterConfigModalComponent } from './variables-panel/filter-config-moda
     CommonModule,
     VariablesPanelComponent,
     AlgorithmPanelComponent,
-    SpinnerComponent,
+    AlgorithmPanelComponent,
     StatisticAnalysisPanelComponent,
     RouterLink,
     FilterConfigModalComponent
