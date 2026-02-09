@@ -13,18 +13,18 @@ import { Subject, takeUntil } from 'rxjs';
 import { FilterConfigModalComponent } from './variables-panel/filter-config-modal/filter-config-modal.component';
 
 @Component({
-    selector: 'app-experiment-studio',
-    imports: [
-        CommonModule,
-        VariablesPanelComponent,
-        AlgorithmPanelComponent,
-        SpinnerComponent,
-        StatisticAnalysisPanelComponent,
-        RouterLink,
-        FilterConfigModalComponent
-    ],
-    templateUrl: './experiment-studio.component.html',
-    styleUrls: ['./experiment-studio.component.css']
+  selector: 'app-experiment-studio',
+  imports: [
+    CommonModule,
+    VariablesPanelComponent,
+    AlgorithmPanelComponent,
+    SpinnerComponent,
+    StatisticAnalysisPanelComponent,
+    RouterLink,
+    FilterConfigModalComponent
+  ],
+  templateUrl: './experiment-studio.component.html',
+  styleUrls: ['./experiment-studio.component.css']
 })
 export class ExperimentStudioComponent implements OnInit, OnDestroy, AfterViewInit {
   constructor(
@@ -60,7 +60,7 @@ export class ExperimentStudioComponent implements OnInit, OnDestroy, AfterViewIn
 
 
 
-  @HostListener('window:resize', ['$event'])
+  @HostListener('window:resize')
   onResize() {
     this.checkSidebarCollapse();
   }
