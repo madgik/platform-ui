@@ -2,47 +2,95 @@
 
 Use this as a fast orientation to the codebase.
 
-- **Project**: Angular 18 standalone app (`fl-platform`) for creating/running experiments and reviewing results. Entry: `src/main.ts`, root component `src/app/app.component.ts`.
-- **Key routes** (`src/app/app.routes.ts`): default `/experiments-dashboard`; `/experiment-studio`; `/account`; `/terms`. Most routes use `AuthGuard` + `TermsGuard` (NDA gating); `/terms` uses `AuthGuard` only.
-- **Auth** (`src/app/services/auth.service.ts`): hits `/services/activeUser` for session; login redirect `/services/oauth2/authorization/keycloak?frontend_redirect=...` (stores redirect in localStorage); logout `/services/logout`. Interceptor (`auth.interceptor.ts`) adds `withCredentials` to same-origin calls.
-- **Backend endpoints (via `src/proxy.conf.json`)**: `/services` proxied to `http://localhost:8080`. API usage examples:
-  - Experiments: `GET/DELETE/PATCH /services/experiments/:id`, `POST /services/experiments` (run), `POST /services/experiments/transient` (quick previews).
-  - Algorithms catalog: `GET /services/algorithms`.
-  - Data models: `GET /services/data-models`.
-  - Active user: `GET /services/activeUser`.
-- **Pages**
-  - Experiment Studio (`src/app/pages/experiment-studio/...`): variable/dataset selection, filters (QueryBuilder), algorithm selection/config, run & results rendering (ECharts/D3). Core state/service: `experiment-studio.service.ts`.
-  - Experiments Dashboard (`src/app/pages/experiments-dashboard/...`): list/search/pagination/share/delete, detail view with results & PDF export, compare view. Data service: `experiments-dashboard.service.ts`.
-  - Account page: simple profile and logout.
-  - Terms page (`src/app/pages/terms-page/...`): NDA/TOS acceptance gate; loads `assets/tos.md`, posts `/services/activeUser/agreeNDA`, then redirects.
-- **State patterns**: heavy use of Angular Signals. `ExperimentStudioService` maintains selections, algorithm configs, filters, running state, and hydration of existing experiments. `ErrorService` exposes a shared error subject.
-- **Visualisation utilities**: algorithm → output schema mappings in `src/app/core/algorithm-mappers.ts`; chart builders under `src/app/pages/experiment-studio/visualisations`.
-- **UI components**: reusable header/footer/navbar/spinner/accordion under `src/app/pages/shared`.
-- **Build/Test commands** (package scripts): `npm start` (dev server with proxy), `npm run build` (Angular), `npm test` (Karma), `npm run watch` (build --watch).
-- **Container**: `Dockerfile` builds Angular, serves via nginx; envsubst uses `PORTAL_BACKEND_SERVER`/`PORTAL_BACKEND_CONTEXT` for proxying `/services`.
-- **Styling/Assets**: global styles `src/styles.css` (includes QueryBuilder theming); assets under `src/assets/`.
-- **Caveats**: many endpoints require authenticated session (Keycloak) and NDA acceptance (`TermsGuard` checks `user.agreeNDA`). Sharing links are built from `/experiments-dashboard?experiment=<id>`. Filters must include datasets selected; algorithms may be disabled when selections don’t match required types.
+- **Project**: Angular **21** standalone app (`fl-platform`) for creating/running experiments and reviewing results. Entry: `src/main.ts`, root component: `src/app/app.component.ts`.
+- **Routing** (`src/app/app.routes.ts`):
+  - Main: `/experiments-dashboard`, `/experiment-studio`, `/account`, `/terms`
+  - Redirects: `''` and `/home` -> `/experiments-dashboard`
+  - Wildcard: `**` -> `/experiments-dashboard`
+  - Guards: most routes use `AuthGuard` + `TermsGuard`; `/terms` uses `AuthGuard` only.
+- **Auth + session flow** (`src/app/services/auth.service.ts`):
+  - Session check: `GET /services/activeUser`
+  - Login redirect: `/services/oauth2/authorization/keycloak?frontend_redirect=...`
+  - Logout: hard redirect to `/services/logout`
+  - Redirect handling stored in localStorage (`redirect_url`)
+  - HTTP interceptor (`auth.interceptor.ts`) adds `withCredentials` for same-origin API calls.
+- **Terms/NDA flow**:
+  - `TermsGuard` checks `user.agreeNDA` and routes to `/terms` if needed.
+  - `TermsService` stores intended destination in localStorage (`tos_redirect_url`).
+  - Terms page loads `assets/tos.md` and posts `POST /services/activeUser/agreeNDA`.
+- **HTTP config** (`src/app/app.config.ts`):
+  - `provideHttpClient` with credentials interceptor and XSRF header/cookie config.
+  - Router uses in-memory scrolling restoration.
+  - ECharts is provided lazily with `provideEchartsCore`.
+- **Backend endpoints** (dev proxy in `src/proxy.conf.json` -> `http://localhost:8080`):
+  - Auth/user: `GET /services/activeUser`, `POST /services/activeUser/agreeNDA`
+  - Catalogs: `GET /services/data-models`, `GET /services/algorithms`
+  - Experiments:
+    - `GET /services/experiments` (paged list)
+    - `GET /services/experiments/:id` (metadata/result fetch)
+    - `POST /services/experiments` (run async + poll by UUID)
+    - `POST /services/experiments/transient` (quick previews: histograms/descriptive stats)
+    - `PATCH /services/experiments/:id` (name/shared updates)
+    - `DELETE /services/experiments/:id`
+- **Feature pages**:
+  - **Experiment Studio** (`src/app/pages/experiment-studio/...`): data model + dataset selection, variable/covariate/filter selection, QueryBuilder filter logic, algorithm configuration, run/edit flows, stats/distribution previews, results rendering (ECharts + D3), PDF export.
+  - **Experiments Dashboard** (`src/app/pages/experiments-dashboard/...`): list/search/pagination, mine/shared toggles, share link creation, detail view, compare mode, delete/edit/name updates, result export.
+  - **Terms page** (`src/app/pages/terms-page/...`): markdown-to-HTML rendering and NDA acceptance gating.
+  - **Account page** (`src/app/pages/account-page/...`): user info/logout view.
+- **State patterns**:
+  - Strong use of Angular Signals across features.
+  - `ExperimentStudioService` is the main orchestration layer (selection state, algorithm availability, configurations, run/polling, hydration for edit mode, transient calls, sessionStorage persistence).
+  - `ExperimentsDashboardService` owns paged experiment list signals.
+  - `ErrorService` shares global feature errors via `BehaviorSubject`.
+- **Algorithm availability rules**:
+  - Encoded in `src/app/services/algorithm-rules.service.ts`.
+  - Includes special cases for ANOVA variants, one-sample t-test, PCA/transformation variants, role constraints, and filter requirements.
+- **Visualization and output mapping**:
+  - Algorithm/result schema mapping: `src/app/core/algorithm-mappers.ts`
+  - Chart registry/builders: `src/app/pages/experiment-studio/visualisations/charts/...`
+  - Enum/label helpers: `src/app/services/experiment-label.service.ts`, `src/app/core/algorithm-result-enum-mapper.ts`
+- **PDF exports**:
+  - `src/app/services/export-results-pdf.service.ts`: experiment results report export.
+  - `src/app/services/pdf-export.service.ts`: distribution/descriptive statistics export.
+- **Theming and branding**:
+  - `ThemeService` toggles body theme classes (`theme-light`/`theme-dark`) and persists preference.
+  - Footer surfaces frontend/backend/exaflow versions from `window.__env` (`src/assets/env.js` or template at container startup).
+- **Build/Test commands**:
+  - `npm start` (dev server + proxy)
+  - `npm run build` (Angular build)
+  - `npm run watch` (dev build watch)
+  - `npm test` (Karma)
+- **Container**:
+  - `Dockerfile` builds with Node 20, serves with nginx.
+  - Runtime `envsubst` injects:
+    - proxy envs: `PORTAL_BACKEND_SERVER`, `PORTAL_BACKEND_CONTEXT`
+    - version envs: `FRONTEND_VERSION`, `BACKEND_VERSION`, `EXAFLOW_VERSION`
 
 ## Folder Map
+
 - `/src/app`: main app code.
-  - `app.component.*`, `app.routes.ts`, `app.config.ts`: shell and routing.
-  - `guards/`: `auth.guard.ts` enforces auth; `terms.guard.ts` enforces NDA acceptance.
-  - `services/`: auth/session/error helpers (including `terms.service.ts`), experiment CRUD (`experiments-dashboard.service.ts`), experiment studio orchestration (`experiment-studio.service.ts`), label resolver, PDF export, auth interceptor.
-  - `models/`: TS interfaces for experiments, algorithms, data-model hierarchy, filters, user, backend DTOs.
-  - `core/`: algorithm mappers (backend → UI schema/output schemas).
-  - `pages/experiments-dashboard/`: dashboard feature (list/search, detail, compare, mappers).
-  - `pages/experiment-studio/`: studio feature (variables panel, filters modal, algorithm panel, visualisations).
-    - `variables-panel/`: data model selector, dataset selector, search, distribution/histogram, filter selection/config modal, stats panel.
-    - `algorithm-panel/`: selection/config UI, description modal, result renderer.
-    - `visualisations/`: chart builder/registry, auto-renderer, histogram, bubble chart utilities.
+  - `app.component.*`, `app.routes.ts`, `app.config.ts`: shell/bootstrap wiring.
+  - `guards/`: `auth.guard.ts`, `terms.guard.ts`.
+  - `services/`:
+    - auth/session/errors: `auth.service.ts`, `auth.interceptor.ts`, `terms.service.ts`, `session-storage.service.ts`, `error.service.ts`, `theme.service.ts`
+    - experiment orchestration: `experiment-studio.service.ts`, `experiments-dashboard.service.ts`, `algorithm-rules.service.ts`, `experiment-label.service.ts`
+    - exports: `pdf-export.service.ts`, `export-results-pdf.service.ts`
+  - `models/`: frontend/backend DTOs and interfaces (user, algorithms, experiments, filters, data-models).
+  - `core/`: algorithm mapping and constants.
+  - `pages/experiment-studio/`:
+    - `variables-panel/`: model/dataset selection, search, variable actions, filters UI, distribution graph.
+    - `algorithm-panel/`: algorithm selection/configuration, run/save-as, result rendering.
+    - `statistic-analysis-panel/`: descriptive stats/model tables/charts.
+    - `visualisations/`: chart registry/builders, histogram, auto-renderer, bubble chart.
+  - `pages/experiments-dashboard/`: list/search/detail/compare and mapper utilities.
+  - `pages/terms-page/`: NDA/TOS gate.
   - `pages/account-page/`: account/profile.
-  - `pages/shared/`: header/footer/navbar/accordion/spinner utilities and form control factory.
-- `/src/assets`: logos and user icons.
-- `/public`: extra static assets copied to build (globbed in `angular.json`).
-- `/src/styles.css`: global styles, including QueryBuilder theming.
-- `/src/proxy.conf.json`: dev proxy for `/services` → backend.
-- `/Dockerfile` & `nginx.conf.template`: containerized build/serve.
+  - `pages/shared/`: header/footer/navbar/spinner and shared form-control factory.
+- `/src/assets`: logos/icons/TOS markdown + runtime env files.
+- `/public`: static files copied to build output.
+- `/src/styles.css`: global styling + QueryBuilder theming.
+- `/src/proxy.conf.json`: dev proxy `/services` -> backend.
+- `/Dockerfile`, `/nginx.conf.template`: container build/serve config.
 
-- Build once you make changes to be sure you did not break something
-
+- Build once you make changes to be sure you did not break something.
 

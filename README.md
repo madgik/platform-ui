@@ -1,4 +1,4 @@
-# FlPlatform
+# MIP
 
 Angular 18 standalone application for running experiments, configuring algorithms, and reviewing results. It integrates with a backend over `/services` (proxied in dev) and uses Keycloak for authentication.
 
