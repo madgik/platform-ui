@@ -4,11 +4,10 @@ import { CommonModule } from "@angular/common";
 import { ExperimentDatePreset, ExperimentFilters, } from "./experiment-filter.model";
 
 @Component({
-  selector: 'app-experiment-search',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
-  templateUrl: './experiment-search.component.html',
-  styleUrls: ['./experiment-search.component.css'],
+    selector: 'app-experiment-search',
+    imports: [CommonModule, FormsModule],
+    templateUrl: './experiment-search.component.html',
+    styleUrls: ['./experiment-search.component.css']
 })
 export class ExperimentSearchComponent {
   @Input({ required: true }) filters!: ExperimentFilters;

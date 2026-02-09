@@ -3,11 +3,10 @@ import { AlgorithmTableRegistry, TableSpec } from './algorithm-table-registry';
 
 
 @Component({
-  selector: 'app-auto-renderer',
-  standalone: true,
-  imports: [],
-  templateUrl: './auto-renderer.component.html',
-  styleUrl: './auto-renderer.component.css'
+    selector: 'app-auto-renderer',
+    imports: [],
+    templateUrl: './auto-renderer.component.html',
+    styleUrl: './auto-renderer.component.css'
 })
 export class AutoRendererComponent implements OnChanges {
   @Input() value: any = null;

@@ -15,18 +15,17 @@ import { SpinnerComponent } from '../../shared/spinner/spinner.component';
 
 
 @Component({
-  selector: 'app-algorithm-panel',
-  standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    AlgorithmResultComponent,
-    EchartsxModule,
-    SpinnerComponent
-  ],
-  templateUrl: './algorithm-panel.component.html',
-  styleUrls: ['./algorithm-panel.component.css']
+    selector: 'app-algorithm-panel',
+    imports: [
+        CommonModule,
+        FormsModule,
+        ReactiveFormsModule,
+        AlgorithmResultComponent,
+        EchartsxModule,
+        SpinnerComponent
+    ],
+    templateUrl: './algorithm-panel.component.html',
+    styleUrls: ['./algorithm-panel.component.css']
 })
 
 export class AlgorithmPanelComponent {

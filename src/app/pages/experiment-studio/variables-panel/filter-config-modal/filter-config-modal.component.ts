@@ -8,11 +8,10 @@ import { FormsModule } from '@angular/forms';
 type SupportedType = 'real' | 'integer' | 'nominal';
 
 @Component({
-  standalone: true,
-  selector: 'app-filter-config-modal',
-  imports: [CommonModule, FormsModule, QueryBuilderModule],
-  templateUrl: './filter-config-modal.component.html',
-  styleUrls: ['./filter-config-modal.component.css'],
+    selector: 'app-filter-config-modal',
+    imports: [CommonModule, FormsModule, QueryBuilderModule],
+    templateUrl: './filter-config-modal.component.html',
+    styleUrls: ['./filter-config-modal.component.css']
 })
 export class FilterConfigModalComponent implements OnInit, OnChanges {
   @Input() filterLogic: any | null = null;

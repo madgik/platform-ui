@@ -4,11 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { createZoomableCirclePacking } from './zoomable-circle-packing';
 
 @Component({
-  selector: 'app-bubble-chart',
-  standalone: true,
-  templateUrl: './bubble-chart.component.html',
-  styleUrls: ['./bubble-chart.component.css'],
-  imports: [FormsModule],
+    selector: 'app-bubble-chart',
+    templateUrl: './bubble-chart.component.html',
+    styleUrls: ['./bubble-chart.component.css'],
+    imports: [FormsModule]
 })
 
 export class BubbleChartComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {

@@ -14,11 +14,10 @@ import { ExperimentLabelService } from '../../../services/experiment-label.servi
 import { EnumMaps } from '../../../core/algorithm-result-enum-mapper';
 
 @Component({
-  selector: 'app-experiment-details',
-  standalone: true,
-  templateUrl: './experiment-detail.component.html',
-  styleUrls: ['./experiment-detail.component.css'],
-  imports: [CommonModule, AlgorithmResultComponent, SpinnerComponent],
+    selector: 'app-experiment-details',
+    templateUrl: './experiment-detail.component.html',
+    styleUrls: ['./experiment-detail.component.css'],
+    imports: [CommonModule, AlgorithmResultComponent, SpinnerComponent]
 })
 export class ExperimentDetailsComponent {
   selectedExperiment = input<Experiment | null>(null);

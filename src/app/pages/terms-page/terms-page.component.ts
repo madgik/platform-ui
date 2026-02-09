@@ -8,11 +8,10 @@ import { AuthService } from '../../services/auth.service';
 import { TermsService } from '../../services/terms.service';
 
 @Component({
-  selector: 'app-terms-page',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
-  templateUrl: './terms-page.component.html',
-  styleUrls: ['./terms-page.component.css']
+    selector: 'app-terms-page',
+    imports: [CommonModule, FormsModule],
+    templateUrl: './terms-page.component.html',
+    styleUrls: ['./terms-page.component.css']
 })
 export class TermsPageComponent {
   tosHtml: SafeHtml | null = null;

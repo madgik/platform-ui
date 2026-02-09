@@ -7,11 +7,10 @@ import { D3HierarchyNode } from '../../../../models/data-model.interface';
 
 
 @Component({
-  selector: 'app-variable-filter-selection',
-  standalone: true,
-  templateUrl: './variable-filter-selection.component.html',
-  styleUrls: ['./variable-filter-selection.component.css'],
-  imports: [CommonModule, FilterConfigModalComponent, DragDropModule]
+    selector: 'app-variable-filter-selection',
+    templateUrl: './variable-filter-selection.component.html',
+    styleUrls: ['./variable-filter-selection.component.css'],
+    imports: [CommonModule, FilterConfigModalComponent, DragDropModule]
 })
 export class VariableFilterSelectionComponent implements OnInit {
   @Input() selectedNode: any; // Selected node from the bubble chart

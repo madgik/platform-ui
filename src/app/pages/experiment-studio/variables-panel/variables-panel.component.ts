@@ -16,23 +16,22 @@ import { catchError, map, of, Subject, switchMap, takeUntil } from 'rxjs';
 import { PdfExportService } from '../../../services/pdf-export.service';
 
 @Component({
-  selector: 'app-variables-panel',
-  standalone: true,
-  templateUrl: './variables-panel.component.html',
-  styleUrls: ['./variables-panel.component.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    CommonModule,
-    MatChipsModule,
-    MatIconModule,
-    BubbleChartComponent,
-    DistributionGraphComponent,
-    DataModelSelectorComponent,
-    DatasetSelectorComponent,
-    SearchBarComponent,
-    VariableFilterSelectionComponent,
-    SpinnerComponent,
-  ],
+    selector: 'app-variables-panel',
+    templateUrl: './variables-panel.component.html',
+    styleUrls: ['./variables-panel.component.css'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [
+        CommonModule,
+        MatChipsModule,
+        MatIconModule,
+        BubbleChartComponent,
+        DistributionGraphComponent,
+        DataModelSelectorComponent,
+        DatasetSelectorComponent,
+        SearchBarComponent,
+        VariableFilterSelectionComponent,
+        SpinnerComponent,
+    ]
 })
 export class VariablesPanelComponent implements OnDestroy {
   @Input() defaultModel: DataModel | null = null;

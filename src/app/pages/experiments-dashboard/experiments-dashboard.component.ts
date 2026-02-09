@@ -14,18 +14,17 @@ import { ErrorService } from '../../services/error.service';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
-  selector: 'app-experiments-dashboard',
-  templateUrl: './experiments-dashboard.component.html',
-  styleUrls: ['./experiments-dashboard.component.css'],
-  standalone: true,
-  imports: [
-    RouterModule,
-    CommonModule,
-    FormsModule,
-    ExperimentDetailsComponent,
-    ExperimentsListComponent,
-    ExperimentsCompareComponent
-  ]
+    selector: 'app-experiments-dashboard',
+    templateUrl: './experiments-dashboard.component.html',
+    styleUrls: ['./experiments-dashboard.component.css'],
+    imports: [
+        RouterModule,
+        CommonModule,
+        FormsModule,
+        ExperimentDetailsComponent,
+        ExperimentsListComponent,
+        ExperimentsCompareComponent
+    ]
 })
 export class ExperimentsDashboardComponent implements OnInit, OnDestroy {
   selectedExperiment = signal<Experiment | null>(null);

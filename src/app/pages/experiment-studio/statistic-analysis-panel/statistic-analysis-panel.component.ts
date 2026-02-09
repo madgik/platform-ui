@@ -28,11 +28,10 @@ interface ModelTableBlock {
 }
 
 @Component({
-  selector: 'app-statistic-analysis-panel',
-  standalone: true,
-  imports: [ChartRendererComponent, SpinnerComponent],
-  templateUrl: './statistic-analysis-panel.component.html',
-  styleUrls: ['./statistic-analysis-panel.component.css']
+    selector: 'app-statistic-analysis-panel',
+    imports: [ChartRendererComponent, SpinnerComponent],
+    templateUrl: './statistic-analysis-panel.component.html',
+    styleUrls: ['./statistic-analysis-panel.component.css']
 })
 export class StatisticAnalysisPanelComponent implements OnChanges {
   @Input() processedData: any[] = [];

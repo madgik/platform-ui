@@ -2,13 +2,12 @@ import { Component, EventEmitter, Input, Output, OnInit, ElementRef, HostListene
 import { FormsModule } from "@angular/forms";
 
 @Component({
-  selector: 'app-search-bar',
-  templateUrl: './search-bar.component.html',
-  standalone: true,
-  imports: [
-    FormsModule,
-  ],
-  styleUrls: ['./search-bar.component.css']
+    selector: 'app-search-bar',
+    templateUrl: './search-bar.component.html',
+    imports: [
+        FormsModule,
+    ],
+    styleUrls: ['./search-bar.component.css']
 })
 export class SearchBarComponent implements OnInit, OnChanges {
   @Input() dataModelHierarchy: any;

@@ -7,11 +7,10 @@ import { Component, OnInit } from "@angular/core";
 import { filter } from "rxjs";
 
 @Component({
-  selector: 'app-header',
-  standalone: true,
-  imports: [CommonModule, NavbarComponent, RouterModule],
-  templateUrl: './header.component.html',
-  styleUrls: ['./header.component.css']
+    selector: 'app-header',
+    imports: [CommonModule, NavbarComponent, RouterModule],
+    templateUrl: './header.component.html',
+    styleUrls: ['./header.component.css']
 })
 export class HeaderComponent implements OnInit {
   currentRoute: string | undefined;

@@ -8,14 +8,13 @@ import { NgxEchartsModule } from 'ngx-echarts';
 import { EnumMaps, LabelMap, mapAlgorithmResultEnums } from '../../../../core/algorithm-result-enum-mapper';
 
 @Component({
-  selector: 'app-algorithm-result',
-  standalone: true,
-  imports: [CommonModule,
-    AutoRendererComponent,
-    ChartRendererComponent,
-    NgxEchartsModule],
-  templateUrl: './algorithm-result.component.html',
-  styleUrls: ['./algorithm-result.component.css']
+    selector: 'app-algorithm-result',
+    imports: [CommonModule,
+        AutoRendererComponent,
+        ChartRendererComponent,
+        NgxEchartsModule],
+    templateUrl: './algorithm-result.component.html',
+    styleUrls: ['./algorithm-result.component.css']
 })
 export class AlgorithmResultComponent {
   result = input<any>(null);

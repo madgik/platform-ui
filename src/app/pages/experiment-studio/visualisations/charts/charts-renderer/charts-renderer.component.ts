@@ -4,11 +4,10 @@ import { ECharts, EChartsOption } from 'echarts';
 import { NgxEchartsModule, NgxEchartsDirective } from 'ngx-echarts';
 
 @Component({
-  selector: 'app-chart-renderer',
-  standalone: true,
-  imports: [CommonModule, NgxEchartsModule],
-  templateUrl: './charts-renderer.component.html',
-  styleUrls: ['./charts-renderer.component.css']
+    selector: 'app-chart-renderer',
+    imports: [CommonModule, NgxEchartsModule],
+    templateUrl: './charts-renderer.component.html',
+    styleUrls: ['./charts-renderer.component.css']
 })
 export class ChartRendererComponent implements AfterViewInit {
   @Input() charts: EChartsOption[] = [];

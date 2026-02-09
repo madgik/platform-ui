@@ -3,13 +3,12 @@ import { FormsModule } from "@angular/forms";
 import { DataModel } from '../../../../models/data-model.interface';
 
 @Component({
-  selector: 'app-data-model-selector',
-  templateUrl: './data-model-selector.component.html',
-  styleUrls: ['./data-model-selector.component.css'],
-  standalone: true,
-  imports: [
-    FormsModule,
-  ]
+    selector: 'app-data-model-selector',
+    templateUrl: './data-model-selector.component.html',
+    styleUrls: ['./data-model-selector.component.css'],
+    imports: [
+        FormsModule,
+    ]
 })
 export class DataModelSelectorComponent implements OnChanges, OnInit {
   @Input() crossSectionalModels: DataModel[] = [];

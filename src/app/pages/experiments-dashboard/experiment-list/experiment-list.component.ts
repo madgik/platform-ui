@@ -9,11 +9,10 @@ import { Router } from '@angular/router';
 import { ExperimentFilters } from '../experiment-search/experiment-filter.model';
 
 @Component({
-  selector: 'app-experiments-list',
-  standalone: true,
-  imports: [CommonModule, FormsModule, ExperimentSearchComponent],
-  templateUrl: './experiment-list.component.html',
-  styleUrls: ['./experiment-list.component.css'],
+    selector: 'app-experiments-list',
+    imports: [CommonModule, FormsModule, ExperimentSearchComponent],
+    templateUrl: './experiment-list.component.html',
+    styleUrls: ['./experiment-list.component.css']
 })
 export class ExperimentsListComponent {
   @Output() experimentSelected = new EventEmitter<Experiment>();

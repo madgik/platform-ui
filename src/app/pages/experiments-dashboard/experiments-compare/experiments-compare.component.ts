@@ -26,11 +26,10 @@ interface CompareRow {
 }
 
 @Component({
-  selector: 'app-experiments-compare',
-  standalone: true,
-  imports: [CommonModule, FormsModule, AlgorithmResultComponent],
-  templateUrl: './experiments-compare.component.html',
-  styleUrls: ['./experiments-compare.component.css'],
+    selector: 'app-experiments-compare',
+    imports: [CommonModule, FormsModule, AlgorithmResultComponent],
+    templateUrl: './experiments-compare.component.html',
+    styleUrls: ['./experiments-compare.component.css']
 })
 export class ExperimentsCompareComponent {
   experiments = input<Experiment[]>([]);

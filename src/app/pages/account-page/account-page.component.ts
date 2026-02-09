@@ -7,11 +7,10 @@ import { Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
 
 @Component({
-  selector: 'app-account-page',
-  standalone: true,
-  imports: [CommonModule, RouterModule],
-  templateUrl: './account-page.component.html',
-  styleUrls: ['./account-page.component.css']
+    selector: 'app-account-page',
+    imports: [CommonModule, RouterModule],
+    templateUrl: './account-page.component.html',
+    styleUrls: ['./account-page.component.css']
 })
 export class AccountPageComponent implements OnInit, OnDestroy {
   userName = '';
