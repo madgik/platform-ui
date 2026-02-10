@@ -88,6 +88,12 @@
       <!-- DISTRIBUTIONS TAB (Two sheets: Numeric + Nominal) -->
       @if (activeTab === 'Distributions' && showBoxPlots) {
       <section class="distributions-section">
+        <div class="accordion-controls no-margin-top">
+          <button class="toolbar-icon-btn" (click)="exportAllDescriptiveToPDF()" title="Export PDF">
+            <i class="fa fa-file-pdf-o"></i>
+            Export
+          </button>
+        </div>
         <!-- Sub-tabs to switch between Numeric and Nominal sheets (only if both exist) -->
         @if (nonNominalVariables.length > 0 && nominalVariables.length > 0) {
         <div class="distribution-sheet-tabs">
@@ -141,9 +147,16 @@
 
       <!-- Hidden charts for PDF export -->
       <div class="hidden-charts-for-export">
-        @for (v of nonNominalVariables; track v; let i = $index) {
-        <app-chart-renderer class="invisible" [charts]="chartsForBoxPlot[i]"></app-chart-renderer>
-        }
+        <div class="numeric-charts-export">
+          @for (v of nonNominalVariables; track v; let i = $index) {
+          <app-chart-renderer class="invisible" [charts]="chartsForBoxPlot[i]"></app-chart-renderer>
+          }
+        </div>
+        <div class="nominal-charts-export">
+          @for (v of nominalVariables; track v; let i = $index) {
+          <app-chart-renderer class="invisible" [charts]="chartsForNominal[i]"></app-chart-renderer>
+          }
+        </div>
       </div>
     </div>
   </div>

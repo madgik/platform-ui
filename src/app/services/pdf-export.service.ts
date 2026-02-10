@@ -23,6 +23,8 @@ export interface DescriptiveStatsData {
     models: any[];
     charts?: NodeListOf<HTMLElement>;
     nonNominalVariables?: any[];
+    nominalCharts?: NodeListOf<HTMLElement>;
+    nominalVariables?: any[];
 }
 
 @Injectable({
@@ -222,15 +224,18 @@ export class PdfExportService {
             addSection('Variables', data.variables || []);
             addSection('Model', data.models || []);
 
-            // Boxplots
+            // Boxplots (Numeric Variables)
             if (data.charts?.length && data.nonNominalVariables?.length) {
-                doc.addPage();
-                yOffset = 20;
-                doc.setFontSize(14);
-                doc.text('Box Plot Charts', 10, yOffset);
-                yOffset += 10;
-
                 for (let i = 0; i < data.charts.length; i++) {
+                    doc.addPage();
+                    yOffset = 20;
+
+                    if (i === 0) {
+                        doc.setFontSize(14);
+                        doc.text('Box Plot Charts (Numeric)', 10, yOffset);
+                        yOffset += 10;
+                    }
+
                     const label =
                         data.nonNominalVariables[i]?.name ||
                         data.nonNominalVariables[i]?.label ||
@@ -253,14 +258,54 @@ export class PdfExportService {
                         doc.text(label, 15, yOffset);
                         yOffset += 6;
 
-                        if (yOffset + imgHeight > 270) {
-                            doc.addPage();
-                            yOffset = 20;
-                        }
                         doc.addImage(imgData, 'PNG', 15, yOffset, imgWidth, imgHeight);
                         yOffset += imgHeight + 12;
                     } catch (err) {
                         console.warn(`Failed to render chart for ${label}`, err);
+                        doc.text(`${label} — (chart not ready)`, 15, yOffset);
+                        yOffset += 10;
+                    }
+                }
+            }
+
+            // Nominal Charts (Grouped Bar Charts)
+            if (data.nominalCharts?.length && data.nominalVariables?.length) {
+                for (let i = 0; i < data.nominalCharts.length; i++) {
+                    doc.addPage();
+                    yOffset = 20;
+
+                    if (i === 0) {
+                        doc.setFontSize(14);
+                        doc.text('Frequency Charts (Nominal)', 10, yOffset);
+                        yOffset += 10;
+                    }
+
+                    const label =
+                        data.nominalVariables[i]?.name ||
+                        data.nominalVariables[i]?.label ||
+                        `Nominal Variable ${i + 1}`;
+                    const chartEl = data.nominalCharts[i];
+                    if (!chartEl) continue;
+
+                    try {
+                        const canvas = await html2canvas(chartEl, {
+                            backgroundColor: '#ffffff',
+                            scale: 3,
+                            useCORS: true,
+                            logging: false,
+                        });
+                        const imgData = canvas.toDataURL('image/png');
+                        const imgWidth = 180;
+                        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+                        doc.setFontSize(11);
+                        doc.text(label, 15, yOffset);
+                        yOffset += 6;
+
+                        doc.addImage(imgData, 'PNG', 15, yOffset, imgWidth, imgHeight);
+                        yOffset += imgHeight + 12;
+                    } catch (err) {
+                        console.warn(`Failed to render nominal chart for ${label}`, err);
                         doc.text(`${label} — (chart not ready)`, 15, yOffset);
                         yOffset += 10;
                     }

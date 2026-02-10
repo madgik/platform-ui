@@ -406,8 +406,12 @@ export class StatisticAnalysisPanelComponent implements OnChanges {
   async exportAllDescriptiveToPDF(): Promise<void> {
     this.isExporting = true;
     try {
-      const charts = document.querySelectorAll(
-        '.hidden-charts-for-export app-chart-renderer'
+      const numericCharts = document.querySelectorAll(
+        '.hidden-charts-for-export .numeric-charts-export app-chart-renderer'
+      ) as NodeListOf<HTMLElement>;
+
+      const nominalCharts = document.querySelectorAll(
+        '.hidden-charts-for-export .nominal-charts-export app-chart-renderer'
       ) as NodeListOf<HTMLElement>;
 
       const dataModel = this.expStudioService.selectedDataModel();
@@ -417,8 +421,10 @@ export class StatisticAnalysisPanelComponent implements OnChanges {
         pathologyName,
         variables: this.processedData,
         models: this.modelData,
-        charts,
-        nonNominalVariables: this.nonNominalVariables
+        charts: numericCharts,
+        nonNominalVariables: this.nonNominalVariables,
+        nominalCharts: nominalCharts,
+        nominalVariables: this.nominalVariables
       });
     } catch (err) {
       console.error('PDF export failed:', err);
