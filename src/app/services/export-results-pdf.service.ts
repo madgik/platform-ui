@@ -126,18 +126,31 @@ export class PdfExportService {
     }
   ): void {
     const { margin, experimentName, createdBy, createdAt } = options;
-
+    const pageWidth = doc.internal.pageSize.getWidth();
     doc.setTextColor(0);
     doc.setFontSize(22);
-    doc.text(experimentName, margin.left, 110);
+
+    const nameLines: string[] = doc.splitTextToSize(experimentName, pageWidth - margin.left - margin.right);
+    let currentY = 110;
+
+    nameLines.forEach((line) => {
+      doc.text(line, margin.left, currentY);
+      currentY += 10;
+    });
+
     doc.setDrawColor(2, 122, 122);
     doc.setLineWidth(0.6);
-    doc.line(margin.left, 112, margin.left + 50, 112);
+    doc.line(margin.left, currentY - 8, margin.left + 50, currentY - 8);
 
     doc.setFontSize(11);
     doc.setTextColor(110);
     const createdLine = this.buildCreatedLine(createdBy, createdAt);
-    doc.text(createdLine, margin.left, 118);
+    const createdLines: string[] = doc.splitTextToSize(createdLine, pageWidth - margin.left - margin.right);
+
+    createdLines.forEach((line) => {
+      doc.text(line, margin.left, currentY - 2);
+      currentY += 6;
+    });
   }
 
   private renderDetailsPage(

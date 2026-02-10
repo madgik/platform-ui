@@ -294,44 +294,72 @@
   display: flex;
 }
 
-/* ---------- FLOATING EXPORT BUTTON ---------- */
+/* ---------- EXPORT BUTTONS ---------- */
 
-.floating-button {
+.export-actions {
   position: absolute;
   right: 12px;
   bottom: 14px;
-  background: linear-gradient(135deg, var(--primary-color, #2b33e9), var(--primary-light, #7f9ce8));
-  color: #ffffff;
-  border: none;
-  border-radius: var(--radius-md);
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+}
+
+.export-button {
+  background: #ffffff;
+  color: var(--primary-color, #2b33e9);
+  border: 1px solid rgba(43, 51, 233, 0.15);
+  border-radius: var(--radius-md, 8px);
   width: 40px;
   height: 40px;
   font-size: 1.1rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.3);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
   cursor: pointer;
-  z-index: 10;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.floating-button:hover {
+.export-button--pdf {
+  background: linear-gradient(135deg, var(--primary-color, #2b33e9), var(--primary-light, #7f9ce8));
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 8px 16px rgba(43, 51, 233, 0.25);
+}
+
+.export-button--pdf:hover {
   background: #ffffff;
   color: var(--primary-color, #2b33e9);
-  transform: translateY(-1px) scale(1.03);
-  box-shadow: 0 16px 30px rgba(15, 23, 42, 0.35);
+  border: 1px solid var(--primary-color);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 12px 20px rgba(43, 51, 233, 0.3);
 }
 
-.floating-button:disabled {
-  background: #d1d5db;
-  color: #6b7280;
+.export-button--csv {
+  background: #ffffff;
+  color: #10b981;
+  /* Success green for CSV */
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.export-button--csv:hover {
+  background: #10b981;
+  color: #ffffff;
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 12px 20px rgba(16, 185, 129, 0.25);
+}
+
+.export-button:disabled {
+  background: #f3f4f6;
+  color: #9ca3af;
+  border-color: #e5e7eb;
   cursor: not-allowed;
   box-shadow: none;
   transform: none;
 }
 
-.pdf-exporting .floating-button {
+.pdf-exporting .export-actions {
   opacity: 0;
   pointer-events: none;
 }

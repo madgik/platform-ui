@@ -44,13 +44,19 @@ export class PdfExportService {
             const { title, nodeLabel, modelLabel, datasetLabels, description, meta, isGroupView } = options;
 
             doc.setFontSize(16);
-            doc.text(title, 12, 14);
+            const titleLines = doc.splitTextToSize(title, 180);
+            doc.text(titleLines, 12, 14);
+
+            let cursorY = 14 + (titleLines.length * 6);
+
             if (nodeLabel) {
                 doc.setFontSize(11);
-                doc.text(nodeLabel, 12, 21);
+                const nodeLabelLines = doc.splitTextToSize(nodeLabel, 180);
+                doc.text(nodeLabelLines, 12, cursorY);
+                cursorY += (nodeLabelLines.length * 5);
             }
 
-            let cursorY = nodeLabel ? 26 : 20;
+            cursorY += 2;
             if (modelLabel) {
                 doc.setFontSize(9);
                 doc.text(`Data model: ${modelLabel}`, 12, cursorY);
@@ -105,9 +111,10 @@ export class PdfExportService {
                 imgData = await new Promise<string | null>((resolve) => {
                     const img = new Image();
                     img.onload = () => {
+                        const qualityScale = 3; // Increase resolution
                         const canvas = document.createElement('canvas');
-                        const width = rawWidth || img.width;
-                        const height = rawHeight || img.height;
+                        const width = (rawWidth || img.width) * qualityScale;
+                        const height = (rawHeight || img.height) * qualityScale;
                         canvas.width = width;
                         canvas.height = height;
                         const ctx = canvas.getContext('2d');
@@ -115,7 +122,7 @@ export class PdfExportService {
                             ctx.fillStyle = '#ffffff';
                             ctx.fillRect(0, 0, width, height);
                             ctx.drawImage(img, 0, 0, width, height);
-                            resolve(canvas.toDataURL('image/png'));
+                            resolve(canvas.toDataURL('image/png', 1.0));
                         } else {
                             resolve(null);
                         }
@@ -132,7 +139,7 @@ export class PdfExportService {
             if (!imgData) {
                 const canvas = await html2canvas(element, {
                     backgroundColor: '#ffffff',
-                    scale: 2.0,
+                    scale: 3.0,
                     useCORS: true,
                     logging: false,
                 });
@@ -178,8 +185,9 @@ export class PdfExportService {
             if (data.pathologyName) {
                 doc.setFontSize(16);
                 doc.setFont('helvetica', 'bold');
-                doc.text(data.pathologyName, 10, yOffset);
-                yOffset += 10;
+                const pathLines = doc.splitTextToSize(data.pathologyName, 180);
+                doc.text(pathLines, 10, yOffset);
+                yOffset += (pathLines.length * 7);
                 doc.setFont('helvetica', 'normal');
             }
 
@@ -233,7 +241,7 @@ export class PdfExportService {
                     try {
                         const canvas = await html2canvas(chartEl, {
                             backgroundColor: '#ffffff',
-                            scale: 2,
+                            scale: 3,
                             useCORS: true,
                             logging: false,
                         });

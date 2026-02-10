@@ -14,6 +14,7 @@ import { DistributionGraphComponent } from './distribution-graph/distribution-gr
 import { SpinnerComponent } from '../../shared/spinner/spinner.component';
 import { catchError, map, of, Subject, switchMap, takeUntil } from 'rxjs';
 import { PdfExportService } from '../../../services/pdf-export.service';
+import { CsvExportService } from '../../../services/csv-export.service';
 
 @Component({
   selector: 'app-variables-panel',
@@ -42,6 +43,7 @@ export class VariablesPanelComponent implements OnDestroy {
 
   experimentStudioService = inject(ExperimentStudioService);
   pdfExportService = inject(PdfExportService);
+  csvExportService = inject(CsvExportService);
   private cdr = inject(ChangeDetectorRef);
 
   errorService = inject(ErrorService);
@@ -572,6 +574,18 @@ export class VariablesPanelComponent implements OnDestroy {
     } finally {
       this.isExporting.set(false);
     }
+  }
+
+  exportDistributionCsv(): void {
+    if (this.isExportDisabled()) return;
+
+    const data = this.groupHistogramData() || this.distributionData();
+    if (!data) return;
+
+    this.csvExportService.exportDistributionCsv(
+      { bins: data.bins, counts: data.counts },
+      String(this.selectedNode?.label ?? data.variableName ?? 'distribution')
+    );
   }
 
   private countLeafNodes(node: any): number {
