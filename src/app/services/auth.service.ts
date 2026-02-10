@@ -35,12 +35,12 @@ export class AuthService {
       return;
     }
     this.initialized = true;
-    this.refreshAuthState();
+    this.refreshAuthState().subscribe();
   }
 
-  refreshAuthState(): void {
+  refreshAuthState(): Observable<User | null> {
     this.authStateSignal.set({ status: 'checking' });
-    this.refreshUser().subscribe();
+    return this.refreshUser();
   }
 
   private refreshUser(): Observable<User | null> {

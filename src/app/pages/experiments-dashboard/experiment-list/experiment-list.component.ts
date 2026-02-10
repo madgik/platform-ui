@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, computed, signal, Input, effect } from '@angular/core';
+import { Component, Output, EventEmitter, computed, signal, Input, effect, OnInit } from '@angular/core';
 import { ExperimentsDashboardService } from '../../../services/experiments-dashboard.service';
 import { ExperimentStudioService } from '../../../services/experiment-studio.service';
 import { Experiment } from '../../../models/experiments-dashboard.model';
@@ -14,7 +14,7 @@ import { ExperimentFilters } from '../experiment-search/experiment-filter.model'
   templateUrl: './experiment-list.component.html',
   styleUrls: ['./experiment-list.component.css']
 })
-export class ExperimentsListComponent {
+export class ExperimentsListComponent implements OnInit {
   @Output() experimentSelected = new EventEmitter<Experiment>();
   @Output() deleteRequested = new EventEmitter<string>();
   @Output() editRequested = new EventEmitter<string>();
@@ -50,7 +50,12 @@ export class ExperimentsListComponent {
     }, { allowSignalWrites: true });
   }
 
+  ngOnInit(): void {
+    this.onlyMine.set(this.initialOnlyMine);
+  }
+
   // toggle
+  @Input() initialOnlyMine = true;
   readonly onlyMine = signal(true);
 
   // pagination

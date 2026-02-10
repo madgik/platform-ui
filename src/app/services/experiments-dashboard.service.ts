@@ -47,17 +47,11 @@ export class ExperimentsDashboardService {
       })
       .subscribe({
         next: (response) => {
-          if (response?.experiments) {
-            const mappedExperiments = response.experiments.map(mapBackendToFrontend);
-            this.experiments.set(mappedExperiments);
-            this.totalExperiments.set(response.totalExperiments || 0);
-            this.totalPages.set(response.totalPages || 0);
-            this.currentPage.set(response.currentPage || 0);
-          } else {
-            console.error('Unexpected response format:', response);
-            this.experiments.set([]);
-            this.errorService.setError('Failed to load experiments.');
-          }
+          const mappedExperiments = (response?.experiments || []).map(mapBackendToFrontend);
+          this.experiments.set(mappedExperiments);
+          this.totalExperiments.set(response?.totalExperiments || 0);
+          this.totalPages.set(response?.totalPages || 0);
+          this.currentPage.set(response?.currentPage || 0);
         },
         error: (err) => {
           console.error('[ExperimentsDashboardService] getUserExperiments error', err);

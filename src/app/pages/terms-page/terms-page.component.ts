@@ -51,22 +51,46 @@ export class TermsPageComponent implements OnInit {
     if (!this.accepted || this.submitting) {
       return;
     }
-    if (this.authService.currentUser?.agreeNDA) {
+
+    const navigateToDashboard = () => {
       const redirect = this.termsService.consumeRedirectUrl() || '/experiments-dashboard';
-      this.router.navigateByUrl(redirect);
+      this.router.navigateByUrl(redirect).then((navigated) => {
+        if (!navigated) {
+          this.submitting = false;
+          this.cdr.markForCheck();
+        }
+      }).catch(() => {
+        this.submitting = false;
+        this.cdr.markForCheck();
+      });
+    };
+
+    if (this.authService.currentUser?.agreeNDA) {
+      navigateToDashboard();
       return;
     }
+
     this.acceptError = false;
     this.submitting = true;
+    this.cdr.markForCheck();
+
     this.http.post('/services/activeUser/agreeNDA', {}).subscribe({
       next: () => {
-        this.authService.refreshAuthState();
-        const redirect = this.termsService.consumeRedirectUrl() || '/experiments-dashboard';
-        this.router.navigateByUrl(redirect);
+        this.authService.refreshAuthState().subscribe({
+          next: () => {
+            navigateToDashboard();
+          },
+          error: () => {
+            this.submitting = false;
+            this.acceptError = true;
+            this.cdr.markForCheck();
+          }
+        });
       },
       error: () => {
         this.submitting = false;
         this.acceptError = true;
+        this.cdr.markForCheck();
       }
     });
   }

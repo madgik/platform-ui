@@ -55,6 +55,8 @@ export class ExperimentsDashboardComponent implements OnInit, OnDestroy {
 
   constructor() { }
 
+  hasDeepLink = signal(false);
+
   ngOnInit(): void {
     this.errorService.clearError();
     this.errorService.error$
@@ -65,6 +67,7 @@ export class ExperimentsDashboardComponent implements OnInit, OnDestroy {
       const expId = params.get('experiment');
       if (expId) {
         this.sharedExperimentId.set(expId);
+        this.hasDeepLink.set(true);
       }
     });
   }
