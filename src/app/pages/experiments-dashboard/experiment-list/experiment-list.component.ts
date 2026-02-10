@@ -5,12 +5,12 @@ import { Experiment } from '../../../models/experiments-dashboard.model';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ExperimentSearchComponent } from '../experiment-search/experiment-search.component';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { ExperimentFilters } from '../experiment-search/experiment-filter.model';
 
 @Component({
   selector: 'app-experiments-list',
-  imports: [CommonModule, FormsModule, ExperimentSearchComponent],
+  imports: [CommonModule, FormsModule, RouterModule, ExperimentSearchComponent],
   templateUrl: './experiment-list.component.html',
   styleUrls: ['./experiment-list.component.css']
 })

@@ -26,8 +26,18 @@
 
   @if (!pagedExperiments().length) {
   <div class="empty-state">
-    <h3>No experiments yet</h3>
-    <p>Run an analysis in the studio and it will appear here.</p>
+    <div class="empty-icon">
+      <i class="fas fa-flask"></i>
+    </div>
+    <h3>No experiments found</h3>
+    <p>
+      Ready to start your research? <br />
+      Launch the Studio to create your first experiment.
+    </p>
+    <a routerLink="/experiment-studio" class="empty-action-btn">
+      <i class="fas fa-plus"></i>
+      Create New Experiment
+    </a>
   </div>
   } @else {
   <!-- Pagination top -->
