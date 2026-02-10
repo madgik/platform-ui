@@ -1,14 +1,14 @@
 :host {
   display: block;
   height: 100%;
-  min-height: 600px;
+  min-height: 500px;
 }
 
 .distribution-graph-expanded {
   position: relative;
   flex-grow: 1;
   height: 100%;
-  min-height: 500px;
+  min-height: 450px;
   overflow-x: hidden;
   overflow-y: auto;
 }

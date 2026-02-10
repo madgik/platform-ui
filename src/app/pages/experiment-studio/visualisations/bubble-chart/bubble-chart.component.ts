@@ -4,10 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { createZoomableCirclePacking } from './zoomable-circle-packing';
 
 @Component({
-    selector: 'app-bubble-chart',
-    templateUrl: './bubble-chart.component.html',
-    styleUrls: ['./bubble-chart.component.css'],
-    imports: [FormsModule]
+  selector: 'app-bubble-chart',
+  templateUrl: './bubble-chart.component.html',
+  styleUrls: ['./bubble-chart.component.css'],
+  imports: [FormsModule]
 })
 
 export class BubbleChartComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
@@ -41,6 +41,7 @@ export class BubbleChartComponent implements OnInit, OnChanges, AfterViewInit, O
   private destroyFn?: () => void;
   private resizeObserver?: ResizeObserver;
   private resizeRaf = 0;
+  private resizeDebounce: any = 0;
   private lastSize = { width: 0, height: 0 };
   private isAnimating = false;
 
@@ -155,20 +156,21 @@ export class BubbleChartComponent implements OnInit, OnChanges, AfterViewInit, O
           const entry = entries[0];
           if (!entry) return;
 
-          // contentRect is more accurate for size changes than getBoundingClientRect in many cases
           const { width, height } = entry.contentRect;
           const roundedW = Math.floor(width);
           const roundedH = Math.floor(height);
 
           if (roundedW === this.lastSize.width && roundedH === this.lastSize.height) return;
           if (this.isAnimating) return;
+          if (roundedW === 0 || roundedH === 0) return;
 
           this.lastSize = { width: roundedW, height: roundedH };
 
-          if (this.resizeRaf) cancelAnimationFrame(this.resizeRaf);
-          this.resizeRaf = requestAnimationFrame(() => {
+          // Debounce: wait until resizing stops before re-rendering
+          clearTimeout(this.resizeDebounce);
+          this.resizeDebounce = setTimeout(() => {
             this.ngZone.run(() => this.renderChart());
-          });
+          }, 150);
         });
         this.resizeObserver.observe(canvas);
       });
@@ -211,6 +213,7 @@ export class BubbleChartComponent implements OnInit, OnChanges, AfterViewInit, O
     this.destroyFn?.();
     this.resizeObserver?.disconnect();
     if (this.resizeRaf) cancelAnimationFrame(this.resizeRaf);
+    clearTimeout(this.resizeDebounce);
   }
 
   renderChart(): void {

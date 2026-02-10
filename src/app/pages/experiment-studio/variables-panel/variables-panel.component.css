@@ -51,7 +51,7 @@
   display: grid;
   grid-template-columns: 1.1fr 0.9fr;
   gap: 24px;
-  align-items: stretch;
+  align-items: start;
 }
 
 .bubble-column {
@@ -61,7 +61,6 @@
   min-width: 0;
   width: 100%;
   align-items: stretch;
-  height: 100%;
 }
 
 .right-column {
@@ -78,9 +77,8 @@
   /* Removed max-height calc to allow filling the container */
   /* max-height: calc(100vh - 300px); */
   /* aspect-ratio: 1 / 1; REMOVED square constraint */
-  min-height: 400px;
-  flex-grow: 1;
-  /* Allow it to grow to fill remaining space in the column */
+  aspect-ratio: 1 / 1;
+  flex-grow: 0;
   display: flex;
   flex-direction: column;
   background: var(--studio-card-bg, rgba(255, 255, 255, 0.72));

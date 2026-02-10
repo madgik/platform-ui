@@ -204,19 +204,14 @@ export function createZoomableCirclePacking(
   );
 
   let focus = root;
-  // Use a 2.3x radius to provide a ~15% safety buffer on all sides for labels
-  let view: [number, number, number] = [focus.x, focus.y, focus.r * 2.3];
+  // Use a 2.05x radius to reduce padding
+  let view: [number, number, number] = [focus.x, focus.y, focus.r * 2];
   let selectedDataNode: d3.HierarchyNode<any> | null = null;
 
   const svg = d3
     .create('svg')
-    .attr('preserveAspectRatio', 'xMidYMid meet')
     .attr('viewBox', `0 0 ${width} ${height}`)
-    .attr('width', width)
-    .attr('height', height)
-    .style('display', 'block')
-    .style('margin', '0')
-    .style('cursor', 'pointer')
+    .attr('preserveAspectRatio', 'xMidYMid meet')
     .attr(
       'style',
       `width: 100%; height: 100%; display: block; margin: 0;
