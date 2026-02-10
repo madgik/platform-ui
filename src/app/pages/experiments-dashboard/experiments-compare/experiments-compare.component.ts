@@ -26,10 +26,10 @@ interface CompareRow {
 }
 
 @Component({
-    selector: 'app-experiments-compare',
-    imports: [CommonModule, FormsModule, AlgorithmResultComponent],
-    templateUrl: './experiments-compare.component.html',
-    styleUrls: ['./experiments-compare.component.css']
+  selector: 'app-experiments-compare',
+  imports: [CommonModule, FormsModule, AlgorithmResultComponent],
+  templateUrl: './experiments-compare.component.html',
+  styleUrls: ['./experiments-compare.component.css']
 })
 export class ExperimentsCompareComponent {
   experiments = input<Experiment[]>([]);
@@ -220,5 +220,20 @@ export class ExperimentsCompareComponent {
     const vars = (exp as any)?.covariates;
     if (Array.isArray(vars)) return vars[0] ?? null;
     return null;
+  }
+
+  enrichResult(exp: Experiment, result: any): any {
+    if (!result || !exp) return result;
+
+    const algo = exp.algorithmName;
+    if (algo !== 'pca' && algo !== 'pca_with_transformation') return result;
+
+    const allNames = [
+      ...this.getVariablesWithLabels(exp).map(v => v.label),
+      ...this.getCovariatesWithLabels(exp).map(c => c.label),
+    ];
+
+    if (allNames.length > 0) return { ...result, variable_names: allNames };
+    return result;
   }
 }

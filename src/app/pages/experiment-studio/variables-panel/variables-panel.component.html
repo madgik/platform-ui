@@ -61,7 +61,8 @@
                 <i class="fas fa-magic"></i>
               </div>
               <h3>Welcome to Experiment Studio</h3>
-              <p>Explore your data model by clicking the bubbles in the chart or use the search bar to find specific variables.</p>
+              <p>Explore your data model by clicking the bubbles in the chart or use the search bar to find specific
+                variables.</p>
               <div class="empty-state-actions">
                 <div class="hint-item">
                   <i class="fas fa-mouse-pointer"></i>
@@ -101,6 +102,14 @@
             } @else if (distributionData()) {
             <div class="group-summary">
               <div class="group-summary-header">
+                @if (selectedNode?.description) {
+                <div class="group-summary-path" style="margin-bottom: 8px;">
+                  <span class="group-summary-label">Description</span>
+                  <span class="group-summary-value" style="font-weight: 400;">
+                    {{ selectedNode?.description }}
+                  </span>
+                </div>
+                }
                 <p class="group-summary-path">
                   <span class="group-summary-label">Path</span>
                   <span class="group-summary-value">
@@ -113,11 +122,6 @@
                     }
                   </span>
                 </p>
-                @if (selectedNode?.description) {
-                <p class="group-summary-empty">
-                  {{ selectedNode?.description }}
-                </p>
-                }
               </div>
             </div>
             <app-distribution-graph [data]="distributionData()"></app-distribution-graph>

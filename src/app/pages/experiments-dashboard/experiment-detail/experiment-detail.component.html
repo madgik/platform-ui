@@ -203,7 +203,7 @@
       } @else if (loadError()) {
       <div class="error-box">{{ loadError() }}</div>
       } @else if (experimentResult()) {
-      <app-algorithm-result [result]="experimentResult()" [schema]="outputSchema()"
+      <app-algorithm-result [result]="enrichedResult()" [schema]="outputSchema()"
         [algorithm]="experimentalAlgorithmName()" [enumMaps]="enumMaps()" [yVar]="yVar()" [xVar]="xVar()"
         [labelMap]="labelMap()" />
       } @else {

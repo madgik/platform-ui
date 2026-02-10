@@ -50,10 +50,12 @@ export function buildPCAHeatmapChart(result: any): EChartsOption[] {
         },
       },
       grid: {
-        height: '80%',
+        height: '75%',
         top: '10%',
-        left: '20%',
+        left: '10%',
         right: '10%',
+        bottom: '15%',
+        containLabel: true,
       },
       xAxis: {
         type: 'category',

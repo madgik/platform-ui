@@ -227,6 +227,23 @@ export class ExperimentDetailsComponent {
     this.withLabels(this.selectedExperiment()?.filters)
   );
 
+  /** Enriches PCA results with actual variable labels so the heatmap doesn't fall back to Var1/Var2. */
+  readonly enrichedResult = computed(() => {
+    const result = this.experimentResult();
+    if (!result) return result;
+
+    const algo = this.experimentalAlgorithmName();
+    if (algo !== 'pca' && algo !== 'pca_with_transformation') return result;
+
+    const allNames = [
+      ...this.variablesWithLabels(),
+      ...this.covariatesWithLabels(),
+    ].map(v => v.label);
+
+    if (allNames.length > 0) return { ...result, variable_names: allNames };
+    return result;
+  });
+
   onExportPdf(): void {
     const element = this.resultsCardRef?.nativeElement;
     const result = this.experimentResult();

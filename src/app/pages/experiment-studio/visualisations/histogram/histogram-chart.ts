@@ -54,7 +54,7 @@ export function createHistogram(
   const yLabelBBox = (tempLabel.node() as SVGTextElement).getBBox();
   tempLabel.remove();
 
-  const baseMargins = { top: 30, right: 10, bottom: 60, left: 40 };
+  const baseMargins = { top: 50, right: 10, bottom: 60, left: 40 };
   const labelCharsPerLine = 10;
   const maxLabelLength = bins.reduce((max, b) => Math.max(max, String(b).length), 0);
   const estimatedLines = Math.max(1, Math.ceil(maxLabelLength / labelCharsPerLine));
@@ -66,7 +66,7 @@ export function createHistogram(
     if (Number.isNaN(num)) return false;
     return raw.length >= 4 && raw.includes('.');
   });
-  const needsRotate = hasStringBins || hasLongNumericBins;
+  const needsRotate = (hasStringBins && estimatedLines > 1) || hasLongNumericBins || (hasStringBins && bins.length > 8);
   const rotateExtra = needsRotate ? 22 : 0;
   const bottomMargin = Math.max(
     70,
@@ -91,11 +91,17 @@ export function createHistogram(
   const innerWidth = desiredWidth - margin.left - margin.right;
   const innerHeight = effectiveHeight - margin.top - margin.bottom - 40;
 
+  // Aesthetic: Limit max bar width for small number of bins
+  const maxBarWidth = 100;
+  const optimalChartWidth = bins.length * maxBarWidth;
+  const chartWidth = Math.min(innerWidth, optimalChartWidth);
+  const xOffset = (innerWidth - chartWidth) / 2;
+
   // Scales
   const xScale = d3
     .scaleBand()
     .domain(bins)
-    .range([0, innerWidth])
+    .range([0, chartWidth])
     .padding(0.2);
 
   const yScale = d3
@@ -107,7 +113,7 @@ export function createHistogram(
   // Chart group
   const chart = svg
     .append('g')
-    .attr('transform', `translate(${margin.left}, ${margin.top})`);
+    .attr('transform', `translate(${margin.left + xOffset}, ${margin.top})`);
 
   // Background Grid (Y-axis only)
   chart
@@ -116,7 +122,7 @@ export function createHistogram(
     .call(
       d3.axisLeft(yScale)
         .ticks(6)
-        .tickSize(-innerWidth)
+        .tickSize(-chartWidth)
         .tickFormat(() => '')
     )
     .call(g => g.select('.domain').remove())
@@ -217,4 +223,19 @@ export function createHistogram(
     .style('fill', mutedTextColor)
     .style('letter-spacing', '0.08em')
     .style('text-transform', 'uppercase');
+
+  // X label
+  // X label (now at top)
+  if (data.variableName) {
+    chart
+      .append('text')
+      .attr('x', chartWidth / 2)
+      .attr('y', -25) // Position above the grid/chart
+      .attr('text-anchor', 'middle')
+      .text(data.variableName)
+      .style('font-size', '14px')
+      .style('font-weight', '700')
+      .style('fill', textColor)
+    //.style('letter-spacing', '0.08em')
+  }
 }
