@@ -8,10 +8,10 @@ import { FormsModule } from '@angular/forms';
 type SupportedType = 'real' | 'integer' | 'nominal';
 
 @Component({
-    selector: 'app-filter-config-modal',
-    imports: [CommonModule, FormsModule, QueryBuilderModule],
-    templateUrl: './filter-config-modal.component.html',
-    styleUrls: ['./filter-config-modal.component.css']
+  selector: 'app-filter-config-modal',
+  imports: [CommonModule, FormsModule, QueryBuilderModule],
+  templateUrl: './filter-config-modal.component.html',
+  styleUrls: ['./filter-config-modal.component.css']
 })
 export class FilterConfigModalComponent implements OnInit, OnChanges {
   @Input() filterLogic: any | null = null;
@@ -47,7 +47,29 @@ export class FilterConfigModalComponent implements OnInit, OnChanges {
   private operatorOptions: Record<SupportedType, string[]> = {
     real: ['equal', 'not_equal', 'less', 'less_or_equal', 'greater', 'greater_or_equal', 'between', 'not_between'],
     integer: ['equal', 'not_equal', 'less', 'less_or_equal', 'greater', 'greater_or_equal', 'between', 'not_between'],
-    nominal: ['equal', 'not_equal', 'in', 'not_in'],
+    nominal: ['equal', 'not_equal'],
+  };
+
+  // Human readable labels
+  operatorLabels: Record<string, string> = {
+    equal: 'Equal',
+    not_equal: 'Not Equal',
+    less: 'Less',
+    less_or_equal: 'Less or Equal',
+    greater: 'Greater',
+    greater_or_equal: 'Greater or Equal',
+    between: 'Between',
+    not_between: 'Not Between',
+    in: 'In',
+    not_in: 'Not In',
+    contains: 'Contains',
+    not_contains: 'Not Contains',
+    begins_with: 'Begins With',
+    ends_with: 'Ends With',
+    is_empty: 'Is Empty',
+    is_not_empty: 'Is Not Empty',
+    is_null: 'Is Null',
+    is_not_null: 'Is Not Null'
   };
 
   Object = Object;
@@ -99,6 +121,14 @@ export class FilterConfigModalComponent implements OnInit, OnChanges {
         this.filterLogicModel.set({ condition: 'AND', rules: [] });
       }
     }
+  }
+
+  getOperatorLabel(op: string): string {
+    if (this.operatorLabels[op]) {
+      return this.operatorLabels[op];
+    }
+    // Fallback: title case replacing underscores
+    return op.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   }
 
   ngOnInit() {

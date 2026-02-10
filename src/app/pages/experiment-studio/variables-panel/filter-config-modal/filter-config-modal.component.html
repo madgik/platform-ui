@@ -24,6 +24,15 @@
       @if(config().fields && Object.keys(config().fields).length) {
       <ngx-query-builder [config]="config()" [ngModel]="filterLogicModel()"
         (ngModelChange)="filterLogicModel.set($event)" [attr.key]="configKey()">
+        <ng-container *queryOperator="let rule; let operators=operators">
+          <select [(ngModel)]="rule.operator" (ngModelChange)="filterLogicModel.set(filterLogicModel())"
+            [class.q-control]="true" [style.min-width.px]="120">
+            <option *ngFor="let value of operators" [value]="value">
+              {{ getOperatorLabel(value) }}
+            </option>
+          </select>
+        </ng-container>
+
         <ng-container *queryInput="let rule; type: 'number'">
           <div class="numeric-input-container">
             @if (rule.operator === 'between' || rule.operator === 'not_between') {
