@@ -332,8 +332,11 @@
 .distribution-action-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  padding: 8px 16px;
+  padding: 8px;
+  width: 40px;
+  height: 40px;
   border-radius: 8px;
   font-size: 0.85rem;
   font-weight: 600;
@@ -345,7 +348,7 @@
 }
 
 .distribution-action-btn i {
-  font-size: 1rem;
+  font-size: 1.15rem;
 }
 
 .csv-btn {
@@ -379,6 +382,60 @@
   background: #f1f5f9;
   border-color: #e2e8f0;
   color: #94a3b8;
+}
+
+.bin-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: #64748b;
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+.bin-selector label {
+  white-space: nowrap;
+}
+
+.bin-selector input {
+  width: 50px;
+  padding: 6px 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #0f172a;
+  outline: none;
+  transition: all 0.2s ease;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  text-align: center;
+}
+
+.bin-selector input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(43, 51, 233, 0.1);
+}
+
+.bin-selector input:disabled,
+.bin-selector input.disabled {
+  background: #f1f5f9;
+  color: #94a3b8;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Chrome, Safari, Edge, Opera */
+.bin-selector input::-webkit-outer-spin-button,
+.bin-selector input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+.bin-selector input[type=number] {
+  appearance: textfield;
+  -moz-appearance: textfield;
 }
 
 .pdf-exporting .distribution-actions-bar {

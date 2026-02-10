@@ -71,8 +71,9 @@ export class VariablesPanelComponent implements OnDestroy {
   errorMessage = signal<string | null>(null);
   isExporting = signal(false);
   refreshKey = signal(0);
+  histogramBins = signal<number | null>(null);
   private destroy$ = new Subject<void>();
-  private histogramRequest$ = new Subject<{ codes: string[]; label?: string }>();
+  private histogramRequest$ = new Subject<{ codes: string[]; label?: string; bins?: number | null }>();
   private lastModelKey: string | null = null;
 
   constructor() {
@@ -381,6 +382,7 @@ export class VariablesPanelComponent implements OnDestroy {
     this.distributionData.set(null); // clear previous histogram
     this.groupHistogramData.set(null);
     this.groupHistogramMeta.set(null);
+    this.histogramBins.set(null); // Reset bins on new selection
 
     if (!node) {
       this.isLoadingHistogram.set(false);
@@ -446,10 +448,10 @@ export class VariablesPanelComponent implements OnDestroy {
     this.histogramRequest$
       .pipe(
         takeUntil(this.destroy$),
-        switchMap(({ codes, label }) => {
+        switchMap(({ codes, label, bins }) => {
           const algoName = 'multiple_histograms';
           return this.experimentStudioService
-            .getAlgorithmResults(algoName, codes)
+            .getAlgorithmResults(algoName, codes, bins)
             .pipe(
               catchError((error) => {
                 this.isLoadingHistogram.set(false);
@@ -492,11 +494,21 @@ export class VariablesPanelComponent implements OnDestroy {
       });
   }
 
-  private queueHistogramRequest(codes: string[], label?: string) {
+  private queueHistogramRequest(codes: string[], label?: string, bins: number | null = null) {
     this.isLoadingHistogram.set(true);
     this.errorMessage.set(null);
     this.distributionData.set(null);
-    this.histogramRequest$.next({ codes, label });
+    this.histogramRequest$.next({ codes, label, bins });
+  }
+
+  onBinsChange(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    const bins = value ? parseInt(value, 10) : null;
+    this.histogramBins.set(bins);
+
+    if (this.selectedNode) {
+      this.queueHistogramRequest([this.selectedNode.code], this.selectedNode.label, bins);
+    }
   }
 
   getPathNodes(node: any): Array<{ code: string; label: string }> {
@@ -545,6 +557,12 @@ export class VariablesPanelComponent implements OnDestroy {
     if (this.errorMessage()) return true;
     if (!this.selectedNode) return true;
     return !this.distributionData() && !this.groupHistogramData();
+  }
+
+  showBinSelector(): boolean {
+    if (!this.selectedNode || !this.selectedNode.type) return false;
+    const type = String(this.selectedNode.type).toLowerCase();
+    return ['real', 'integer', 'int'].includes(type);
   }
 
   async exportDistributionPdf(): Promise<void> {

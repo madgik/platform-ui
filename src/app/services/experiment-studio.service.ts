@@ -496,7 +496,8 @@ export class ExperimentStudioService {
     yVariables: string[] | null = null,
     xVariables: string[] | null = null,
     effectiveAlgorithmName: string | null = null,
-    customName: string | null = null
+    customName: string | null = null,
+    bins: number | null = null
   ): any {
     let algoConfig: AlgorithmConfig | undefined;
 
@@ -553,7 +554,7 @@ export class ExperimentStudioService {
             datasets: this.selectedDatasetsSignal(),
             filters: null,
           },
-          parameters: {},
+          parameters: bins ? { bins } : {},
           preprocessing: null,
         },
       };
@@ -721,9 +722,9 @@ export class ExperimentStudioService {
 
   //Runs transient or standard algorithm calls.
   //Used for fetching quick results like histograms or descriptive stats.
-  getAlgorithmResults(algorithmName: string, nodeCodes: string[] | null = null): Observable<any> {
+  getAlgorithmResults(algorithmName: string, nodeCodes: string[] | null = null, bins: number | null = null): Observable<any> {
     if (algorithmName === 'multiple_histograms') {
-      const requestBody = this.buildRequestBody(algorithmName, nodeCodes);
+      const requestBody = this.buildRequestBody(algorithmName, nodeCodes, null, null, null, bins);
       return this.submitTransientRequest(requestBody).pipe(
         map(resp => this.normalizeResponse(algorithmName, resp))
       );
