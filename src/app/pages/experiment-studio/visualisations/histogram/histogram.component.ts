@@ -8,11 +8,11 @@ import { createHistogram } from './histogram-chart';
   styleUrls: ['./histogram.component.css'],
 })
 export class HistogramComponent implements OnChanges {
-  @Input() data: { bins: string[]; counts: number[]; variableName: string} | null = null; // Data for histogram
+  @Input() data: { bins: string[]; counts: number[]; variableName: string; variableType?: string } | null = null; // Data for histogram
   @Input() config: { color?: string; width?: number; height?: number } = {}; // Configuration for the graph
   isLoading = false;
 
-  constructor(private elementRef: ElementRef) {}
+  constructor(private elementRef: ElementRef) { }
 
   ngOnChanges(changes: SimpleChanges): void {
     this.isLoading = true; // Show loading only if empty

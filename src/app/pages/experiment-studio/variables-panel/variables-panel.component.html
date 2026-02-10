@@ -46,6 +46,9 @@
 
         <!-- Distribution graph -->
         <section class="panel-block distribution-panel" id="distribution-graph">
+          <div class="distribution-header">
+            {{ groupHistogramData() ? 'Group Information' : 'Distribution graph' }}
+          </div>
           <!-- Distribution Actions Bar -->
           <div class="distribution-actions-bar">
             <div class="distribution-actions-group">

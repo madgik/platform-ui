@@ -1,6 +1,6 @@
 <div class="stats-panel-shell">
   <div class="modal-header">
-    <p>Statistical Analysis</p>
+    <p>Descriptive statistics</p>
   </div>
 
   <div class="modal-content">
@@ -21,7 +21,7 @@
 
     <div class="modal-body">
       @if (isLoading) {
-      <app-spinner text="Statistical Analysis Loading" [overlay]="false" />
+      <app-spinner text="Descriptive statistics Loading" [overlay]="false" />
       }
       @if (!isLoading) {
       <!-- VARIABLES / MODEL TAB -->
@@ -29,7 +29,8 @@
       <section class="pivot-section">
         @if ((activeTab === 'Variables' ? processedData : modelData).length > 0) {
         @if (activeTab === 'Model') {
-        <p class="tab-description">Statistical analysis for complete dataset only, based on the variables and covariates
+        <p class="tab-description">Descriptive statistics for complete dataset only, based on the variables and
+          covariates
           you selected.</p>
         }
         <div class="accordion-controls">

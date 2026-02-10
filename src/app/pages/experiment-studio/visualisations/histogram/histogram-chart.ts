@@ -7,6 +7,7 @@ export function createHistogram(
     variable?: string;
     variableName?: string;
     description?: string;
+    variableType?: string;
   },
   container: HTMLElement,
   config: {
@@ -131,6 +132,26 @@ export function createHistogram(
       .attr('stroke-dasharray', '3,3')
     );
 
+
+  // Tooltip
+  const tooltip = d3
+    .select(container)
+    .append('div')
+    .style('position', 'absolute')
+    .style('visibility', 'hidden')
+    .style('background-color', isDark ? '#1e293b' : '#ffffff')
+    .style('color', isDark ? '#f1f5f9' : '#0f172a')
+    .style('padding', '8px 12px')
+    .style('border-radius', '6px')
+    .style('font-size', '12px')
+    .style('font-weight', '500')
+    .style('box-shadow', '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)')
+    .style('border', `1px solid ${isDark ? '#334155' : '#e2e8f0'}`)
+    .style('max-width', '250px')
+    .style('white-space', 'normal')
+    .style('pointer-events', 'none')
+    .style('z-index', '10');
+
   // Bars
   chart
     .selectAll('.bar')
@@ -142,15 +163,49 @@ export function createHistogram(
     .attr('y', (d) => yScale(d))
     .attr('width', xScale.bandwidth())
     .attr('height', (d) => innerHeight - yScale(d))
-    .attr('rx', 4) // Rounded corners
-    .attr('ry', 4)
     .attr('fill', barColor)
     .attr('opacity', 0.85)
-    .on('mouseover', function () {
+    .on('mouseover', function (event, d) {
       d3.select(this).attr('opacity', 1).attr('filter', 'brightness(1.1)');
+      const i = counts.indexOf(d);
+      const binLabel = bins[i];
+
+      tooltip
+        .style('visibility', 'visible')
+        .html(`
+          <div style="margin-bottom: 4px; font-weight: 600; line-height: 1.4;">${data.variableName ? data.variableName + ': ' : ''}${binLabel}</div>
+          <div>Count: ${smartFormat(d)}</div>
+        `);
+    })
+    .on('mousemove', function (event) {
+      // Get container position to calculate relative coordinates
+      const [x, y] = d3.pointer(event, container);
+
+      // Keep tooltip within container bounds
+      const tooltipNode = tooltip.node() as HTMLElement;
+      const tooltipWidth = tooltipNode?.offsetWidth || 100;
+      const tooltipHeight = tooltipNode?.offsetHeight || 60;
+
+      let left = x + 15;
+      let top = y - 10;
+
+      // Flip if too close to right edge
+      if (left + tooltipWidth > containerWidth) {
+        left = x - tooltipWidth - 15;
+      }
+
+      // Flip if too close to bottom edge
+      if (top + tooltipHeight > containerHeight) {
+        top = y - tooltipHeight - 10;
+      }
+
+      tooltip
+        .style('left', `${left}px`)
+        .style('top', `${top}px`);
     })
     .on('mouseout', function () {
       d3.select(this).attr('opacity', 0.85).attr('filter', null);
+      tooltip.style('visibility', 'hidden');
     });
 
   // Smart number formatter
@@ -170,7 +225,13 @@ export function createHistogram(
     .tickValues(bins)
     .tickFormat((d: any) => {
       const num = parseFloat(d);
-      return isNaN(num) ? d : smartFormat(num);
+      if (isNaN(num)) return d;
+
+      if (data.variableType === 'integer') {
+        return Math.round(num).toString();
+      }
+
+      return smartFormat(num);
     })
     .tickSize(0)
     .tickPadding(12);

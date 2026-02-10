@@ -476,7 +476,8 @@ export class VariablesPanelComponent implements OnDestroy {
 
           const dataWithName = {
             ...enrichedHistogram,
-            variableName: label ?? variableNode?.label ?? enrichedHistogram.variable ?? enrichedHistogram.variableName
+            variableName: label ?? variableNode?.label ?? enrichedHistogram.variable ?? enrichedHistogram.variableName,
+            variableType: variableNode?.type
           };
           this.distributionData.set(dataWithName);
           this.errorMessage.set(null);
