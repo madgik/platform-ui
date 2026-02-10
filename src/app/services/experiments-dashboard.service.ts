@@ -15,6 +15,7 @@ export class ExperimentsDashboardService {
   // WritableSignal
   experiments: WritableSignal<Experiment[]> = signal<Experiment[]>([]);
   totalExperiments = signal<number>(0);
+  globalTotalExperiments = signal<number>(0);
   totalPages = signal<number>(0);
   currentPage = signal<number>(0);
 
@@ -57,6 +58,27 @@ export class ExperimentsDashboardService {
           console.error('[ExperimentsDashboardService] getUserExperiments error', err);
           this.errorService.setError('Failed to load experiments.');
           this.experiments.set([]);
+        }
+      });
+  }
+
+  fetchGlobalTotal(): void {
+    const params = {
+      page: '0',
+      size: '1',
+      mine: 'false',
+      includeShared: 'true'
+    };
+    this.http
+      .get<{ experiments: BackendExperiment[], totalExperiments: number, totalPages: number, currentPage: number }>(this.apiUrl, {
+        params: params
+      })
+      .subscribe({
+        next: (response) => {
+          this.globalTotalExperiments.set(response?.totalExperiments || 0);
+        },
+        error: (err) => {
+          console.error('[ExperimentsDashboardService] fetchGlobalTotal error', err);
         }
       });
   }

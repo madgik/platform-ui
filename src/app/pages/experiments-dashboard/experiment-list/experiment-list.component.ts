@@ -52,6 +52,7 @@ export class ExperimentsListComponent implements OnInit {
 
   ngOnInit(): void {
     this.onlyMine.set(this.initialOnlyMine);
+    this.experimentsService.fetchGlobalTotal();
   }
 
   // toggle
