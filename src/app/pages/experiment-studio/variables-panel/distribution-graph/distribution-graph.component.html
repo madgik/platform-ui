@@ -1,9 +1,5 @@
 <div class="distribution-graph-expanded">
-  <div class="distribution-toolbar">
-    <button class="export-btn" (click)="exportToPdf()" title="Export PDF">
-      <i class="fa fa-file-pdf-o"></i> PDF
-    </button>
-  </div>
+
   <div class="distribution-graph-full" id="histogram-chart-container">
     @if (data && data.bins && data.counts) {
     <app-histogram [data]="data" [config]="{ color: '#2b33e9' }"></app-histogram>

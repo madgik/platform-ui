@@ -46,6 +46,22 @@
 
         <!-- Distribution graph -->
         <section class="panel-block distribution-panel" id="distribution-graph">
+          <!-- Distribution Actions Bar -->
+          <div class="distribution-actions-bar">
+            <div class="distribution-actions-group">
+              <button class="distribution-action-btn csv-btn" [disabled]="isExportDisabled() || isExporting()"
+                (click)="exportDistributionCsv()">
+                <i class="fas fa-file-csv"></i>
+                <span>Export CSV</span>
+              </button>
+              <button class="distribution-action-btn pdf-btn" [disabled]="isExportDisabled() || isExporting()"
+                (click)="exportDistributionPdf()">
+                <i class="fas fa-file-pdf"></i>
+                <span>Export PDF</span>
+              </button>
+            </div>
+          </div>
+
           <div class="distribution-graph" #distributionExport>
             @if (isLoadingHistogram()) {
             <div class="distribution-loader">
@@ -128,21 +144,7 @@
             }
           </div>
 
-          <!-- Distribution Actions Bar -->
-          <div class="distribution-actions-bar">
-            <div class="distribution-actions-group">
-              <button class="distribution-action-btn csv-btn" [disabled]="isExportDisabled() || isExporting()"
-                (click)="exportDistributionCsv()">
-                <i class="fas fa-file-csv"></i>
-                <span>Export CSV</span>
-              </button>
-              <button class="distribution-action-btn pdf-btn" [disabled]="isExportDisabled() || isExporting()"
-                (click)="exportDistributionPdf()">
-                <i class="fas fa-file-pdf"></i>
-                <span>Export PDF</span>
-              </button>
-            </div>
-          </div>
+
 
           @if (isExporting()) {
           <div class="pdf-export-overlay">

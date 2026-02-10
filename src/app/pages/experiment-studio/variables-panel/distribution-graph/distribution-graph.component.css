@@ -33,37 +33,3 @@
   box-sizing: border-box;
   overflow: hidden;
 }
-
-.distribution-toolbar {
-  position: absolute;
-  top: 10px;
-  right: 15px;
-  z-index: 10;
-  display: flex;
-  justify-content: flex-end;
-}
-
-.export-btn {
-  background: var(--primary-color, #2b33e9);
-  color: #fff;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  box-shadow: 0 2px 6px rgba(43, 51, 233, 0.25);
-  transition: transform 0.1s ease, filter 0.1s ease;
-}
-
-.export-btn:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.1);
-}
-
-.export-btn i {
-  font-size: 14px;
-}
