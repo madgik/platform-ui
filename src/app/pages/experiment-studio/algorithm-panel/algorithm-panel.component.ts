@@ -8,7 +8,7 @@ import { AlgorithmResultComponent } from './algorithm-result/algorithm-result.co
 import { getOutputSchema } from '../../../core/algorithm-mappers';
 import { EchartsxModule } from 'echarts-for-angular';
 import { AlgorithmConfig } from '../../../models/algorithm-definition.model';
-import { PdfExportService } from '../../../services/export-results-pdf.service';
+import { ResultsPdfExportService } from '../../../services/export-results-pdf.service';
 import { ErrorService } from '../../../services/error.service';
 import { AuthService } from '../../../services/auth.service';
 import { SpinnerComponent } from '../../shared/spinner/spinner.component';
@@ -29,7 +29,7 @@ import { SpinnerComponent } from '../../shared/spinner/spinner.component';
 })
 
 export class AlgorithmPanelComponent {
-  pdfExport = inject(PdfExportService);
+  pdfExport = inject(ResultsPdfExportService);
   private errorService = inject(ErrorService);
   private authService = inject(AuthService);
   Object = Object;

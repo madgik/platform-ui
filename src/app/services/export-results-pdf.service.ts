@@ -29,7 +29,7 @@ export interface ExperimentPdfPayload {
 }
 
 @Injectable({ providedIn: 'root' })
-export class PdfExportService {
+export class ResultsPdfExportService {
   private readonly platformName = 'Medical Informatics Platform';
   private readonly logoUrl = '/assets/mip-logo.png';
 

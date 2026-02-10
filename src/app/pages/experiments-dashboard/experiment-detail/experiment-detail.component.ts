@@ -8,7 +8,7 @@ import { BackendExperimentWithResult } from '../../../models/backend-experiment.
 import { AlgorithmResultComponent } from '../../experiment-studio/algorithm-panel/algorithm-result/algorithm-result.component';
 import { getOutputSchema } from '../../../core/algorithm-mappers';
 import { SpinnerComponent } from '../../shared/spinner/spinner.component';
-import { PdfExportService } from '../../../services/export-results-pdf.service';
+import { ResultsPdfExportService } from '../../../services/export-results-pdf.service';
 import { Router } from '@angular/router';
 import { ExperimentLabelService } from '../../../services/experiment-label.service';
 import { EnumMaps } from '../../../core/algorithm-result-enum-mapper';
@@ -100,7 +100,7 @@ export class ExperimentDetailsComponent {
   constructor(
     private dashboardService: ExperimentsDashboardService,
     private expStudioService: ExperimentStudioService,
-    private pdfExport: PdfExportService,
+    private pdfExport: ResultsPdfExportService,
     private router: Router,
     private labelService: ExperimentLabelService
   ) {

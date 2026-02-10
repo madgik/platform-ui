@@ -294,74 +294,78 @@
   display: flex;
 }
 
-/* ---------- EXPORT BUTTONS ---------- */
+/* ---------- DISTRIBUTION ACTIONS BAR ---------- */
 
-.export-actions {
-  position: absolute;
-  right: 12px;
-  bottom: 14px;
+.distribution-actions-bar {
+  margin-top: auto;
+  padding: 12px 16px;
+  background: rgba(248, 250, 252, 0.4);
+  border-top: 1px solid rgba(148, 163, 184, 0.1);
   display: flex;
-  gap: 8px;
-  z-index: 10;
+  justify-content: flex-end;
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
 }
 
-.export-button {
-  background: #ffffff;
-  color: var(--primary-color, #2b33e9);
-  border: 1px solid rgba(43, 51, 233, 0.15);
-  border-radius: var(--radius-md, 8px);
-  width: 40px;
-  height: 40px;
-  font-size: 1.1rem;
+.distribution-actions-group {
+  display: flex;
+  gap: 10px;
+}
+
+.distribution-action-btn {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.export-button--pdf {
-  background: linear-gradient(135deg, var(--primary-color, #2b33e9), var(--primary-light, #7f9ce8));
-  color: #ffffff;
-  border: none;
-  box-shadow: 0 8px 16px rgba(43, 51, 233, 0.25);
-}
-
-.export-button--pdf:hover {
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
   background: #ffffff;
-  color: var(--primary-color, #2b33e9);
-  border: 1px solid var(--primary-color);
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 12px 20px rgba(43, 51, 233, 0.3);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.export-button--csv {
-  background: #ffffff;
-  color: #10b981;
-  /* Success green for CSV */
-  border-color: rgba(16, 185, 129, 0.2);
+.distribution-action-btn i {
+  font-size: 1rem;
 }
 
-.export-button--csv:hover {
-  background: #10b981;
-  color: #ffffff;
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 12px 20px rgba(16, 185, 129, 0.25);
+.csv-btn {
+  color: #059669;
+  border-color: rgba(5, 150, 105, 0.2);
 }
 
-.export-button:disabled {
-  background: #f3f4f6;
-  color: #9ca3af;
-  border-color: #e5e7eb;
+.csv-btn:hover:not(:disabled) {
+  background: #ecfdf5;
+  border-color: #059669;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.15);
+}
+
+.pdf-btn {
+  color: #dc2626;
+  border-color: rgba(220, 38, 38, 0.2);
+}
+
+.pdf-btn:hover:not(:disabled) {
+  background: #fef2f2;
+  border-color: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15);
+}
+
+.distribution-action-btn:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
-  box-shadow: none;
-  transform: none;
+  filter: grayscale(1);
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+  color: #94a3b8;
 }
 
-.pdf-exporting .export-actions {
-  opacity: 0;
-  pointer-events: none;
+.pdf-exporting .distribution-actions-bar {
+  display: none;
 }
 
 .pdf-export-overlay {

@@ -582,10 +582,14 @@ export class VariablesPanelComponent implements OnDestroy {
     const data = this.groupHistogramData() || this.distributionData();
     if (!data) return;
 
-    this.csvExportService.exportDistributionCsv(
-      { bins: data.bins, counts: data.counts },
-      String(this.selectedNode?.label ?? data.variableName ?? 'distribution')
-    );
+    try {
+      this.csvExportService.exportDistributionCsv(
+        { bins: data.bins, counts: data.counts },
+        String(this.selectedNode?.label ?? data.variableName ?? 'distribution')
+      );
+    } catch (err) {
+      console.error('Distribution CSV export failed:', err);
+    }
   }
 
   private countLeafNodes(node: any): number {
