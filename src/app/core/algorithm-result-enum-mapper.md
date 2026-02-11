@@ -33,7 +33,7 @@ metadata enumerations and variable labels. The implementation lives in:
   **when these fields are object maps**.
 - Interaction terms (`var1:var2`) are mapped per-part and re-joined with `:`.
 
-### multiple_histograms
+### histogram
 - `histogram[].bins`: map using **Y** variable enums.
 - `histogram[].grouping_enum`: map using **Y** variable enums (when present).
 

@@ -631,8 +631,8 @@ export class AlgorithmPanelComponent {
 
     // shouldn't run through here. safety
     if (
-      algo.name === 'multiple_histograms' ||
-      algo.name === 'descriptive_stats'
+      algo.name === 'describe' ||
+      algo.name === 'histogram'
     ) {
       return true;
     }

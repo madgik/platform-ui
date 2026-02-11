@@ -435,8 +435,8 @@ export class ExperimentStudioService {
 
     // Hide quick-preview algorithms from the selection list.
     const hidden = new Set([
-      AlgorithmNames.MULTIPLE_HISTOGRAMS,
-      AlgorithmNames.DESCRIPTIVE_STATS,
+      AlgorithmNames.HISTOGRAM,
+      AlgorithmNames.DESCRIBE,
       AlgorithmNames.LOGISTIC_REGRESSION_FEDAVERAGE_FLOWER
     ]);
 
@@ -542,8 +542,8 @@ export class ExperimentStudioService {
         filterLogic.rules.length > 0
       );
 
-    // special case for multiple_histograms (no filters, transient)
-    if (algorithmName === AlgorithmNames.MULTIPLE_HISTOGRAMS) {
+    // special case for histogram (no filters, transient)
+    if (algorithmName === AlgorithmNames.HISTOGRAM) {
       return {
         name: expName,
         algorithm: {
@@ -690,7 +690,7 @@ export class ExperimentStudioService {
 
 
   private isTransientAlgorithm(name: string): boolean {
-    return ['multiple_histograms', 'descriptive_stats'].includes(name);
+    return ['histogram', 'describe'].includes(name);
   }
 
   private normalizeResponse(algoName: string, resp: any): any {
@@ -723,7 +723,7 @@ export class ExperimentStudioService {
   //Runs transient or standard algorithm calls.
   //Used for fetching quick results like histograms or descriptive stats.
   getAlgorithmResults(algorithmName: string, nodeCodes: string[] | null = null, bins: number | null = null): Observable<any> {
-    if (algorithmName === 'multiple_histograms') {
+    if (algorithmName === 'histogram') {
       const requestBody = this.buildRequestBody(algorithmName, nodeCodes, null, null, null, bins);
       return this.submitTransientRequest(requestBody).pipe(
         map(resp => this.normalizeResponse(algorithmName, resp))
@@ -740,9 +740,9 @@ export class ExperimentStudioService {
     const hasFilters = !!(filters && Array.isArray(filters.rules) && filters.rules.length > 0);
 
     return {
-      name: `experiment_descriptive_stats_${variableCodes.join('_')}`,
+      name: `experiment_describe_${variableCodes.join('_')}`,
       algorithm: {
-        name: "descriptive_stats",
+        name: "describe",
         inputdata: {
           data_model: this.getActiveDataModelCode(),
           y: variableCodes,
@@ -764,7 +764,7 @@ export class ExperimentStudioService {
       tap((response) => {
         console.log("Raw descriptive overview response:", response);
       }),
-      map(resp => this.normalizeResponse("descriptive_stats", resp)),
+      map(resp => this.normalizeResponse("describe", resp)),
       catchError((error) => {
         console.error("Error fetching descriptive overview:", error);
         this.errorService.setError('Failed to load descriptive statistics.');
@@ -787,7 +787,7 @@ export class ExperimentStudioService {
     const baseAlgorithmName = algorithmNameOverride ?? selectedAlgo.name;
     const requestAlgorithmName = effectiveAlgorithmName ?? baseAlgorithmName;
 
-    if (baseAlgorithmName === 'descriptive_stats') {
+    if (baseAlgorithmName === 'describe') {
       const variableCodes = this.selectedVariables().map((v) => v.code);
       if (!variableCodes.length) {
         console.warn('Descriptive stats: no variables selected.');
@@ -814,7 +814,7 @@ export class ExperimentStudioService {
     const baseAlgorithmName = algorithmNameOverride ?? selectedAlgo.name;
     const requestAlgorithmName = effectiveAlgorithmName ?? baseAlgorithmName;
 
-    if (baseAlgorithmName === 'descriptive_stats') {
+    if (baseAlgorithmName === 'describe') {
       const variableCodes = this.selectedVariables().map((v) => v.code);
       if (!variableCodes.length) {
         console.warn('Descriptive stats: no variables selected.');

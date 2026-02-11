@@ -25,7 +25,7 @@ describe('ExperimentStudioService', () => {
   };
 
   const mockHistogramAlgo = {
-    name: 'multiple_histograms',
+    name: 'histogram',
     label: 'Histograms',
     desc: '',
     enabled: true,
@@ -67,16 +67,16 @@ describe('ExperimentStudioService', () => {
     httpMock.verify();
   });
 
-  it('builds request body for multiple_histograms with active data model and datasets', () => {
+  it('builds request body for histogram with active data model and datasets', () => {
     // Arrange
     service.setSelectedDataModel(mockDataModel);
     service.setSelectedDatasets(['ds1']);
 
     // Act
-    const body = service.buildRequestBody('multiple_histograms', ['var1']);
+    const body = service.buildRequestBody('histogram', ['var1']);
 
     // Assert
-    expect(body.algorithm.name).toBe('multiple_histograms');
+    expect(body.algorithm.name).toBe('histogram');
     expect(body.algorithm.inputdata.data_model).toBe('dm:1');
     expect(body.algorithm.inputdata.datasets).toEqual(['ds1']);
     expect(body.algorithm.inputdata.y).toEqual(['var1']);

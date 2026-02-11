@@ -5,8 +5,8 @@ export const AlgorithmNames = {
     TTEST_ONESAMPLE: 'ttest_onesample',
     PCA: 'pca',
     PCA_WITH_TRANSFORMATION: 'pca_with_transformation',
-    MULTIPLE_HISTOGRAMS: 'multiple_histograms',
-    DESCRIPTIVE_STATS: 'descriptive_stats',
+    HISTOGRAM: 'histogram',
+    DESCRIBE: 'describe',
     LOGISTIC_REGRESSION_FEDAVERAGE_FLOWER: 'logistic_regression_fedaverage_flower',
 };
 

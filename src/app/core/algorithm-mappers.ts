@@ -3,8 +3,6 @@ import { AlgorithmConfig } from '../models/algorithm-definition.model';
 
 // Lookup for categories
 const CATEGORY_MAPPING: Record<string, string> = {
-  "descriptive_stats": "Descriptive Statistics",
-  "multiple_histograms": "Descriptive Statistics",
   "pearson_correlation": "Correlation",
   "anova": "Statistical Tests",
   "anova_oneway": "Statistical Tests",
@@ -24,6 +22,11 @@ const CATEGORY_MAPPING: Record<string, string> = {
   "logistic_regression_cv_fedaverage": "Regression",
   "naive_bayes_gaussian_cv": "Classification",
   "naive_bayes_categorical_cv": "Classification",
+  "anova_twoway": "Statistical Tests",
+  "describe": "Descriptive Statistics",
+  "histogram": "Descriptive Statistics",
+  "linear_svm": "Classification",
+  "longitudinal_transformer": "Transformers",
 };
 
 function guessVariableType(ioField?: { types?: string[] }): string {
@@ -113,6 +116,7 @@ export function mapRawAlgorithmToAlgorithmConfig(raw: RawAlgorithmDefinition): A
 export function getOutputSchema(algorithmName: string): any[] | undefined {
   switch (algorithmName) {
     case 'anova':
+    case 'anova_twoway':
       return [
         {
           key: 'sum_sq',
@@ -396,6 +400,17 @@ export function getOutputSchema(algorithmName: string): any[] | undefined {
           type: 'array',
           elementType: 'number'
         }
+      ];
+    case 'linear_svm':
+      return [
+        { key: 'n_obs', label: 'Observations', type: 'number' },
+        {
+          key: 'weights',
+          label: 'Weights',
+          type: 'array',
+          elementType: 'number'
+        },
+        { key: 'intercept', label: 'Intercept', type: 'number' }
       ];
     case 'ttest_independent':
       return [

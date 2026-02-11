@@ -56,11 +56,11 @@ export const AlgorithmChartRegistry: Record<string, AlgorithmChartConfig> = {
     build: composeCharts(buildBarChart, buildMeanPlotChart),
     inputPath: '',
   },
-    svm_scikit: {
+  svm_scikit: {
     build: buildSVMChart,
     inputPath: '',
   },
-    descriptive_stats: {
+  describe: {
     build: buildBoxPlotChart,
     inputPath: '',
   },

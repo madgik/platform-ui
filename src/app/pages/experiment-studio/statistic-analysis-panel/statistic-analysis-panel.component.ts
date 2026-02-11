@@ -135,7 +135,7 @@ export class StatisticAnalysisPanelComponent implements OnChanges {
           )
         }
       };
-      return this.chartBuilder.getChartsForAlgorithm('descriptive_stats', perVarResp);
+      return this.chartBuilder.getChartsForAlgorithm('describe', perVarResp);
     });
     this.activeBoxPlotIndex = 0;
   }

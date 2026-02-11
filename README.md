@@ -71,4 +71,4 @@ Nginx proxies `/${PORTAL_BACKEND_CONTEXT}/` to the backend; everything else serv
 
 ## Notes
 - Many features require authenticated backend access; unauthenticated calls will trigger login redirect.
-- Algorithm availability depends on selected variables/datasets; some algorithms are transient-only (`multiple_histograms`, `descriptive_stats`).
+- Algorithm availability depends on selected variables/datasets; some algorithms are transient-only (`histogram`, `describe`).

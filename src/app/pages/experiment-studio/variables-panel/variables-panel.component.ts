@@ -284,7 +284,7 @@ export class VariablesPanelComponent implements OnDestroy {
     const federationGroups = this.d3Data.children || [];
     const groupCodes = federationGroups.map((g: any) => g.code);
 
-    const algorithmName = "multiple_histograms";
+    const algorithmName = "histogram";
 
     this.queueHistogramRequest(groupCodes, 'Federation');
   }
@@ -449,7 +449,7 @@ export class VariablesPanelComponent implements OnDestroy {
       .pipe(
         takeUntil(this.destroy$),
         switchMap(({ codes, label, bins }) => {
-          const algoName = 'multiple_histograms';
+          const algoName = 'histogram';
           return this.experimentStudioService
             .getAlgorithmResults(algoName, codes, bins)
             .pipe(
