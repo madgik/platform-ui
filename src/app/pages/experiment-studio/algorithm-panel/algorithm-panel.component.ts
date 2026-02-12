@@ -92,6 +92,24 @@ export class AlgorithmPanelComponent {
     });
     return map;
   });
+  readonly resultAlgorithmLabel = computed(() => {
+    const algoKey =
+      this.experimentStudioService.lastUsedAlgorithm() ||
+      this.selectedAlgorithm()?.name ||
+      '';
+
+    if (!algoKey) return 'Algorithm';
+
+    const algoConfig = this.experimentStudioService.backendAlgorithms()[algoKey];
+    return algoConfig?.label || this.prettifyLabel(algoKey);
+  });
+  readonly resultDisplayTitle = computed(() => {
+    const explicitTitle = this.result()?.title;
+    if (typeof explicitTitle === 'string' && explicitTitle.trim()) {
+      return explicitTitle.trim();
+    }
+    return `Result ${this.resultAlgorithmLabel()}`;
+  });
 
   readonly lastUsedSchema = signal<any[]>([]);
   readonly availableAlgorithmCategories = computed(() => {
@@ -828,13 +846,13 @@ export class AlgorithmPanelComponent {
   getRoleRequirement(field: any, label: string): string | null {
     if (!field) return null;
 
-    const notBlank = this.normalizeBool(field.notblank) === true;
+    const isRequired = this.normalizeBool(field.required) === true;
     const multiple = this.normalizeBool(field.multiple);
 
     let count = 'optional';
     if (multiple === false) {
-      count = notBlank ? 'exactly 1' : '0–1';
-    } else if (notBlank) {
+      count = isRequired ? 'exactly 1' : '0–1';
+    } else if (isRequired) {
       count = '1+';
     }
 

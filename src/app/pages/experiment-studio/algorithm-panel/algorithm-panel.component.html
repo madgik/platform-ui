@@ -278,7 +278,8 @@
     } @else if (result()) {
     <section class="result-section" #resultSection>
       <div class="result-header">
-        <h5>Experiment Result</h5>
+        <div class="header-spacer"></div>
+        <h5>{{ resultDisplayTitle() }}</h5>
 
         <!-- Export as PDF button -->
         <button class="icon-button export-button" type="button" (click)="onExportResult(resultSection)"
@@ -291,7 +292,8 @@
       </div>
 
       <app-algorithm-result [result]="result()" [schema]="lastUsedSchema()" [algorithm]="lastUsedAlgorithm"
-        [enumMaps]="enumMaps()" [yVar]="yVar()" [xVar]="xVar()" [labelMap]="labelMap()" />
+        [enumMaps]="enumMaps()" [yVar]="yVar()" [xVar]="xVar()" [labelMap]="labelMap()"
+        [algorithmLabel]="resultAlgorithmLabel()" />
     </section>
     } @else if (selectedAlgorithm()) {
     <section class="experiment-settings">
@@ -385,7 +387,7 @@
         <div class="config-field">
           <label class="font-semibold mb-1 text-[var(--primary-color)] flex items-center gap-2">
             {{ prettyFieldLabel(field) }}
-            @if (field.notblank) {
+            @if (field.required) {
             <span class="required-tag">Required</span>
             }
           </label>

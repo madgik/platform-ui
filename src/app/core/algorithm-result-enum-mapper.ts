@@ -309,7 +309,9 @@ export function mapAlgorithmResultEnums(
   const xVar = vars?.x ?? null;
 
   switch (algorithm) {
+    case 'naive_bayes_categorical':
     case 'naive_bayes_categorical_cv':
+    case 'naive_bayes_gaussian':
     case 'naive_bayes_gaussian_cv': {
       const { result: mappedResult, map } = mapConfusionMatrix(result, safeEnumMaps, yVar);
       if (map && mappedResult?.classification_summary) {
@@ -343,7 +345,8 @@ export function mapAlgorithmResultEnums(
     case 'logistic_regression':
     case 'logistic_regression_cv':
       return mapRegressionVars(result, safeEnumMaps, labelMap);
-    case 'anova': {
+    case 'anova':
+    case 'anova_twoway': {
       if (!labelMap) return result;
       const mapped: any = { ...result };
       if (Array.isArray(mapped.terms)) {

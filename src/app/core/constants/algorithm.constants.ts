@@ -2,6 +2,7 @@
 export const AlgorithmNames = {
     ANOVA_ONEWAY: 'anova_oneway',
     ANOVA: 'anova',
+    ANOVA_TWOWAY: 'anova_twoway',
     TTEST_ONESAMPLE: 'ttest_onesample',
     PCA: 'pca',
     PCA_WITH_TRANSFORMATION: 'pca_with_transformation',

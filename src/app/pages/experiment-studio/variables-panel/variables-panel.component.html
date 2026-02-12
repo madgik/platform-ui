@@ -60,6 +60,17 @@
                   placeholder="Auto">
               </div>
               }
+              @if (!groupHistogramData() && histogramVariants().length > 1) {
+              <div class="bin-selector">
+                <label for="histogram-variant-select">View:</label>
+                <select id="histogram-variant-select" [value]="selectedHistogramVariantKey() || ''"
+                  (change)="onHistogramVariantChange($event)">
+                  @for (variant of histogramVariants(); track variant.key) {
+                  <option [value]="variant.key">{{ variant.label }}</option>
+                  }
+                </select>
+              </div>
+              }
               <button class="distribution-action-btn csv-btn" [disabled]="isExportDisabled() || isExporting()"
                 (click)="exportDistributionCsv()" title="Export CSV">
                 <i class="fas fa-file-csv"></i>

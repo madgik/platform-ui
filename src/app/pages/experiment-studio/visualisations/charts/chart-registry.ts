@@ -24,12 +24,21 @@ export const AlgorithmChartRegistry: Record<string, AlgorithmChartConfig> = {
     build: buildKMeansChart,
     inputPath: '',
   },
+  // Legacy alias retained for backwards compatibility with historical payloads.
   logistic_regression_cv_fedaverage: {
     build: composeCharts(buildLogRegConfusionChart, buildRocCurveChart),
     inputPath: '',
   },
   logistic_regression_cv: {
     build: composeCharts(buildLogRegConfusionChart, buildRocCurveChart),
+    inputPath: '',
+  },
+  naive_bayes_gaussian: {
+    build: () => [],
+    inputPath: '',
+  },
+  naive_bayes_categorical: {
+    build: () => [],
     inputPath: '',
   },
   naive_bayes_gaussian_cv: {
@@ -56,6 +65,11 @@ export const AlgorithmChartRegistry: Record<string, AlgorithmChartConfig> = {
     build: composeCharts(buildBarChart, buildMeanPlotChart),
     inputPath: '',
   },
+  linear_svm: {
+    build: buildSVMChart,
+    inputPath: '',
+  },
+  // Legacy alias retained for backwards compatibility.
   svm_scikit: {
     build: buildSVMChart,
     inputPath: '',

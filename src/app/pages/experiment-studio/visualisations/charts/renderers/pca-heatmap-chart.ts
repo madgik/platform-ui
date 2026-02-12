@@ -40,64 +40,130 @@ export function buildPCAHeatmapChart(result: any): EChartsOption[] {
     }
   }
 
-  return [
-    {
-      tooltip: {
-        position: 'top',
-        formatter: (params: any) => {
-          const [x, y, val] = params.value;
-          return `PC: ${componentNames[y]}<br/>Var: ${variableNames[x]}<br/>Weight: ${val.toFixed(3)}`;
+  const charts: EChartsOption[] = [];
+  // 1. Loadings Heatmap
+  charts.push({
+    title: {
+      text: 'Eigenvectors',
+      left: 'center'
+    },
+    tooltip: {
+      position: 'top',
+      formatter: (params: any) => {
+        const [x, y, val] = params.value;
+        return `PC: ${componentNames[y]}<br/>Var: ${variableNames[x]}<br/>Weight: ${val.toFixed(3)}`;
+      },
+    },
+    grid: {
+      height: '65%',
+      top: '15%',
+      left: '10%',
+      right: '10%',
+      bottom: '25%',
+      containLabel: true,
+    },
+    xAxis: {
+      type: 'category',
+      data: variableNames,
+      splitArea: { show: true },
+      axisLabel: {
+        fontSize: 12,
+        rotate: 45,
+        interval: 0,
+        width: 100,
+        overflow: 'break'
+      },
+    },
+    yAxis: {
+      type: 'category',
+      data: componentNames,
+      splitArea: { show: true },
+      axisLabel: {
+        fontSize: 12, // Consistent font size
+        interval: 0
+      }
+    },
+    visualMap: {
+      min: -1,
+      max: 1,
+      calculable: true,
+      orient: 'vertical',
+      left: '95%',
+      top: 'center',
+    },
+    series: [
+      {
+        name: 'Eigenvector weights',
+        type: 'heatmap',
+        data: heatmapData,
+        label: {
+          show: true,
+          fontSize: 14,
+          formatter: (params: any) => params.value[2]?.toFixed(2),
+        },
+        emphasis: {
+          itemStyle: {
+            shadowBlur: 10,
+            shadowColor: 'rgba(0, 0, 0, 0.5)',
+          },
         },
       },
+    ],
+  });
+
+  // 2. Scree Plot (Eigenvalues)
+  const eigenvalues = result?.eigenvalues;
+  if (Array.isArray(eigenvalues) && eigenvalues.length > 0) {
+    charts.push({
+      title: {
+        text: 'Scree Plot (Eigenvalues)',
+        left: 'center'
+      },
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: { type: 'shadow' }
+      },
       grid: {
-        height: '75%',
-        top: '10%',
+        height: '65%',
+        top: '15%',
         left: '10%',
         right: '10%',
         bottom: '15%',
-        containLabel: true,
+        containLabel: true
       },
       xAxis: {
         type: 'category',
-        data: variableNames,
-        splitArea: { show: true },
-        axisLabel: { rotate: 30 },
+        data: componentNames,
+        axisLabel: { interval: 0, rotate: 30 }
       },
       yAxis: {
-        type: 'category',
-        data: componentNames,
-        splitArea: { show: true },
-      },
-      axisLabel: {
-        fontSize: 14,
-        rotate: 30
-      },
-      visualMap: {
-        min: -1,
-        max: 1,
-        calculable: true,
-        orient: 'vertical',
-        left: '95%',
-        top: 'center',
+        type: 'value',
+        name: 'Eigenvalue',
+        nameLocation: 'middle',
+        nameGap: 50
       },
       series: [
         {
-          name: 'Eigenvector weights',
-          type: 'heatmap',
-          data: heatmapData,
+          name: 'Eigenvalue',
+          type: 'bar',
+          data: eigenvalues.map((v: number) => parseFloat(v.toFixed(3))),
+          itemStyle: { color: '#5470c6' },
           label: {
             show: true,
-            fontSize: 14,
-            formatter: (params: any) => params.value[2]?.toFixed(2),
-          },
-          emphasis: {
-            itemStyle: {
-              shadowBlur: 10,
-              shadowColor: 'rgba(0, 0, 0, 0.5)',
-            },
-          },
+            position: 'top'
+          }
         },
-      ],
-    },
-  ];
+        {
+          name: 'Eigenvalue (Line)',
+          type: 'line',
+          data: eigenvalues.map((v: number) => parseFloat(v.toFixed(3))),
+          itemStyle: { color: '#ee6666' },
+          symbol: 'circle',
+          symbolSize: 8
+        }
+      ]
+    });
+  }
+
+  return charts;
 }

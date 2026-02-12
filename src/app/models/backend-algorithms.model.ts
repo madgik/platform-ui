@@ -31,7 +31,7 @@ export interface RawParameter {
   desc: string;
   types: string[];
   stattypes?: number;
-  notblank?: boolean | string;
+  required?: boolean | string;
   multiple?: boolean | string;
   default_value?: string | number;
   min?: string | number;

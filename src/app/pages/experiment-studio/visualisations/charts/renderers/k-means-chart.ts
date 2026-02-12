@@ -2,6 +2,7 @@ import { EChartsOption } from 'echarts';
 
 export function buildKMeansChart(output: any): EChartsOption[] {
   const centers = output?.centers;
+  const title = 'K-Means Centers';
 
   if (!Array.isArray(centers) || centers.length === 0) {
     console.warn('[KMeans] No centers provided.');
@@ -11,16 +12,16 @@ export function buildKMeansChart(output: any): EChartsOption[] {
   const dims = centers[0].length;
 
   if (dims === 2) {
-    return buildKMeans2DChart(centers);
+    return buildKMeans2DChart(centers, title);
   } else if (dims === 3) {
-    return buildKMeans3DChart(centers);
+    return buildKMeans3DChart(centers, title);
   } else {
     console.warn(`[KMeans] Unsupported dimensionality: ${dims}`);
     return [];
   }
 }
 
-function buildKMeans2DChart(centers: [number, number][]): EChartsOption[] {
+function buildKMeans2DChart(centers: [number, number][], title: string): EChartsOption[] {
   const series = centers.map(([x, y]: [number, number], i: number) => ({
     name: `Cluster ${i + 1}`,
     type: 'scatter',
@@ -36,7 +37,7 @@ function buildKMeans2DChart(centers: [number, number][]): EChartsOption[] {
   return [
     {
       title: {
-        text: 'K-Means Centers',
+        text: title,
         left: 'center',
       },
       xAxis: {
@@ -52,7 +53,7 @@ function buildKMeans2DChart(centers: [number, number][]): EChartsOption[] {
   ];
 }
 
-function buildKMeans3DChart(centers: [number, number, number][]): EChartsOption[] {
+function buildKMeans3DChart(centers: [number, number, number][], title: string): EChartsOption[] {
   const series: any[] = [
     {
       type: 'scatter3D',
@@ -68,7 +69,7 @@ function buildKMeans3DChart(centers: [number, number, number][]): EChartsOption[
   return [
     {
       title: {
-        text: 'K-Means Centers (3D)',
+        text: `${title} (3D)`,
         left: 'center',
       },
       xAxis3D: {

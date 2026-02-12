@@ -29,7 +29,7 @@ export function buildFormControl(field: any, initialValue: any = ''): FormContro
   const validators = [];
 
   // Basic validators
-  if (field.notblank) validators.push(Validators.required);
+  if (field.required) validators.push(Validators.required);
   if (field.min !== undefined && field.min !== null) validators.push(Validators.min(field.min));
   if (field.max !== undefined && field.max !== null) validators.push(Validators.max(field.max));
   if (field.pattern) validators.push(Validators.pattern(field.pattern));

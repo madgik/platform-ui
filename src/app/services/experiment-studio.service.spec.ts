@@ -32,7 +32,7 @@ describe('ExperimentStudioService', () => {
     inputdata: {
       data_model: { label: '', desc: '', types: [] },
       datasets: { label: '', desc: '', types: [] },
-      y: { label: '', desc: '', types: ['text'], notblank: true, multiple: true },
+      y: { label: '', desc: '', types: ['text'], required: true, multiple: true },
       x: { label: '', desc: '', types: ['text'] },
       filter: { label: '', desc: '', types: [] }
     },

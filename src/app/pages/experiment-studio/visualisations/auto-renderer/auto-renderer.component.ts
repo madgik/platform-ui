@@ -1,16 +1,21 @@
 import { Component, Input, OnChanges, SimpleChanges, signal } from '@angular/core';
 import { AlgorithmTableRegistry, TableSpec } from './algorithm-table-registry';
+import { EnumMaps } from '../../../../core/algorithm-result-enum-mapper';
 
 
 @Component({
-    selector: 'app-auto-renderer',
-    imports: [],
-    templateUrl: './auto-renderer.component.html',
-    styleUrl: './auto-renderer.component.css'
+  selector: 'app-auto-renderer',
+  imports: [],
+  templateUrl: './auto-renderer.component.html',
+  styleUrl: './auto-renderer.component.css'
 })
 export class AutoRendererComponent implements OnChanges {
   @Input() value: any = null;
   @Input() algorithm: string | null = null;
+  @Input() fallbackTitle: string | null = null;
+  @Input() labelMap: Record<string, string> | null = null;
+  @Input() enumMaps: EnumMaps | null = null;
+  @Input() yVar: string | null = null;
   algorithmToRender: string = '';
 
   tableSpec = signal<TableSpec[] | null>(null);
@@ -32,12 +37,24 @@ export class AutoRendererComponent implements OnChanges {
       return;
     }
 
-    const key = `${this.algorithm}-${JSON.stringify(this.value)}`;
+    const key = JSON.stringify({
+      algorithm: this.algorithm,
+      value: this.value,
+      labelMap: this.labelMap,
+      enumMaps: this.enumMaps,
+      yVar: this.yVar,
+      fallbackTitle: this.fallbackTitle,
+    });
     if (key === this.lastKey && this.tableSpec()) return;
 
     try {
-      const spec = builder(this.value);
-      this.tableSpec.set(spec);
+      const enrichedValue = this.value && (this.labelMap || this.enumMaps)
+        ? { ...this.value, __labelMap__: this.labelMap, __enumMaps__: this.enumMaps, __yVar__: this.yVar }
+        : this.value;
+      const spec = builder(enrichedValue);
+      const explicitTitle = this.getResultTitle(enrichedValue);
+      const resultTitle = explicitTitle ?? this.getFallbackTitle();
+      this.tableSpec.set(this.applyResultTitle(spec, resultTitle, !!explicitTitle));
       this.error.set(null);
       this.lastKey = key;
     } catch (err) {
@@ -108,8 +125,13 @@ export class AutoRendererComponent implements OnChanges {
     if (!builder) return null;
 
     try {
-      const table = builder(this.value);
-      return table;
+      const enrichedValue = this.value && (this.labelMap || this.enumMaps)
+        ? { ...this.value, __labelMap__: this.labelMap, __enumMaps__: this.enumMaps, __yVar__: this.yVar }
+        : this.value;
+      const table = builder(enrichedValue);
+      const explicitTitle = this.getResultTitle(enrichedValue);
+      const resultTitle = explicitTitle ?? this.getFallbackTitle();
+      return this.applyResultTitle(table, resultTitle, !!explicitTitle);
     } catch (err) {
       console.warn('[AutoRenderer] Custom table builder failed', err);
       return null;
@@ -221,5 +243,52 @@ export class AutoRendererComponent implements OnChanges {
     }
     return str;
   }
-}
 
+  private getResultTitle(result: any): string | null {
+    const title = result?.title;
+    if (typeof title !== 'string') return null;
+    const trimmed = title.trim();
+    return trimmed.length ? trimmed : null;
+  }
+
+  private getFallbackTitle(): string | null {
+    if (typeof this.fallbackTitle !== 'string') return null;
+    const trimmed = this.fallbackTitle.trim();
+    return trimmed.length ? trimmed : null;
+  }
+
+  private applyResultTitle(tables: TableSpec[], resultTitle: string | null, forceOverride: boolean): TableSpec[] {
+    if (!resultTitle || !Array.isArray(tables) || !tables.length) return tables;
+
+    const isSingleTable = tables.length === 1;
+
+    return tables.map((table, index) => {
+      if (index !== 0) return table;
+
+      const existingTitle = (table.title ?? '').trim();
+
+      if (!existingTitle) {
+        return { ...table, title: resultTitle };
+      }
+
+      if (!forceOverride) {
+        return table;
+      }
+
+      if (existingTitle === resultTitle) {
+        return table;
+      }
+
+      if (isSingleTable) {
+        return { ...table, title: resultTitle };
+      }
+
+      const prefixed = `${resultTitle} - `;
+      if (existingTitle.startsWith(prefixed)) {
+        return table;
+      }
+
+      return { ...table, title: `${resultTitle} - ${existingTitle}` };
+    });
+  }
+}

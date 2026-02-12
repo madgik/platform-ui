@@ -14,6 +14,10 @@ export class AlgorithmRulesService {
 
     constructor() { }
 
+    private isTwoWayAnova(name: string | undefined | null): boolean {
+        return name === AlgorithmNames.ANOVA || name === AlgorithmNames.ANOVA_TWOWAY;
+    }
+
     isAlgorithmAvailable(
         algo: AlgorithmConfig,
         selections: RoleSelections
@@ -41,7 +45,7 @@ export class AlgorithmRulesService {
         }
 
         // 2-way ANOVA: 1 dependent + 2 nominal factors
-        if (name === AlgorithmNames.ANOVA) {
+        if (this.isTwoWayAnova(name)) {
             const { y: vars, x: covs } = selections;
 
             if (vars.length !== 1) return false;
@@ -94,11 +98,11 @@ export class AlgorithmRulesService {
             if (![AlgorithmRoles.Y, AlgorithmRoles.X].includes(role)) continue;
 
             const sel: D3HierarchyNode[] = selections[role as SelectionRole] ?? [];
-            const notBlank = this.normalizeBool((req as any)?.notblank) === true;
+            const isRequired = this.isFieldRequired(req);
             const multiple = this.normalizeBool((req as any)?.multiple);
 
-            if (notBlank && sel.length === 0) {
-                console.warn(`✘ ${name}: role ${role} is required (notblank) but selection is empty.`);
+            if (isRequired && sel.length === 0) {
+                console.warn(`✘ ${name}: role ${role} is required but selection is empty.`);
                 return false;
             }
 
@@ -128,10 +132,10 @@ export class AlgorithmRulesService {
 
         if (filterReq) {
             const sel: D3HierarchyNode[] = selections[AlgorithmRoles.FILTERS as SelectionRole] ?? [];
-            const notBlank = this.normalizeBool(filterReq.notblank) === true;
-            const multiple = this.normalizeBool(filterReq.multiple);
+            const isRequired = this.isFieldRequired(filterReq);
+            const multiple = this.normalizeBool((filterReq as any).multiple);
 
-            if (notBlank && sel.length === 0) {
+            if (isRequired && sel.length === 0) {
                 console.warn(`✘ ${name}: filters are required but none selected.`);
                 return false;
             }
@@ -158,6 +162,7 @@ export class AlgorithmRulesService {
                     x: `Covariate: exactly 1${formatTypes([VariableTypes.NOMINAL, VariableTypes.TEXT])}`,
                 };
             case AlgorithmNames.ANOVA:
+            case AlgorithmNames.ANOVA_TWOWAY:
                 return {
                     y: `Variable: exactly 1${formatTypes([VariableTypes.REAL, VariableTypes.INT])}`,
                     x: `Covariate: exactly 2${formatTypes([VariableTypes.NOMINAL, VariableTypes.TEXT])}`,
@@ -196,5 +201,12 @@ export class AlgorithmRulesService {
         if (normalized === 'true') return true;
         if (normalized === 'false') return false;
         return null;
+    }
+
+    private isFieldRequired(field: any): boolean {
+        // Prefer canonical `required`, but keep legacy `notblank` compatibility.
+        const required = this.normalizeBool(field?.required);
+        if (required !== null) return required;
+        return this.normalizeBool(field?.notblank) === true;
     }
 }

@@ -45,7 +45,7 @@ function buildConfigSchema(parameters: Record<string, RawParameter>): Array<any>
       key,
       label: param.label ?? key,
       desc: param.desc ?? '',
-      notblank: param.notblank ?? false,
+      required: param.required ?? false,
       multiple: param.multiple ?? false,
       types: param.types ?? [],
       stattypes: param.stattypes ?? [],
@@ -435,6 +435,22 @@ export function getOutputSchema(algorithmName: string): any[] | undefined {
         { key: 'ci_upper', label: 'CI Upper', type: 'string' },
         { key: 'cohens_d', label: 'Cohen\'s d', type: 'number' }
       ];
+    case 'naive_bayes_categorical':
+      return [
+        {
+          type: 'section',
+          label: 'Model Info',
+          fields: [
+            { key: 'classes', label: 'Classes', type: 'array', elementType: 'string' },
+            { key: 'class_count', label: 'Class Counts', type: 'array', elementType: 'number' },
+            { key: 'class_log_prior', label: 'Class Log Prior', type: 'array', elementType: 'number' },
+            { key: 'feature_names', label: 'Feature Names', type: 'array', elementType: 'string' },
+            { key: 'categories', label: 'Categories per Feature', type: 'dictionary' },
+            { key: 'category_count', label: 'Category Counts', type: 'dictionary' },
+            { key: 'category_log_prob', label: 'Category Log Probabilities', type: 'dictionary' }
+          ]
+        }
+      ];
     case 'naive_bayes_categorical_cv':
       return [
         {
@@ -460,6 +476,21 @@ export function getOutputSchema(algorithmName: string): any[] | undefined {
           label: 'Predictions',
           type: 'dictionary',
           description: 'Predicted class distribution'
+        }
+      ];
+    case 'naive_bayes_gaussian':
+      return [
+        {
+          type: 'section',
+          label: 'Model Parameters',
+          fields: [
+            { key: 'classes', label: 'Classes', type: 'array', elementType: 'string' },
+            { key: 'class_count', label: 'Class Counts', type: 'array', elementType: 'number' },
+            { key: 'class_prior', label: 'Class Prior', type: 'array', elementType: 'number' },
+            { key: 'feature_names', label: 'Feature Names', type: 'array', elementType: 'string' },
+            { key: 'theta', label: 'Feature Means per Class', type: 'matrix', elementType: 'number' },
+            { key: 'var', label: 'Feature Variances per Class', type: 'matrix', elementType: 'number' }
+          ]
         }
       ];
     case 'naive_bayes_gaussian_cv':

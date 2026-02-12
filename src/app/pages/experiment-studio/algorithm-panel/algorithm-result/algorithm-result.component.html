@@ -9,7 +9,8 @@
 
   <!-- Custom structured renderer -->
   @if (isRenderable()) {
-  <app-auto-renderer [value]="mappedResult()" [algorithm]="algorithm()" />
+  <app-auto-renderer [value]="mappedResult()" [algorithm]="algorithm()" [labelMap]="labelMap()" [enumMaps]="enumMaps()"
+    [yVar]="yVar()" [fallbackTitle]="fallbackResultTitle()" />
   }
 
   <!-- Charts -->

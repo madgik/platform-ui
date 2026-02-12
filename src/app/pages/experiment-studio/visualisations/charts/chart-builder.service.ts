@@ -13,7 +13,7 @@ function getByPath(obj: any, path: string): any {
 export class ChartBuilderService {
   constructor(private experimentService: ExperimentStudioService) { }
 
-  getChartsForAlgorithm(algorithm: string, result: any): EChartsOption[] {
+  getChartsForAlgorithm(algorithm: string, result: any, _fallbackTitle?: string | null): EChartsOption[] {
     const config = AlgorithmChartRegistry[algorithm] || AlgorithmChartRegistry['default'];
 
     // raw input
@@ -34,6 +34,7 @@ export class ChartBuilderService {
       }
     }
 
+    // Keep chart titles chart-specific. Experiment-level title is rendered in the result header.
     return config.build(enrichedInput);
   }
 

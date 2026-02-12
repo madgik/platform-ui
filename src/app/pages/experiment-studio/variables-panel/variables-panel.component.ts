@@ -51,6 +51,8 @@ export class VariablesPanelComponent implements OnDestroy {
   filteredGroups: WritableSignal<any[]> = signal([]);
   distributionData = signal<any | null>(null);
   groupHistogramData = signal<{ bins: string[]; counts: number[]; variableName: string } | null>(null);
+  histogramVariants = signal<Array<{ key: string; label: string; data: any }>>([]);
+  selectedHistogramVariantKey = signal<string | null>(null);
   groupHistogramMeta = signal<{
     pathNodes: Array<{ code: string; label: string }>;
     groupCount: number;
@@ -365,6 +367,8 @@ export class VariablesPanelComponent implements OnDestroy {
       this.errorMessage.set(null);
       this.distributionData.set(null);
       this.groupHistogramData.set(null);
+      this.histogramVariants.set([]);
+      this.selectedHistogramVariantKey.set(null);
       this.groupHistogramMeta.set(null);
       this.isLoadingHistogram.set(false);
       this.errorMessage.set('No variable selected.');
@@ -381,6 +385,8 @@ export class VariablesPanelComponent implements OnDestroy {
     this.errorMessage.set(null);
     this.distributionData.set(null); // clear previous histogram
     this.groupHistogramData.set(null);
+    this.histogramVariants.set([]);
+    this.selectedHistogramVariantKey.set(null);
     this.groupHistogramMeta.set(null);
     this.histogramBins.set(null); // Reset bins on new selection
 
@@ -469,21 +475,48 @@ export class VariablesPanelComponent implements OnDestroy {
         if (!response) return;
 
         const histList = response?.result?.histogram ?? response?.histogram ?? [];
-        const firstHist = histList[0];
-
-        if (firstHist) {
-          const variableCode = firstHist?.variable ?? codes?.[0];
+        if (histList.length) {
+          const variableCode = histList[0]?.variable ?? codes?.[0];
           const variableNode = variableCode ? this.findNodeByCode(this.d3Data, variableCode) : null;
-          const enrichedHistogram = this.mapBinsToEnumLabels(firstHist, variableNode?.enumerations);
 
-          const dataWithName = {
-            ...enrichedHistogram,
-            variableName: label ?? variableNode?.label ?? enrichedHistogram.variable ?? enrichedHistogram.variableName,
-            variableType: variableNode?.type
-          };
-          this.distributionData.set(dataWithName);
+          const variants = histList.map((hist: any, idx: number) => {
+            const enrichedHistogram = this.mapBinsToEnumLabels(hist, variableNode?.enumerations);
+            const groupingVarCode = hist?.grouping_var;
+            const groupingVarNode = groupingVarCode ? this.findNodeByCode(this.d3Data, groupingVarCode) : null;
+            const groupingVarLabel = groupingVarNode?.label ?? groupingVarCode;
+            const groupingEnumLabel = this.mapEnumValueLabel(hist?.grouping_enum, groupingVarNode?.enumerations);
+
+            const variantLabel = groupingVarCode
+              ? `${groupingVarLabel}: ${groupingEnumLabel ?? hist?.grouping_enum ?? 'N/A'}`
+              : 'Overall';
+
+            const dataWithName = {
+              ...enrichedHistogram,
+              variableName: label ?? variableNode?.label ?? enrichedHistogram.variable ?? enrichedHistogram.variableName,
+              variableType: variableNode?.type
+            };
+
+            return {
+              key: groupingVarCode ? `${groupingVarCode}:${String(hist?.grouping_enum ?? idx)}` : 'overall',
+              label: variantLabel,
+              data: dataWithName,
+              isOverall: !groupingVarCode,
+            };
+          });
+
+          const sortedVariants = [
+            ...variants.filter((v: { isOverall: boolean }) => v.isOverall),
+            ...variants.filter((v: { isOverall: boolean }) => !v.isOverall),
+          ].map(({ key, label: variantLabel, data }) => ({ key, label: variantLabel, data }));
+
+          this.histogramVariants.set(sortedVariants);
+          const selectedKey = sortedVariants[0]?.key ?? null;
+          this.selectedHistogramVariantKey.set(selectedKey);
+          this.distributionData.set(sortedVariants[0]?.data ?? null);
           this.errorMessage.set(null);
         } else {
+          this.histogramVariants.set([]);
+          this.selectedHistogramVariantKey.set(null);
           const resultData = response?.result?.data || response?.data;
           if (typeof resultData === 'string' && resultData.includes('insufficient data')) {
             this.errorMessage.set(resultData);
@@ -498,7 +531,18 @@ export class VariablesPanelComponent implements OnDestroy {
     this.isLoadingHistogram.set(true);
     this.errorMessage.set(null);
     this.distributionData.set(null);
+    this.histogramVariants.set([]);
+    this.selectedHistogramVariantKey.set(null);
     this.histogramRequest$.next({ codes, label, bins });
+  }
+
+  onHistogramVariantChange(event: Event): void {
+    const key = (event.target as HTMLSelectElement).value;
+    this.selectedHistogramVariantKey.set(key);
+    const variant = this.histogramVariants().find((item) => item.key === key);
+    if (variant) {
+      this.distributionData.set(variant.data);
+    }
   }
 
   onBinsChange(event: Event): void {
@@ -640,6 +684,13 @@ export class VariablesPanelComponent implements OnDestroy {
 
     if (!mapped) return hist;
     return { ...hist, bins: binsWithLabels };
+  }
+
+  private mapEnumValueLabel(value: any, enumerations?: Array<{ code?: any; label?: string; name?: string }>): string | null {
+    if (value === null || value === undefined || !enumerations?.length) return null;
+    const match = enumerations.find((entry) => String(entry?.code ?? entry?.label ?? entry?.name ?? '') === String(value));
+    if (!match) return null;
+    return String(match?.label ?? match?.name ?? value);
   }
 
 }

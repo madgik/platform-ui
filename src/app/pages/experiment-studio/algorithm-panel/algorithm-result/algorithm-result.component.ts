@@ -23,6 +23,7 @@ export class AlgorithmResultComponent {
   result = input<any>(null);
   schema = input<any[]>([]);
   algorithm = input.required<string>();
+  algorithmLabel = input<string | null>(null);
   enumMaps = input<EnumMaps | null>(null);
   yVar = input<string | null>(null);
   xVar = input<string | null>(null);
@@ -51,18 +52,31 @@ export class AlgorithmResultComponent {
       }, this.labelMap())
   );
 
+  fallbackResultTitle = computed(() => {
+    const explicitTitle = this.mappedResult()?.title;
+    if (typeof explicitTitle === 'string' && explicitTitle.trim()) {
+      return explicitTitle.trim();
+    }
+
+    const label = this.algorithmLabel()?.trim();
+    if (label) return `Result ${label}`;
+
+    return `Result ${this.prettifyAlgorithmName(this.algorithm())}`;
+  });
+
   chartOptions = computed<EChartsOption[]>(() =>
     this.errorMessage()
       ? []
       : this.chartBuilder.getChartsForAlgorithm(
         this.algorithm(),
-        this.mappedResult()
+        this.mappedResult(),
+        this.fallbackResultTitle()
       )
   );
 
   renderedCharts = computed(() => {
     if (!this.result() || !this.algorithm() || this.errorMessage()) return [];
-    return this.chartBuilder.getChartsForAlgorithm(this.algorithm(), this.mappedResult());
+    return this.chartBuilder.getChartsForAlgorithm(this.algorithm(), this.mappedResult(), this.fallbackResultTitle());
   });
 
   getMatrixRows(data: any): any[][] {
@@ -102,5 +116,12 @@ export class AlgorithmResultComponent {
 
   isExpanded(key: string): boolean {
     return this.expandedPanels().has(key);
+  }
+
+  private prettifyAlgorithmName(name: string): string {
+    if (!name) return 'Algorithm';
+    return name
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, (c) => c.toUpperCase());
   }
 }
