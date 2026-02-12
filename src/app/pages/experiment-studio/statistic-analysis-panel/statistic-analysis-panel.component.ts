@@ -95,21 +95,31 @@ export class StatisticAnalysisPanelComponent implements OnChanges {
     this.activeTab = tab;
   }
 
-  private computeDistributionVariables(): void {
+  private computeDistributionVariables(variable_based: any[] = []): void {
     const selectedVars = this.expStudioService.selectedVariables();
     const selectedCovars = this.expStudioService.selectedCovariates();
     const all = [...selectedVars, ...selectedCovars];
     const dedupMap = new Map(all.map(v => [v.code, v]));
     const unique = Array.from(dedupMap.values());
 
-    // Non-nominal variables (for box plots)
-    this.nonNominalVariables = unique.filter(
-      (v) => v?.type && v.type !== 'nominal' && v.type !== 'text'
+    // Identify variables that have counts in the response
+    const varsWithCounts = new Set<string>();
+    for (const item of variable_based) {
+      if (item.data && item.data.counts && Object.keys(item.data.counts).length > 0) {
+        varsWithCounts.add(item.variable);
+      }
+    }
+
+    // Nominal variables: Explicitly nominal OR found to have counts
+    this.nominalVariables = unique.filter(
+      (v) => v?.type === 'nominal' || varsWithCounts.has(v.code)
     );
 
-    // Nominal variables (for pie charts)
-    this.nominalVariables = unique.filter(
-      (v) => v?.type === 'nominal'
+    // Non-nominal variables: everything else
+    // We exclude those already identified as nominal to avoid duplication
+    const nominalCodes = new Set(this.nominalVariables.map(v => v.code));
+    this.nonNominalVariables = unique.filter(
+      (v) => !nominalCodes.has(v.code) && v?.type !== 'text'
     );
 
     this.showBoxPlots = this.nonNominalVariables.length > 0 || this.nominalVariables.length > 0;
@@ -200,7 +210,7 @@ export class StatisticAnalysisPanelComponent implements OnChanges {
         }));
 
         // Box Plots
-        this.computeDistributionVariables();
+        this.computeDistributionVariables(variable_based);
         if (this.nonNominalVariables.length > 0) this.buildBoxPlotCharts(response);
         if (this.nominalVariables.length > 0) this.buildNominalCharts(response);
         this.isLoading = false;
