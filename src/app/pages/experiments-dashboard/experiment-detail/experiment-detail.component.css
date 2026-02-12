@@ -660,6 +660,33 @@
   color: #6b7280;
 }
 
+/* MIP VERSION BAR */
+
+.mip-version-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  background: rgba(248, 250, 252, 0.8);
+  border: 1px solid var(--glass-border);
+  border-radius: 0 0 20px 20px;
+  margin-top: -8px;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.mip-version-label {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+}
+
+.mip-version-value {
+  font-family: 'JetBrains Mono', 'Roboto Mono', monospace;
+  color: #475569;
+}
+
 /* TOAST */
 
 .copy-toast {

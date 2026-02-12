@@ -14,6 +14,7 @@ export interface Experiment {
   variables?: string[];
   covariates?: string[];
   filters?: string[];
+  mipVersion?: string;
 }
 
 export interface AlgorithmDetails {

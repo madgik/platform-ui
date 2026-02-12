@@ -294,6 +294,11 @@
       <app-algorithm-result [result]="result()" [schema]="lastUsedSchema()" [algorithm]="lastUsedAlgorithm"
         [enumMaps]="enumMaps()" [yVar]="yVar()" [xVar]="xVar()" [labelMap]="labelMap()"
         [algorithmLabel]="resultAlgorithmLabel()" />
+
+      <div class="mip-version-bar">
+        <span class="mip-version-label">MIP Version:</span>
+        <span class="mip-version-value">{{ mipVersion }}</span>
+      </div>
     </section>
     } @else if (selectedAlgorithm()) {
     <section class="experiment-settings">

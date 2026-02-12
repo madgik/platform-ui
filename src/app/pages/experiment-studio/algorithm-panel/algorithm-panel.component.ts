@@ -46,6 +46,7 @@ export class AlgorithmPanelComponent {
   saveAsName = signal('');
   loadingText = signal('Processing experiment...');
   showSuccessNotification = signal(false);
+  mipVersion = (window as any).__env?.MIP_VERSION || '9.0.0';
 
   readonly selectedAlgorithm = this.experimentStudioService.selectedAlgorithm;
   readonly enumMaps = computed(() => this.experimentStudioService.getCategoricalEnumMaps());
