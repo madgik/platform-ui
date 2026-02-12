@@ -9,6 +9,7 @@ export interface BackendExperiment {
   viewed: boolean;
   status: string;
   description?: string;
+  mipVersion?: string;
   algorithm: {
     name: string;
     inputdata: {

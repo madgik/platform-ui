@@ -576,6 +576,7 @@ export class ExperimentStudioService {
         parameters: config,
         preprocessing: null,
       },
+      mipVersion: (window as any).__env?.MIP_VERSION || '9.0.0'
     };
     return body;
   }
