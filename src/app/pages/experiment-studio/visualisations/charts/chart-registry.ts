@@ -10,6 +10,14 @@ import { buildMeanPlotChart } from './renderers/mean-plot-chart';
 import { buildBoxPlotChart } from './renderers/box-plot-chart';
 import { buildSVMChart } from './renderers/svm-chart';
 
+// New Renderers
+import { buildForestPlotChart } from './renderers/forest-plot-chart';
+import { buildTTestChart } from './renderers/t-test-chart';
+import { buildTwoWayAnovaChart } from './renderers/anova-twoway-chart';
+import { buildCVMetricsChart } from './renderers/cv-metrics-chart';
+import { buildHistogramChart } from './renderers/histogram-chart';
+import { buildNaiveBayesPriorsChart } from './renderers/naive-bayes-priors-chart';
+
 export interface AlgorithmChartConfig {
   build: (input: any) => EChartsOption[];
   inputPath: string;
@@ -24,60 +32,109 @@ export const AlgorithmChartRegistry: Record<string, AlgorithmChartConfig> = {
     build: buildKMeansChart,
     inputPath: '',
   },
+
+  linear_regression: {
+    build: buildForestPlotChart,
+    inputPath: '',
+  },
+
+  linear_regression_cv: {
+    build: buildCVMetricsChart,
+    inputPath: '',
+  },
+
+  // Logistic Regression (Standard)
+  logistic_regression: {
+    build: buildForestPlotChart,
+    inputPath: '',
+  },
+
   // Legacy alias retained for backwards compatibility with historical payloads.
   logistic_regression_cv_fedaverage: {
     build: composeCharts(buildLogRegConfusionChart, buildRocCurveChart),
     inputPath: '',
   },
+
   logistic_regression_cv: {
-    build: composeCharts(buildLogRegConfusionChart, buildRocCurveChart),
+    build: composeCharts(buildLogRegConfusionChart, buildRocCurveChart), // CV Metrics chart could be added if supported
     inputPath: '',
   },
+
   naive_bayes_gaussian: {
-    build: () => [],
+    build: buildNaiveBayesPriorsChart,
     inputPath: '',
   },
+
   naive_bayes_categorical: {
-    build: () => [],
+    build: buildNaiveBayesPriorsChart,
     inputPath: '',
   },
+
   naive_bayes_gaussian_cv: {
     build: buildNaiveBayesConfusionChart,
     inputPath: '',
   },
+
   naive_bayes_categorical_cv: {
     build: buildNaiveBayesConfusionChart,
     inputPath: '',
   },
+
   pearson_correlation: {
     build: buildMatrixChart,
-    inputPath: '', // Top-level result
+    inputPath: '',
   },
+
   pca: {
     build: buildPCAHeatmapChart,
     inputPath: '',
   },
+
   pca_with_transformation: {
     build: buildPCAHeatmapChart,
     inputPath: '',
   },
+
   anova_oneway: {
     build: composeCharts(buildBarChart, buildMeanPlotChart),
     inputPath: '',
   },
+
+  anova_twoway: {
+    build: buildTwoWayAnovaChart,
+    inputPath: '',
+  },
+
+  ttest_independent: {
+    build: buildTTestChart,
+    inputPath: '',
+  },
+
+  ttest_paired: {
+    build: buildTTestChart,
+    inputPath: '',
+  },
+
+  ttest_onesample: {
+    build: buildTTestChart,
+    inputPath: '',
+  },
+
   linear_svm: {
     build: buildSVMChart,
     inputPath: '',
   },
-  // Legacy alias retained for backwards compatibility.
-  svm_scikit: {
-    build: buildSVMChart,
-    inputPath: '',
-  },
+
   describe: {
     build: buildBoxPlotChart,
     inputPath: '',
   },
+
+  histogram: {
+    build: buildHistogramChart,
+    inputPath: '',
+  },
+
   default: {
     build: () => [],
     inputPath: '',

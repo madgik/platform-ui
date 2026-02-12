@@ -63,7 +63,7 @@ describe('AlgorithmTableRegistry', () => {
     expect(summaryRows).toContain('BIC');
   });
 
-  it('renders anova_twoway and keeps anova alias behavior', () => {
+  it('renders anova_twoway table', () => {
     const payload = {
       terms: ['A', 'B', 'A:B', 'Residual'],
       df: [1, 1, 1, 96],
@@ -73,11 +73,8 @@ describe('AlgorithmTableRegistry', () => {
     };
 
     const canonical = AlgorithmTableRegistry['anova_twoway'](payload);
-    const legacy = AlgorithmTableRegistry['anova'](payload);
-
     expect(canonical.length).toBe(1);
     expect(canonical[0].rows.length).toBe(4);
-    expect(legacy).toEqual(canonical);
   });
 
   it('renders anova_oneway min/max per group table when provided', () => {
@@ -104,7 +101,7 @@ describe('AlgorithmTableRegistry', () => {
     expect(tables.some((t) => t.title === 'Group Min/Max')).toBeTrue();
   });
 
-  it('renders linear_svm via canonical key while keeping legacy table builder', () => {
+  it('renders linear_svm via canonical key', () => {
     const payload = {
       title: 'Federated Linear SVM (Averaged Parameters)',
       n_obs: 240,
@@ -113,10 +110,7 @@ describe('AlgorithmTableRegistry', () => {
     };
 
     const canonical = AlgorithmTableRegistry['linear_svm'](payload);
-    const legacy = AlgorithmTableRegistry['svm_scikit'](payload);
-
     expect(canonical.length).toBeGreaterThan(0);
-    expect(canonical).toEqual(legacy);
     expect(canonical[0].rows.some((row) => row[0] === 'Intercept')).toBeTrue();
   });
 

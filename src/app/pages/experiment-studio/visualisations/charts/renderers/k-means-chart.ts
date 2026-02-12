@@ -16,8 +16,7 @@ export function buildKMeansChart(output: any): EChartsOption[] {
   } else if (dims === 3) {
     return buildKMeans3DChart(centers, title);
   } else {
-    console.warn(`[KMeans] Unsupported dimensionality: ${dims}`);
-    return [];
+    return buildKMeansParallelCoordinatesChart(centers, title);
   }
 }
 
@@ -103,6 +102,48 @@ function buildKMeans3DChart(centers: [number, number, number][], title: string):
         },
       },
       series: series as any, // Type assertion to bypass TS type check
+    },
+  ];
+}
+
+function buildKMeansParallelCoordinatesChart(centers: number[][], title: string): EChartsOption[] {
+  if (!centers.length || !Array.isArray(centers[0])) return [];
+
+  const dims = centers[0].length;
+  const parallelAxis = Array.from({ length: dims }, (_, i) => ({
+    dim: i,
+    name: `Dim ${i + 1}`,
+  }));
+
+  return [
+    {
+      title: {
+        text: `${title} (Parallel Coordinates)`,
+        left: 'center',
+      },
+      tooltip: {
+        trigger: 'item',
+      },
+      legend: {
+        top: 30,
+        type: 'scroll',
+      },
+      parallel: {
+        top: 90,
+        left: 70,
+        right: 70,
+        bottom: 60,
+      },
+      parallelAxis,
+      series: centers.map((center, i) => ({
+        type: 'parallel',
+        name: `Cluster ${i + 1}`,
+        data: [center],
+        lineStyle: {
+          width: 2,
+          opacity: 0.85,
+        },
+      })),
     },
   ];
 }

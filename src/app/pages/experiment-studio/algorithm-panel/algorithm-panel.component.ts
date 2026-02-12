@@ -647,13 +647,6 @@ export class AlgorithmPanelComponent {
     // if experiment running -> disabled
     if (this.isRunning()) return true;
 
-    // shouldn't run through here. safety
-    if (
-      algo.name === 'describe' ||
-      algo.name === 'histogram'
-    ) {
-      return true;
-    }
 
     if (this.configForm() && Object.keys(this.configForm().controls).length > 0) {
       return this.configForm().invalid;

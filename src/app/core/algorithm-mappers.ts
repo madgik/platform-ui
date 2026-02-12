@@ -4,7 +4,6 @@ import { AlgorithmConfig } from '../models/algorithm-definition.model';
 // Lookup for categories
 const CATEGORY_MAPPING: Record<string, string> = {
   "pearson_correlation": "Correlation",
-  "anova": "Statistical Tests",
   "anova_oneway": "Statistical Tests",
   "ttest_independent": "Statistical Tests",
   "ttest_onesample": "Statistical Tests",
@@ -13,7 +12,6 @@ const CATEGORY_MAPPING: Record<string, string> = {
   "logistic_regression": "Regression",
   "naive_bayes_categorical": "Classification",
   "naive_bayes_gaussian": "Classification",
-  "svm_scikit": "Classification",
   "kmeans": "Clustering",
   "pca": "Dimensionality Reduction",
   "pca_with_transformation": "Dimensionality Reduction",
@@ -97,25 +95,26 @@ function buildConfigSchema(parameters: Record<string, RawParameter>): Array<any>
 }
 
 export function mapRawAlgorithmToAlgorithmConfig(raw: RawAlgorithmDefinition): AlgorithmConfig {
+  const normalizedName = raw.name === 'anova' ? 'anova_twoway' : raw.name;
+
   return {
-    name: raw.name,
+    name: normalizedName,
     label: raw.label,
     description: raw.desc ?? '',
     inputdata: raw.inputdata ?? {},
     requiredVariable: raw.inputdata?.y?.types || [],
     covariate: raw.inputdata?.x?.types || [],
-    category: CATEGORY_MAPPING[raw.name] ?? 'Uncategorized',
+    category: CATEGORY_MAPPING[normalizedName] ?? 'Uncategorized',
     configSchema: buildConfigSchema(raw.parameters ?? {}),
     type: raw.type || 'exareme2',
     isDisabled: false,
-    ...(getOutputSchema(raw.name) ? { outputSchema: getOutputSchema(raw.name) } : {}),
+    ...(getOutputSchema(normalizedName) ? { outputSchema: getOutputSchema(normalizedName) } : {}),
   };
 }
 
 
 export function getOutputSchema(algorithmName: string): any[] | undefined {
   switch (algorithmName) {
-    case 'anova':
     case 'anova_twoway':
       return [
         {
@@ -383,22 +382,6 @@ export function getOutputSchema(algorithmName: string): any[] | undefined {
           type: 'matrix',
           elementType: 'float',
           variablesKey: 'variables'
-        }
-      ];
-    case 'svm_scikit':
-      return [
-        { key: 'n_obs', label: 'Observations', type: 'number' },
-        {
-          key: 'coeff',
-          label: 'Coefficients',
-          type: 'array',
-          elementType: 'number'
-        },
-        {
-          key: 'support_vectors',
-          label: 'Support Vectors',
-          type: 'array',
-          elementType: 'number'
         }
       ];
     case 'linear_svm':

@@ -292,6 +292,27 @@ function mapPearsonRows(rows: any[], labelMap: LabelMap | null | undefined): any
   });
 }
 
+function mapNaiveBayesClasses(
+  result: any,
+  enumMaps: EnumMaps,
+  yVar: string | null | undefined
+): { result: any; map: Record<string, string> | null } {
+  const classes: any[] = Array.isArray(result?.classes) ? result.classes : [];
+  if (!classes.length) return { result, map: null };
+
+  const directMap = getEnumMapForVar(enumMaps, yVar);
+  const map = directMap ?? resolveEnumMapForValues(classes, enumMaps);
+  if (!map) return { result, map: null };
+
+  return {
+    result: {
+      ...result,
+      classes: mapArrayValues(classes, map),
+    },
+    map,
+  };
+}
+
 export function mapAlgorithmResultEnums(
   algorithm: string | null | undefined,
   result: any,
@@ -313,14 +334,17 @@ export function mapAlgorithmResultEnums(
     case 'naive_bayes_categorical_cv':
     case 'naive_bayes_gaussian':
     case 'naive_bayes_gaussian_cv': {
-      const { result: mappedResult, map } = mapConfusionMatrix(result, safeEnumMaps, yVar);
-      if (map && mappedResult?.classification_summary) {
+      const classesMapped = mapNaiveBayesClasses(result, safeEnumMaps, yVar);
+      const confusionMapped = mapConfusionMatrix(classesMapped.result, safeEnumMaps, yVar);
+      const effectiveMap = confusionMapped.map ?? classesMapped.map;
+
+      if (effectiveMap && confusionMapped.result?.classification_summary) {
         return {
-          ...mappedResult,
-          classification_summary: mapClassificationSummary(mappedResult.classification_summary, map),
+          ...confusionMapped.result,
+          classification_summary: mapClassificationSummary(confusionMapped.result.classification_summary, effectiveMap),
         };
       }
-      return mappedResult;
+      return confusionMapped.result;
     }
     case 'anova_oneway':
       {
@@ -345,7 +369,6 @@ export function mapAlgorithmResultEnums(
     case 'logistic_regression':
     case 'logistic_regression_cv':
       return mapRegressionVars(result, safeEnumMaps, labelMap);
-    case 'anova':
     case 'anova_twoway': {
       if (!labelMap) return result;
       const mapped: any = { ...result };

@@ -15,7 +15,7 @@ export class AlgorithmRulesService {
     constructor() { }
 
     private isTwoWayAnova(name: string | undefined | null): boolean {
-        return name === AlgorithmNames.ANOVA || name === AlgorithmNames.ANOVA_TWOWAY;
+        return name === AlgorithmNames.ANOVA_TWOWAY;
     }
 
     isAlgorithmAvailable(
@@ -130,6 +130,12 @@ export class AlgorithmRulesService {
             }
         }
 
+        const yConfigured = Object.prototype.hasOwnProperty.call(algo.inputdata, AlgorithmRoles.Y);
+        const xConfigured = Object.prototype.hasOwnProperty.call(algo.inputdata, AlgorithmRoles.X);
+
+        if (!yConfigured && selections.y.length > 0) return false;
+        if (!xConfigured && selections.x.length > 0) return false;
+
         if (filterReq) {
             const sel: D3HierarchyNode[] = selections[AlgorithmRoles.FILTERS as SelectionRole] ?? [];
             const isRequired = this.isFieldRequired(filterReq);
@@ -161,7 +167,6 @@ export class AlgorithmRulesService {
                     y: `Variable: exactly 1${formatTypes([VariableTypes.REAL, VariableTypes.INT])}`,
                     x: `Covariate: exactly 1${formatTypes([VariableTypes.NOMINAL, VariableTypes.TEXT])}`,
                 };
-            case AlgorithmNames.ANOVA:
             case AlgorithmNames.ANOVA_TWOWAY:
                 return {
                     y: `Variable: exactly 1${formatTypes([VariableTypes.REAL, VariableTypes.INT])}`,

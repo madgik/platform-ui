@@ -1,3 +1,13 @@
+import {
+  AnovaResult, AnovaTwoWayResult, TTestResult,
+  LinearRegressionResult, LinearRegressionCVResult,
+  LogisticRegressionResult, CVLogisticRegressionResult,
+  NaiveBayesGaussianResult, NaiveBayesCategoricalResult, NaiveBayesCVResult,
+  KMeansResult, PCAResult, PearsonResult,
+  HistogramResult, DescriptiveStatsResult,
+  VariableStats, NominalDescriptiveStats, NumericalDescriptiveStats
+} from '../../../../models/algorithm-results.model';
+
 export interface TableSpec {
   title?: string;
   columns: string[];
@@ -82,57 +92,25 @@ function buildTTestRows(result: Record<string, any>): any[][] {
 }
 
 export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
-  kmeans: (result) => {
+  kmeans: (result: KMeansResult) => {
     const centers = result?.centers;
-    if (!Array.isArray(centers)) return [];
+    if (!Array.isArray(centers) || centers.length === 0) return [];
     const dims = centers[0]?.length || 0;
     const columns = [...Array(dims)].map((_, i) => ['x', 'y', 'z'][i] || `dim${i + 1}`);
     const rows = centers.map((row: number[]) => row.map(v => Number(v.toFixed(3))));
     return [{ title: 'K-Means Centers', columns, rows }];
   },
 
-  linear_regression: (result) => {
+  linear_regression: (result: LinearRegressionResult) => {
     if (!result) return [];
 
-    const coefTable = result?.coefficients;
-    const infoTable = result?.model_info;
-
-    // (A) Object-style coefficients + model_info
-    if (coefTable && infoTable && typeof coefTable === 'object' && !Array.isArray(coefTable)) {
-      const coefRows = Object.entries(coefTable).map(([variable, stats]: [string, any]) => [
-        variable,
-        formatDecimal(stats?.coefficient),
-        formatDecimal(stats?.std_err),
-        formatDecimal(stats?.z_score),
-        formatDecimal(stats?.p_value),
-        formatDecimal(stats?.ci_lower),
-        formatDecimal(stats?.ci_upper),
-      ]);
-
-      const infoRows = Object.entries(infoTable).map(([key, value]) => [key, formatDecimal(value)]);
-
-      return [
-        {
-          title: 'Coefficients',
-          columns: ['Independent variables', 'Coefficients', 'Std.Err.', 'z-scores', 'P(>|z|)', 'Lower 95% c.i.', 'Upper 95% c.i.'],
-          rows: coefRows,
-        },
-        {
-          title: 'Model Info',
-          columns: ['Name', 'Value'],
-          rows: infoRows,
-        },
-      ];
-    }
-
-    // (B) Array-style coefficients (backend format)
-    const indepVars: any[] = Array.isArray(result?.indep_vars) ? result.indep_vars : [];
-    const coefficients: any[] = Array.isArray(result?.coefficients) ? result.coefficients : [];
-    const stdErr: any[] = Array.isArray(result?.std_err) ? result.std_err : [];
-    const tStats: any[] = Array.isArray(result?.t_stats) ? result.t_stats : [];
-    const pValues: any[] = Array.isArray(result?.pvalues) ? result.pvalues : [];
-    const lowerCi: any[] = Array.isArray(result?.lower_ci) ? result.lower_ci : [];
-    const upperCi: any[] = Array.isArray(result?.upper_ci) ? result.upper_ci : [];
+    const indepVars = result.indep_vars || [];
+    const coefficients = result.coefficients || [];
+    const stdErr = result.std_err || [];
+    const tStats = result.t_stats || [];
+    const pValues = result.pvalues || [];
+    const lowerCi = result.lower_ci || [];
+    const upperCi = result.upper_ci || [];
 
     if (indepVars.length && coefficients.length) {
       const coefRows = indepVars.map((variable, idx) => [
@@ -145,24 +123,39 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
         formatDecimal(upperCi[idx]),
       ]);
 
-      const infoKeys: Array<[string, string]> = [
-        ['dependent_var', 'Dependent variable'],
-        ['n_obs', 'Observations'],
-        ['df_model', 'Degrees of Freedom (Model)'],
-        ['df_resid', 'Degrees of Freedom (Residual)'],
-        ['r_squared', 'R² Score'],
-        ['r_squared_adjusted', 'Adjusted R²'],
-        ['f_stat', 'F-statistic'],
-        ['f_pvalue', 'p-value (F-stat)'],
-        ['rse', 'Residual Std. Error'],
-        ['ll', 'Log-likelihood'],
-        ['aic', 'AIC'],
-        ['bic', 'BIC'],
+      const infoKeys: Array<keyof LinearRegressionResult> = [
+        'dependent_var',
+        'n_obs',
+        'df_model',
+        'df_resid',
+        'r_squared',
+        'r_squared_adjusted',
+        'f_stat',
+        'f_pvalue',
+        'rse',
+        'll',
+        'aic',
+        'bic',
       ];
 
+      const labelMap: Record<string, string> = {
+        dependent_var: 'Dependent variable',
+        n_obs: 'Observations',
+        df_model: 'Degrees of Freedom (Model)',
+        df_resid: 'Degrees of Freedom (Residual)',
+        r_squared: 'R² Score',
+        r_squared_adjusted: 'Adjusted R²',
+        f_stat: 'F-statistic',
+        f_pvalue: 'p-value (F-stat)',
+        rse: 'Residual Std. Error',
+        ll: 'Log-likelihood',
+        aic: 'AIC',
+        bic: 'BIC'
+      };
+
       const infoRows = infoKeys
-        .filter(([key]) => result?.[key] !== undefined)
-        .map(([key, label]) => [label, formatDecimal(result[key])]);
+        .filter((key) => result[key] !== undefined && result[key] !== null)
+        .map((key) => [labelMap[key] || key, formatDecimal(result[key])]);
 
       return [
         {
@@ -178,127 +171,90 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
         },
       ];
     }
-
     return [];
   },
 
-  linear_regression_cv: (result) => {
+  linear_regression_cv: (result: LinearRegressionCVResult) => {
     if (!result) return [];
 
-    // 1) Training set sample sizes
-    const nObs = result?.n_obs;
+    // Training set sample sizes
+    const nObs = result.n_obs;
     const sampleSizeRows = Array.isArray(nObs)
       ? nObs.map((val: number, i: number) => [`Fold ${i + 1}`, val])
       : [];
 
-    const getMetric = (field: any): [number | null, number | null] => {
-      if (!field) return [null, null];
+    const statsRows = [
+      ['Root mean squared error', result.mean_sq_error.mean, result.mean_sq_error.std],
+      ['R-squared', result.r_squared.mean, result.r_squared.std],
+      ['Mean absolute error', result.mean_abs_error.mean, result.mean_abs_error.std],
+      ['F-statistic', result.f_stat.mean, result.f_stat.std],
+    ].map(([label, mean, std]) => [label, formatDecimal(mean), formatDecimal(std)]);
 
-      if (Array.isArray(field)) {
-        return [
-          typeof field[0] === 'number' ? field[0] : null,
-          typeof field[1] === 'number' ? field[1] : null,
-        ];
-      }
-
-      if (typeof field === 'object') {
-        const avg = typeof field.avg === 'number'
-          ? field.avg
-          : typeof field.mean === 'number'
-            ? field.mean
-            : null;
-        const std = typeof field.std === 'number' ? field.std : null;
-        return [avg, std];
-      }
-
-      // fallback
-      return [typeof field === 'number' ? field : null, null];
-    };
-
-    const [rmseMean, rmseStd] = getMetric(result?.mean_sq_error);
-    const [r2Mean, r2Std] = getMetric(result?.r_squared);
-    const [maeMean, maeStd] = getMetric(result?.mean_abs_error);
-    const [fstatMean, fstatStd] = getMetric(result?.f_stat);
-
-    const summaryRows = [
-      ['Root mean squared error', rmseMean, rmseStd],
-      ['R-squared', r2Mean, r2Std],
-      ['Mean absolute error', maeMean, maeStd],
-      ['F-statistic', fstatMean, fstatStd],
-    ].filter(([, mean, std]) => mean !== null || std !== null);
-
-    const tables: TableSpec[] = [];
-    tables.push({
+    return [
+      {
         title: 'Training set sample sizes',
         columns: ['Fold', 'Training Set Sample Sizes'],
         rows: sampleSizeRows,
-    });
-
-    tables.push({
+      },
+      {
         title: 'Error metrics',
         columns: ['Metric', 'Mean', 'Standard Deviation'],
-        rows: summaryRows,
-    });
-
-    return tables;
+        rows: statsRows,
+      }
+    ];
   },
 
-
-
-  naive_bayes_gaussian: (result) => {
+  naive_bayes_gaussian: (result: NaiveBayesGaussianResult & { __labelMap__?: Record<string, string>, __enumMaps__?: any, __yVar__?: string }) => {
     if (!result) return [];
+
+    // Extract metadata
+    const labelMap = result.__labelMap__ || {};
+    const enumMaps = result.__enumMaps__ || {};
+    const yVar = result.__yVar__;
+
+    // Helpers
+    const getLabel = (code: string) => labelMap[code] || code;
+    const getEnumLabel = (varCode: string, val: string) => enumMaps[varCode]?.[val] ?? val;
+
     const tables: TableSpec[] = [];
 
-    const lm: Record<string, string> = result?.__labelMap__ ?? {};
-    const em: Record<string, Record<string, string>> = result?.__enumMaps__ ?? {};
-    const yVar: string = result?.__yVar__;
+    const rawClasses = result.classes || [];
+    const rawFeatureNames = result.feature_names || [];
 
-    const resolveLabel = (code: string, isClass = false) => {
-      // If it's a class, try resolving from y-variable enumerations first
-      if (isClass && yVar && em[yVar] && em[yVar][code]) {
-        return em[yVar][code];
-      }
-      // Otherwise try the general label map (for variable names)
-      return lm[code] || code;
-    };
+    // Map labels
+    const classLabels = rawClasses.map(c => yVar ? getEnumLabel(yVar, String(c)) : String(c));
+    const featureLabels = rawFeatureNames.map(f => getLabel(f));
 
-    const classes: string[] = result?.classes ?? [];
-    const featureNames: string[] = result?.feature_names ?? [];
-
-    // Class summary table: class name, count, prior
-    const classCount: number[] = result?.class_count ?? [];
-    const classPrior: number[] = result?.class_prior ?? [];
-    if (classes.length > 0) {
+    // Class summary
+    if (rawClasses.length > 0) {
       tables.push({
         title: 'Class Summary',
         columns: ['Class', 'Count', 'Prior'],
-        rows: classes.map((cls: string, i: number) => [
-          resolveLabel(String(cls), true),
-          formatDecimal(classCount[i]),
-          formatDecimal(classPrior[i]),
+        rows: rawClasses.map((cls, i) => [
+          classLabels[i],
+          formatDecimal(result.class_count?.[i]),
+          formatDecimal(result.class_prior?.[i]),
         ]),
         layout: 'full',
       });
     }
 
-    // Theta table: means per class × feature
-    const theta = result?.theta;
-    if (Array.isArray(theta) && theta.length > 0) {
-      const columns = ['Class', ...featureNames.map(f => resolveLabel(f))];
-      const rows = theta.map((row: number[], i: number) => [
-        resolveLabel(String(classes[i] ?? `Class ${i}`), true),
-        ...row.map((v: number) => formatDecimal(v)),
+    // Theta (Means)
+    if (result.theta && result.theta.length > 0) {
+      const columns = ['Class', ...featureLabels];
+      const rows = result.theta.map((row, i) => [
+        classLabels[i] ?? `Class ${i}`,
+        ...row.map((v) => formatDecimal(v)),
       ]);
       tables.push({ title: 'Feature Means per Class (θ)', columns, rows, layout: 'full' });
     }
 
-    // Variance table: variances per class × feature
-    const variance = result?.var;
-    if (Array.isArray(variance) && variance.length > 0) {
-      const columns = ['Class', ...featureNames.map(f => resolveLabel(f))];
-      const rows = variance.map((row: number[], i: number) => [
-        resolveLabel(String(classes[i] ?? `Class ${i}`), true),
-        ...row.map((v: number) => formatDecimal(v)),
+    // Variance
+    if (result.var && result.var.length > 0) {
+      const columns = ['Class', ...featureLabels];
+      const rows = result.var.map((row, i) => [
+        classLabels[i] ?? `Class ${i}`,
+        ...row.map((v) => formatDecimal(v)),
       ]);
       tables.push({ title: 'Feature Variances per Class (σ²)', columns, rows, layout: 'full' });
     }
@@ -306,15 +262,14 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
     return tables;
   },
 
-  naive_bayes_gaussian_cv: (result) => {
+  naive_bayes_gaussian_cv: (result: NaiveBayesCVResult) => {
     const summary = result?.classification_summary;
     if (!summary) return [];
 
-    const metrics = ['accuracy', 'precision', 'recall', 'fscore'];
-    // Ensure we have data for the first metric to detect classes
+    const metrics = ['accuracy', 'precision', 'recall', 'fscore'] as const;
     if (!summary.accuracy) return [];
 
-    const classes = Object.keys(summary.accuracy); // e.g. F, M
+    const classes = Object.keys(summary.accuracy);
     if (!classes.length) return [];
 
     const folds = Object.keys(summary.accuracy[classes[0]]).filter(k => k !== 'average' && k !== 'stdev');
@@ -322,17 +277,11 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
     const rows = [...folds, 'average', 'stdev'].map(fold => {
       const row: any[] = [fold];
       for (const metric of metrics) {
-        // Guard against missing metrics
-        if (!summary[metric]) {
-          for (const cls of classes) row.push('');
-          continue;
-        }
         for (const cls of classes) {
           row.push(formatDecimal(summary[metric][cls]?.[fold]));
         }
       }
-      // n_obs is usually adjacent to accuracy/precision objects, check both locations
-      const nObsVal = summary.n_obs?.[fold] ?? summary[classes[0]]?.n_obs?.[fold];
+      const nObsVal = summary.n_obs?.[fold] ?? 0;
       row.push(formatDecimal(nObsVal));
       return row;
     });
@@ -340,68 +289,64 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
     const columns = ['Fold'];
     for (const metric of metrics) {
       for (const cls of classes) {
-        const name = `${metric.charAt(0).toUpperCase() + metric.slice(1)} (${cls})`;
+        const name = `${capitalize(metric)} (${cls})`;
         columns.push(name);
       }
     }
     columns.push('Number of observations');
 
-    return [
+    const tables: TableSpec[] = [
       {
         title: 'Classification Metrics per Fold',
         columns,
         rows,
         layout: 'full'
-      },
+      }
     ];
-  },
 
-  logistic_regression: (result) => {
-    if (!result) return [];
-
-    const dep = result?.dependent_var ?? '';
-    const indep: string[] = Array.isArray(result?.indep_vars) ? result.indep_vars : [];
-
-    const s = result?.summary ?? {};
-    const coef: number[] = Array.isArray(s?.coefficients) ? s.coefficients : [];
-    const se: number[] = Array.isArray(s?.std_err)
-      ? s.std_err
-      : Array.isArray(s?.stderr)
-        ? s.stderr
-        : [];
-    const z: number[] = Array.isArray(s?.z_scores) ? s.z_scores : [];
-    const p: number[] = Array.isArray(s?.pvalues) ? s.pvalues : [];
-    const lo: number[] = Array.isArray(s?.lower_ci) ? s.lower_ci : [];
-    const hi: number[] = Array.isArray(s?.upper_ci) ? s.upper_ci : [];
-
-    // needs at least coefficients + indep vars
-    if (!indep.length || !coef.length) return [];
-
-    const n = Math.min(indep.length, coef.length, se.length || indep.length);
-
-    const coefRows: any[][] = [];
-    for (let i = 0; i < n; i++) {
-      coefRows.push([
-        indep[i] ?? `var_${i + 1}`,
-        formatDecimal(coef[i]),
-        formatDecimal(se[i]),
-        formatDecimal(z[i]),
-        formatDecimal(p[i]),
-        formatDecimal(lo[i]),
-        formatDecimal(hi[i]),
-      ]);
+    if (result.confusion_matrix) {
+      tables.push({
+        title: 'Confusion Matrix (Combined)',
+        columns: ['Actual \\ Predicted', ...result.confusion_matrix.labels],
+        rows: result.confusion_matrix.data.map((row, i) => [
+          result.confusion_matrix.labels[i],
+          ...row.map(v => formatDecimal(v))
+        ])
+      });
     }
 
-    // Model info rows, if not arrays
-    const modelInfoKeys = Object.keys(s).filter((k) => !Array.isArray((s as any)[k]));
-    const modelInfoRows: any[][] = [
-      ...(dep ? [['Dependent variable', dep]] : []),
-      ...modelInfoKeys.map((k) => [capitalize(k.replace(/_/g, ' ')), formatDecimal((s as any)[k])]),
+    return tables;
+  },
+
+  logistic_regression: (result: LogisticRegressionResult) => {
+    if (!result) return [];
+
+    const s = result.summary;
+    const coefRows = result.indep_vars.map((v, i) => [
+      v,
+      formatDecimal(s.coefficients[i]),
+      formatDecimal(s.stderr[i]),
+      formatDecimal(s.z_scores[i]),
+      formatDecimal(s.pvalues[i]),
+      formatDecimal(s.lower_ci[i]),
+      formatDecimal(s.upper_ci[i]),
+    ]);
+
+    const modelInfoRows = [
+      ['Dependent Variable', result.dependent_var],
+      ['Observations', formatDecimal(s.n_obs)],
+      ['DF Model', formatDecimal(s.df_model)],
+      ['DF Residual', formatDecimal(s.df_resid)],
+      ['AIC', formatDecimal(s.aic)],
+      ['BIC', formatDecimal(s.bic)],
+      ['Log Likelihood', formatDecimal(s.ll)],
+      ['Pseudo R-squared (CS)', formatDecimal(s.r_squared_cs)],
+      ['Pseudo R-squared (McF)', formatDecimal(s.r_squared_mcf)],
     ];
 
     return [
       {
-        title: 'Logistic Regression Coefficients',
+        title: 'Coefficients',
         columns: ['Variable', 'Coefficient', 'Std.Err.', 'z', 'P(>|z|)', 'Lower 95% CI', 'Upper 95% CI'],
         rows: coefRows,
       },
@@ -414,240 +359,105 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
     ];
   },
 
-  // Legacy alias retained for backwards compatibility with historical payloads.
-  logistic_regression_cv_fedaverage: (result: any, title = 'Logistic Regression Cross-Validation'): TableSpec[] => {
+  logistic_regression_cv: (result: CVLogisticRegressionResult) => {
     if (!result) return [];
+    const s = result.summary;
 
-    // (A) Preferred: summary tabular shape
-    // summary: { row_names: string[], n_obs: number[], accuracy: number[], ... }
-
-    const s = result?.summary;
-    const rowNames: any[] = Array.isArray(s?.row_names) ? s.row_names : (Array.isArray(s?.fold_names) ? s.fold_names : []);
-
-    const nObsArr: any[] = Array.isArray(s?.n_obs) ? s.n_obs : [];
-    const accArr: any[] = Array.isArray(s?.accuracy) ? s.accuracy : [];
-    const recArr: any[] = Array.isArray(s?.recall) ? s.recall : [];
-    const precArr: any[] = Array.isArray(s?.precision) ? s.precision : [];
-    const fArr: any[] = Array.isArray(s?.fscore) ? s.fscore : (Array.isArray(s?.f1) ? s.f1 : []);
-
-    const hasSummary =
-      rowNames.length > 0 &&
-      (accArr.length === rowNames.length || recArr.length === rowNames.length || precArr.length === rowNames.length || fArr.length === rowNames.length);
-
-    if (hasSummary) {
-      const n = rowNames.length;
-
-      const rows: any[][] = [];
-      for (let i = 0; i < n; i++) {
-        rows.push([
-          rowNames[i] ?? `fold_${i + 1}`,
-          nObsArr[i] == null ? '' : formatDecimal(nObsArr[i]),
-          formatDecimal(accArr[i]),
-          formatDecimal(recArr[i]),
-          formatDecimal(precArr[i]),
-          formatDecimal(fArr[i]),
-        ]);
-      }
-
-      return [
-        {
-        title,
-        columns: ['Fold', 'Number of observations', 'Accuracy', 'Recall', 'Precision', 'F-score'],
-        rows,
-        }
-      ];
-    }
-
-    // (B) Alternative: metrics array shape
-    // metrics: Array<{ fold, n_obs, accuracy, recall, precision, fscore }>
-
-    const metrics = Array.isArray(result?.metrics) ? result.metrics : null;
-    if (metrics?.length) {
-      const getFoldLabel = (m: any) => m.fold ?? m.fold_id ?? m.name ?? m.id ?? '';
-      const getVal = (m: any, keys: string[]) => {
-        for (const k of keys) if (m?.[k] !== undefined) return m[k];
-        return null;
-      };
-
-      const rows = metrics.map((m: any) => [
-        getFoldLabel(m),
-        (() => {
-          const v = getVal(m, ['n_obs', 'n', 'num_observations', 'observations']);
-          return v == null ? '' : formatDecimal(v);
-        })(),
-        formatDecimal(getVal(m, ['accuracy', 'acc'])),
-        formatDecimal(getVal(m, ['recall', 'tpr'])),
-        formatDecimal(getVal(m, ['precision', 'ppv'])),
-        formatDecimal(getVal(m, ['fscore', 'f_score', 'f1', 'f1_score'])),
+    const n = s.n_obs.length;
+    const rows = [];
+    for (let i = 0; i < n; i++) {
+      rows.push([
+        s.row_names[i],
+        formatDecimal(s.n_obs[i]),
+        formatDecimal(s.accuracy[i]),
+        formatDecimal(s.precision[i]),
+        formatDecimal(s.recall[i]),
+        formatDecimal(s.fscore[i])
       ]);
-
-      return [
-        {
-        title,
-        columns: ['Fold', 'Number of observations', 'Accuracy', 'Recall', 'Precision', 'F-score'],
-        rows,
-        }
-      ];
     }
 
-    return [];
+    return [{
+      title: 'Logistic Regression CV Summary',
+      columns: ['Fold', 'Observations', 'Accuracy', 'Precision', 'Recall', 'F-Score'],
+      rows
+    }];
   },
 
-  logistic_regression_cv: (result: any, title = 'Logistic Regression Cross-Validation'): TableSpec[] => {
-    if (!result) return [];
-
-    // (A) Preferred: summary tabular shape
-    // summary: { row_names: string[], n_obs: number[], accuracy: number[], ... }
-
-    const s = result?.summary;
-    const rowNames: any[] = Array.isArray(s?.row_names) ? s.row_names : (Array.isArray(s?.fold_names) ? s.fold_names : []);
-
-    const nObsArr: any[] = Array.isArray(s?.n_obs) ? s.n_obs : [];
-    const accArr: any[] = Array.isArray(s?.accuracy) ? s.accuracy : [];
-    const recArr: any[] = Array.isArray(s?.recall) ? s.recall : [];
-    const precArr: any[] = Array.isArray(s?.precision) ? s.precision : [];
-    const fArr: any[] = Array.isArray(s?.fscore) ? s.fscore : (Array.isArray(s?.f1) ? s.f1 : []);
-
-    const hasSummary =
-      rowNames.length > 0 &&
-      (accArr.length === rowNames.length || recArr.length === rowNames.length || precArr.length === rowNames.length || fArr.length === rowNames.length);
-
-    if (hasSummary) {
-      const n = rowNames.length;
-
-      const rows: any[][] = [];
-      for (let i = 0; i < n; i++) {
-        rows.push([
-          rowNames[i] ?? `fold_${i + 1}`,
-          nObsArr[i] == null ? '' : formatDecimal(nObsArr[i]),
-          formatDecimal(accArr[i]),
-          formatDecimal(recArr[i]),
-          formatDecimal(precArr[i]),
-          formatDecimal(fArr[i]),
-        ]);
-      }
-
-      return [
-        {
-        title,
-        columns: ['Fold', 'Number of observations', 'Accuracy', 'Recall', 'Precision', 'F-score'],
-        rows,
-        }
-      ];
-    }
-
-    // (B) Alternative: metrics array shape
-    // metrics: Array<{ fold, n_obs, accuracy, recall, precision, fscore }>
-
-    const metrics = Array.isArray(result?.metrics) ? result.metrics : null;
-    if (metrics?.length) {
-      const getFoldLabel = (m: any) => m.fold ?? m.fold_id ?? m.name ?? m.id ?? '';
-      const getVal = (m: any, keys: string[]) => {
-        for (const k of keys) if (m?.[k] !== undefined) return m[k];
-        return null;
-      };
-
-      const rows = metrics.map((m: any) => [
-        getFoldLabel(m),
-        (() => {
-          const v = getVal(m, ['n_obs', 'n', 'num_observations', 'observations']);
-          return v == null ? '' : formatDecimal(v);
-        })(),
-        formatDecimal(getVal(m, ['accuracy', 'acc'])),
-        formatDecimal(getVal(m, ['recall', 'tpr'])),
-        formatDecimal(getVal(m, ['precision', 'ppv'])),
-        formatDecimal(getVal(m, ['fscore', 'f_score', 'f1', 'f1_score'])),
-      ]);
-
-      return [
-        {
-        title,
-        columns: ['Fold', 'Number of observations', 'Accuracy', 'Recall', 'Precision', 'F-score'],
-        rows,
-        }
-      ];
-    }
-
-    return [];
-  },
-
-  naive_bayes_categorical: (result) => {
+  naive_bayes_categorical: (result: NaiveBayesCategoricalResult & { __labelMap__?: Record<string, string>, __enumMaps__?: any, __yVar__?: string }) => {
     if (!result) return [];
     const tables: TableSpec[] = [];
 
-    const lm: Record<string, string> = result?.__labelMap__ ?? {};
-    const em: Record<string, Record<string, string>> = result?.__enumMaps__ ?? {};
-    const yVar: string = result?.__yVar__;
+    // Extract metadata injected by AutoRenderer
+    const labelMap = result.__labelMap__ || {};
+    const enumMaps = result.__enumMaps__ || {};
+    const yVar = result.__yVar__;
 
-    const resolveLabel = (code: string, isClass = false) => {
-      if (isClass && yVar && em[yVar] && em[yVar][code]) {
-        return em[yVar][code];
-      }
-      return lm[code] || code;
-    };
+    // Helpers
+    const getLabel = (code: string) => labelMap[code] || code;
+    const getEnumLabel = (varCode: string, val: string) => enumMaps[varCode]?.[val] ?? val;
 
-    const classes: string[] = result?.classes ?? [];
-    const featureNames: string[] = result?.feature_names ?? [];
+    const rawClasses = result.classes;
+    // Map class codes to labels
+    const classLabels = rawClasses.map(c => yVar ? getEnumLabel(yVar, String(c)) : String(c));
 
-    // Class summary table
-    const classCount: number[] = result?.class_count ?? [];
-    const classLogPrior: number[] = result?.class_log_prior ?? [];
-    if (classes.length > 0) {
+    // Class summary
+    if (rawClasses.length > 0) {
       tables.push({
         title: 'Class Summary',
         columns: ['Class', 'Count', 'Log Prior'],
-        rows: classes.map((cls: string, i: number) => [
-          resolveLabel(String(cls), true),
-          formatDecimal(classCount[i]),
-          formatDecimal(classLogPrior[i]),
+        rows: rawClasses.map((cls, i) => [
+          classLabels[i],
+          formatDecimal(result.class_count[i]),
+          formatDecimal(result.class_log_prior[i]),
         ]),
         layout: 'full',
       });
     }
 
-    // Category count tables — one per feature
-    const categoryCount: Record<string, number[][]> = result?.category_count ?? {};
-    const categoryLogProb: Record<string, number[][]> = result?.category_log_prob ?? {};
-    const categories: Record<string, string[]> = result?.categories ?? {};
+    // Category tables
+    for (const feature of result.feature_names) {
+      const counts = result.category_count[feature];
+      const logProbs = result.category_log_prob[feature];
+      const categories = result.categories[feature];
 
-    for (const featureName of featureNames) {
-      const counts = categoryCount[featureName];
-      const catLabels = categories[featureName] ?? [];
-      if (!Array.isArray(counts) || counts.length === 0) continue;
+      const featureLabel = getLabel(feature);
 
-      // Resolve category labels using the feature's enum map if available
-      const resolveCategory = (cat: string) => {
-        if (em[featureName] && em[featureName][cat]) {
-          return em[featureName][cat];
+      if (!counts || !categories) continue;
+
+      const numCats = categories.length;
+      const countRows = [];
+      const logProbRows = [];
+
+      for (let c = 0; c < numCats; c++) {
+        const catVal = String(categories[c]);
+        const catLabel = getEnumLabel(feature, catVal);
+
+        const countRow = [catLabel];
+        const logRow = [catLabel];
+
+        for (let i = 0; i < rawClasses.length; i++) {
+          countRow.push(formatDecimal(counts[i][c]));
+          if (logProbs) logRow.push(formatDecimal(logProbs[i][c]));
         }
-        return cat;
-      };
+        countRows.push(countRow);
+        logProbRows.push(logRow);
+      }
 
-      // counts is [numClasses][numCategories]
-      const numCategories = Array.isArray(counts[0]) ? counts[0].length : 0;
-      const columns = ['Category', ...classes.map(cls => resolveLabel(String(cls), true))];
-      const rows = Array.from({ length: numCategories }, (_, catIdx) => [
-        resolveCategory(String(catLabels[catIdx] ?? `Cat ${catIdx}`)),
-        ...counts.map((classCounts: number[]) => formatDecimal(classCounts[catIdx])),
-      ]);
+      const colHeaders = ['Category', ...classLabels];
+
       tables.push({
-        title: `Category Counts — ${resolveLabel(featureName)}`,
-        columns,
-        rows,
-        layout: 'full',
+        title: `Category Counts: ${featureLabel}`,
+        columns: colHeaders,
+        rows: countRows,
+        layout: 'full'
       });
 
-      const logProb = categoryLogProb[featureName];
-      if (Array.isArray(logProb) && logProb.length > 0) {
-        const logRows = Array.from({ length: numCategories }, (_, catIdx) => [
-          resolveCategory(String(catLabels[catIdx] ?? `Cat ${catIdx}`)),
-          ...logProb.map((classLogProb: number[]) => formatDecimal(classLogProb[catIdx])),
-        ]);
+      if (logProbs) {
         tables.push({
-          title: `Category Log Probabilities — ${resolveLabel(featureName)}`,
-          columns,
-          rows: logRows,
-          layout: 'full',
+          title: `Category Log Probabilities: ${featureLabel}`,
+          columns: colHeaders,
+          rows: logProbRows,
+          layout: 'full'
         });
       }
     }
@@ -655,492 +465,241 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
     return tables;
   },
 
-  pca: (result) => {
-    if (!result || typeof result !== 'object') return [];
+  naive_bayes_categorical_cv: (result: NaiveBayesCVResult) => {
+    // Same as Gaussian CV
+    return AlgorithmTableRegistry['naive_bayes_gaussian_cv'](result);
+  },
 
+  pca: (result: PCAResult) => {
+    if (!result) return [];
     const tables: TableSpec[] = [];
-    const metadataRows: any[][] = [];
-    if (result?.title) metadataRows.push(['Title', result.title]);
-    if (result?.n_obs !== undefined) metadataRows.push(['Observations', formatDecimal(result.n_obs)]);
 
-    if (metadataRows.length) {
+    // Eigenvalues
+    if (result.eigenvalues && result.eigenvalues.length) {
       tables.push({
-        title: 'PCA Summary',
-        columns: ['Metric', 'Value'],
-        rows: metadataRows,
+        title: 'Eigenvalues',
+        columns: ['Component', 'Eigenvalue'],
+        rows: result.eigenvalues.map((v, i) => [`PC${i + 1}`, formatDecimal(v)])
       });
     }
 
     return tables;
   },
 
-  pca_with_transformation: (result) => {
+  pca_with_transformation: (result: PCAResult) => {
     return AlgorithmTableRegistry['pca'](result);
   },
 
-  describe: (result) => {
-    if (!result || typeof result !== 'object') return [];
-
-    const tables: TableSpec[] = [];
-    const buildDescribeTables = (entries: any[], prefix: string) => {
-      if (!entries.length) return;
-
-      const numericRows = entries
-        .filter((entry) => entry?.data && typeof entry.data === 'object' && !('counts' in entry.data))
-        .map((entry) => {
-          const data = entry.data;
-          return [
-            entry.variable ?? '',
-            entry.dataset ?? '',
-            formatDecimal(data?.num_dtps),
-            formatDecimal(data?.num_na),
-            formatDecimal(data?.num_total),
-            formatDecimal(data?.mean),
-            formatDecimal(data?.std),
-            formatDecimal(data?.min),
-            formatDecimal(data?.q1),
-            formatDecimal(data?.q2),
-            formatDecimal(data?.q3),
-            formatDecimal(data?.max),
-          ];
-        });
-
-      if (numericRows.length) {
-        tables.push({
-          title: `${prefix} — Numeric`,
-          columns: ['Variable', 'Dataset', 'Datapoints', 'Missing', 'Total', 'Mean', 'Std', 'Min', 'Q1', 'Median', 'Q3', 'Max'],
-          rows: numericRows,
-          layout: 'full',
-        });
-      }
-
-      const nominalRows = entries
-        .filter((entry) => entry?.data && typeof entry.data === 'object' && 'counts' in entry.data)
-        .map((entry) => {
-          const data = entry.data;
-          const counts = data?.counts && typeof data.counts === 'object'
-            ? Object.entries(data.counts).map(([k, v]) => `${k}: ${v}`).join('; ')
-            : '';
-          return [
-            entry.variable ?? '',
-            entry.dataset ?? '',
-            formatDecimal(data?.num_dtps),
-            formatDecimal(data?.num_na),
-            formatDecimal(data?.num_total),
-            counts,
-          ];
-        });
-
-      if (nominalRows.length) {
-        tables.push({
-          title: `${prefix} — Nominal`,
-          columns: ['Variable', 'Dataset', 'Datapoints', 'Missing', 'Total', 'Counts'],
-          rows: nominalRows,
-          layout: 'full',
-        });
-      }
-    };
-
-    const variableBased = Array.isArray(result?.variable_based) ? result.variable_based : [];
-    const modelBased = Array.isArray(result?.model_based) ? result.model_based : [];
-
-    buildDescribeTables(variableBased, 'Variable-based Summary');
-    buildDescribeTables(modelBased, 'Model-based Summary');
-
-    return tables;
-  },
-
-  naive_bayes_categorical_cv: (result) => {
-    // Reuse the logic from Gaussian if the structure is the same (classification_summary)
-    const summary = result?.classification_summary;
-
-    // Fallback: old 'metrics' array support
-    if (!summary) {
-      const metrics = result?.metrics;
-      if (!Array.isArray(metrics)) return [];
-      const columns = Object.keys(metrics[0]);
-      const rows = metrics.map((m: any) => columns.map(col => m[col]));
-      return [{ title: 'Categorical Naive Bayes CV Metrics', columns, rows, layout: 'full' }];
-    }
-
-    const metrics = ['accuracy', 'precision', 'recall', 'fscore'];
-    // Ensure we have data for the first metric to detect classes
-    if (!summary.accuracy) return [];
-
-    const classes = Object.keys(summary.accuracy); // e.g. F, M
-    if (!classes.length) return [];
-
-    const folds = Object.keys(summary.accuracy[classes[0]]).filter(k => k !== 'average' && k !== 'stdev');
-
-    const rows = [...folds, 'average', 'stdev'].map(fold => {
-      const row: any[] = [fold];
-      for (const metric of metrics) {
-        // Guard against missing metrics
-        if (!summary[metric]) {
-          for (const cls of classes) row.push('');
-          continue;
-        }
-        for (const cls of classes) {
-          row.push(formatDecimal(summary[metric][cls]?.[fold]));
-        }
-      }
-      // n_obs is usually adjacent to accuracy/precision objects, check both locations
-      const nObsVal = summary.n_obs?.[fold] ?? summary[classes[0]]?.n_obs?.[fold];
-      row.push(formatDecimal(nObsVal));
-      return row;
-    });
-
-    const columns = ['Fold'];
-    for (const metric of metrics) {
-      for (const cls of classes) {
-        const name = `${metric.charAt(0).toUpperCase() + metric.slice(1)} (${cls})`;
-        columns.push(name);
-      }
-    }
-    columns.push('Number of observations');
-
-    return [
-      {
-        title: 'Categorical Naive Bayes CV Metrics',
-        columns,
-        rows,
-        layout: 'full'
-      },
-    ];
-  },
-
-  pearson_correlation: (result) => {
+  describe: (result: DescriptiveStatsResult) => {
     if (!result) return [];
-
     const tables: TableSpec[] = [];
-    const lm = result?.__labelMap__ ?? {};
-    const label = (code: string) => lm[code] || code;
 
-    // Helper to extract matrix data
-    const buildMatrixTable = (data: any, title: string) => {
-      const vars = data?.variables;
-      if (!Array.isArray(vars) || vars.length === 0) return;
+    const buildTables = (stats: VariableStats[], titleProp: string) => {
+      const numRows: any[][] = [];
+      const nomRows: any[][] = [];
 
-      const columns = ['Variable', ...vars.map((v: string) => label(v))];
-      const rows = vars.map((rowVar: string) => {
-        const rowData = data[rowVar];
-        if (!Array.isArray(rowData)) return [];
-        return [
-          label(rowVar),
-          ...rowData.map((val: number) => formatDecimal(val))
-        ];
-      });
+      for (const stat of stats) {
+        if (!stat.data) continue;
+        // Check if nominal
+        if ('counts' in stat.data) {
+          const d = stat.data as NominalDescriptiveStats;
+          const countsStr = Object.entries(d.counts).map(([k, v]) => `${k}: ${v}`).join(', ');
+          nomRows.push([
+            stat.variable,
+            stat.dataset,
+            formatDecimal(d.num_dtps),
+            formatDecimal(d.num_na),
+            formatDecimal(d.num_total),
+            countsStr
+          ]);
+        } else {
+          const d = stat.data as NumericalDescriptiveStats;
+          numRows.push([
+            stat.variable,
+            stat.dataset,
+            formatDecimal(d.num_dtps),
+            formatDecimal(d.num_na),
+            formatDecimal(d.num_total),
+            formatDecimal(d.mean),
+            formatDecimal(d.std),
+            formatDecimal(d.min),
+            formatDecimal(d.q1),
+            formatDecimal(d.q2),
+            formatDecimal(d.q3),
+            formatDecimal(d.max)
+          ]);
+        }
+      }
 
-      tables.push({
-        title,
-        columns,
-        rows,
-        layout: 'full'
-      });
-    };
-
-    // 1. P-Values and CI are now visualized as charts.
-
-    // 2. Number of Observations
-
-    // 3. Number of Observations
-    // This might be a single number (if uniform) or a matrix (if pairwise/missing data)
-    // The user input shows "n_obs=13310.0" as a scalar in the example description,
-    // but typically Pearson might return a matrix if pairwise deletion is used.
-    // Let's check if it's a matrix or scalar.
-    if (result.n_obs) {
-      if (typeof result.n_obs === 'object' && result.n_obs.variables) {
-        // It's a matrix
-        buildMatrixTable(result.n_obs, 'Number of Observations (N)');
-      } else if (typeof result.n_obs === 'number') {
-        // It's a scalar global N
+      if (numRows.length) {
         tables.push({
-          title: 'Number of Observations',
-          columns: ['Metric', 'Value'],
-          rows: [['N', formatDecimal(result.n_obs)]],
-          layout: 'compact'
+          title: `${titleProp} - Numerical`,
+          columns: ['Variable', 'Dataset', 'N', 'Missing', 'Total', 'Mean', 'Std', 'Min', 'Q1', 'Median', 'Q3', 'Max'],
+          rows: numRows,
+          layout: 'full'
         });
       }
+      if (nomRows.length) {
+        tables.push({
+          title: `${titleProp} - Nominal`,
+          columns: ['Variable', 'Dataset', 'N', 'Missing', 'Total', 'Counts'],
+          rows: nomRows,
+          layout: 'full'
+        });
+      }
+    };
+
+    buildTables(result.variable_based, 'Variable-based');
+    buildTables(result.model_based, 'Model-based');
+
+    return tables;
+  },
+
+  anova_oneway: (result: AnovaResult) => {
+    // Two tables: ANOVA Table and Tukey Test
+    const t1: TableSpec = {
+      title: 'ANOVA Summary',
+      columns: ['Source', 'df', 'Sum Sq', 'Mean Sq', 'F', 'Prob>F'],
+      rows: [
+        ['Explained', formatDecimal(result.anova_table.df_explained), formatDecimal(result.anova_table.ss_explained), formatDecimal(result.anova_table.ms_explained), formatDecimal(result.anova_table.f_stat), formatDecimal(result.anova_table.p_value)],
+        ['Residual', formatDecimal(result.anova_table.df_residual), formatDecimal(result.anova_table.ss_residual), formatDecimal(result.anova_table.ms_residual), '', '']
+      ]
+    };
+
+    const tables = [t1];
+
+    if (result.tuckey_test && result.tuckey_test.length) {
+      tables.push({
+        title: 'Tukey Post-hoc Test',
+        columns: ['Group A', 'Group B', 'Mean A', 'Mean B', 'Diff', 'SE', 't-stat', 'p-value'],
+        rows: result.tuckey_test.map(r => [
+          r.groupA, r.groupB,
+          formatDecimal(r.meanA), formatDecimal(r.meanB),
+          formatDecimal(r.diff), formatDecimal(r.se),
+          formatDecimal(r.t_stat), formatDecimal(r.p_tuckey)
+        ])
+      });
     }
 
     return tables;
   },
 
-  anova_oneway: (result) => {
-    const table = result?.anova_table;
-    const comparisons = result?.tuckey_test;
-    const minMax = result?.min_max_per_group;
-    const formatP = (val: any) => {
-      if (typeof val !== 'number') return val ?? '';
-      return val.toFixed(3);
-    };
-
-    if (!table || !comparisons) return [];
-
-    const summaryData = [
-      {
-        label: table.x_label ?? 'Factor',
-        df: table.df_explained,
-        ss: table.ss_explained,
-        ms: table.ms_explained,
-        f: table.f_stat,
-        p: table.p_value,
-      },
-      {
-        label: 'Residual',
-        df: table.df_residual,
-        ss: table.ss_residual,
-        ms: table.ms_residual,
-        f: table.f_residual,
-        p: table.p_residual,
-      },
-    ];
-
-    const summaryCols = ['Source', 'DF', 'Sum of Squares', 'Mean Square', 'F ratio', 'P value'];
-    const summaryRows = summaryData.map((row) => [
-      row.label,
-      formatDecimal(row.df),
-      formatDecimal(row.ss),
-      formatDecimal(row.ms),
-      formatDecimal(row.f),
-      formatP(row.p),
+  anova_twoway: (result: AnovaTwoWayResult) => {
+    const rows = result.terms.map((term, i) => [
+      term,
+      formatDecimal(result.sum_sq[i]),
+      formatDecimal(result.df[i]),
+      formatDecimal(result.f_stat[i]),
+      formatDecimal(result.f_pvalue[i])
     ]);
 
-    const compCols = Object.keys(comparisons[0]);
-    const compRows = comparisons.map((r: any) =>
-      compCols.map(c => formatDecimal(r[c]))
-    );
-
-    const tables: TableSpec[] = [
-      {
-        title: 'ANOVA Summary',
-        columns: summaryCols,
-        rows: summaryRows,
-      },
-      {
-        title: 'Pairwise Comparisons',
-        columns: compCols,
-        rows: compRows,
-      },
-    ];
-
-    const categories = Array.isArray(minMax?.categories) ? minMax.categories : [];
-    const mins = Array.isArray(minMax?.min) ? minMax.min : [];
-    const maxs = Array.isArray(minMax?.max) ? minMax.max : [];
-    if (categories.length && categories.length === mins.length && categories.length === maxs.length) {
-      tables.push({
-        title: 'Group Min/Max',
-        columns: ['Group', 'Min', 'Max'],
-        rows: categories.map((category: any, idx: number) => [
-          category,
-          formatDecimal(mins[idx]),
-          formatDecimal(maxs[idx]),
-        ]),
-      });
-    }
-
-    return tables;
+    return [{
+      title: 'Two-Way ANOVA',
+      columns: ['Term', 'Sum Sq', 'df', 'F', 'Prob>F'],
+      rows
+    }];
   },
 
-  anova_twoway: (result) => {
-    if (!result) return [];
-
-    // future proof, supports if backend returns table[]
-    if (Array.isArray((result as any).table) && (result as any).table.length > 0) {
-      const rows = (result as any).table;
-      const columns = Object.keys(rows[0]);
-
-      return [
-        {
-          title: 'Two-Way ANOVA Results',
-          columns,
-          rows: rows.map((r: any) => columns.map(c => formatDecimal(r[c]))),
-        },
-      ];
-    }
-
-    // Current layout: df[], sum_sq[], f_stat[] / f_value[], p_value[], terms[]
-    const terms = Array.isArray(result.terms) ? result.terms : [];
-    const df = Array.isArray(result.df) ? result.df : [];
-    const ss = Array.isArray(result.sum_sq) ? result.sum_sq : [];
-    const fArray =
-      Array.isArray(result.f_stat)
-        ? result.f_stat
-        : Array.isArray(result.f_value)
-          ? result.f_value
-          : [];
-
-    const p =
-      Array.isArray(result.p_value)
-        ? result.p_value
-        : Array.isArray(result.pvalue)
-          ? result.pvalue
-          : Array.isArray(result.f_pvalue)
-            ? result.f_pvalue
-            : [];
-
-    // Object-map layout: sum_sq/df/etc as { term: value }
-    if (!terms.length && result.sum_sq && typeof result.sum_sq === 'object' && !Array.isArray(result.sum_sq)) {
-      const keySet = new Set<string>([
-        ...Object.keys(result.sum_sq || {}),
-        ...Object.keys(result.df || {}),
-        ...Object.keys(result.f_stat || {}),
-        ...Object.keys(result.f_value || {}),
-        ...Object.keys(result.p_value || {}),
-        ...Object.keys(result.pvalue || {}),
-        ...Object.keys(result.f_pvalue || {}),
-      ]);
-      const objTerms = Array.from(keySet);
-      const rows: any[][] = objTerms.map((label) => [
-        label,
-        formatDecimal((result.df || {})[label]),
-        formatDecimal((result.sum_sq || {})[label]),
-        formatDecimal((result.ms || {})[label]),
-        formatDecimal((result.f_stat || result.f_value || {})[label]),
-        formatDecimal((result.p_value || result.pvalue || result.f_pvalue || {})[label]),
-      ]);
-
-      return [
-        {
-          title: 'Two-Way ANOVA Results',
-          columns: ['Source', 'DF', 'Sum of Squares', 'Mean Square', 'F', 'P value'],
-          rows,
-        },
-      ];
-    }
-
-    if (!terms.length) return [];
-
-    const n = terms.length;
-    const rows: any[][] = [];
-
-    for (let i = 0; i < n; i++) {
-      const label = terms[i];
-      const dfVal = df[i];
-      const ssVal = ss[i];
-      const msVal =
-        typeof dfVal === 'number' && dfVal !== 0 && typeof ssVal === 'number'
-          ? ssVal / dfVal
-          : null;
-      const fVal = fArray[i];
-      const pVal = p[i];
-
-      rows.push([
-        label,
-        formatDecimal(dfVal),
-        formatDecimal(ssVal),
-        formatDecimal(msVal),
-        formatDecimal(fVal),
-        formatDecimal(pVal),
-      ]);
-    }
-
-    const columns = ['Source', 'DF', 'Sum of Squares', 'Mean Square', 'F', 'P value'];
-
-    return [
-      {
-        title: 'Two-Way ANOVA Results',
-        columns,
-        rows,
-      },
-    ];
-  },
-
-  // Legacy alias retained for backwards compatibility with historical payloads.
-  anova: (result) => {
-    return AlgorithmTableRegistry['anova_twoway'](result);
-  },
-
-  ttest_onesample: (result) => {
-    if (!result || typeof result !== 'object') return [];
-    const rows = buildTTestRows(result);
-    return [
-      {
-        title: 'One-Sample T-Test',
-        columns: ['Metric', 'Value'],
-        rows,
-      }
-    ];
-  },
-
-  ttest_independent: (result) => {
-    if (!result || typeof result !== 'object') return [];
-    const rows = buildTTestRows(result);
-    return [
-      {
-        title: 'Independent T-Test',
-        columns: ['Metric', 'Value'],
-        rows,
-      }
-    ];
-  },
-
-  ttest_paired: (result) => {
-    if (!result || typeof result !== 'object') return [];
-    const rows = buildTTestRows(result);
-    return [
-      {
-        title: 'Paired T-Test',
-        columns: ['Metric', 'Value'],
-        rows,
-      }
-    ];
-  },
-  linear_svm: (result) => {
-    return AlgorithmTableRegistry['svm_scikit'](result);
-  },
-
-  // Legacy alias retained for backwards compatibility.
-  svm_scikit: (result) => {
-    if (!result) return [];
-
-    const nObs = result?.n_obs ?? null;
-    const intercept = typeof result?.intercept === 'number' ? result.intercept : null;
-    const coeff = Array.isArray(result?.coeff)
-      ? result.coeff
-      : Array.isArray(result?.weights)
-        ? result.weights
-        : [];
-    const hasSupportVectors = Array.isArray(result?.support_vectors);
-    const supportVectors = hasSupportVectors
-      ? result.support_vectors.slice(0, 10)
-      : Array.isArray(result?.weights)
-        ? result.weights.slice(0, 10)
-        : [];
-
+  pearson_correlation: (result: PearsonResult) => {
+    // Guide says "Correlation Heatmap" is primary.
+    // We can return a small summary if needed, e.g. number of observations?
     const tables: TableSpec[] = [];
-
-    if (nObs !== null || intercept !== null) {
-      const summaryRows = [];
-      if (nObs !== null) summaryRows.push(['Observations', nObs]);
-      if (intercept !== null) summaryRows.push(['Intercept', intercept.toFixed(4)]);
+    if (typeof result.n_obs === 'number') {
       tables.push({
-        title: 'Model Summary',
+        title: 'Number of Observations',
         columns: ['Metric', 'Value'],
-        rows: summaryRows,
-        layout: 'full',
+        rows: [['Number of Observations', formatDecimal(result.n_obs)]],
+        layout: 'compact'
       });
     }
-
-    if (coeff.length) {
-      tables.push({
-        title: 'Coefficients',
-        columns: ['Coefficient'],
-        rows: coeff.map((c: number) => [c.toFixed(4)]),
-        layout: 'full',
-      });
-    }
-
-    if (supportVectors.length) {
-      tables.push({
-        title: `${hasSupportVectors ? 'Support Vectors' : 'Weights'} (sample of ${supportVectors.length})`,
-        columns: ['Value'],
-        rows: supportVectors.map((v: number) => [v.toFixed(4)]),
-        layout: 'full',
-      });
-    }
-
     return tables;
   },
-  default: () => [],
+
+  histogram: (result: HistogramResult) => {
+    // Primary is chart. Table could be bin counts.
+    const tables: TableSpec[] = [];
+    for (const item of result.histogram) {
+      const rows = [];
+      for (let i = 0; i < item.counts.length; i++) {
+        if (item.counts[i] === null) continue;
+        rows.push([item.bins[i], item.counts[i]]);
+      }
+      tables.push({
+        title: `Histogram Data: ${item.var}` + (item.grouping_var ? ` (${item.grouping_enum})` : ''),
+        columns: ['Bin', 'Count'],
+        rows
+      });
+    }
+    return tables;
+  },
+
+  ttest_independent: (result: TTestResult) => {
+    return [{
+      title: 'Independent T-Test',
+      columns: ['t-stat', 'df', 'p-value', 'Mean Diff', 'SE Diff', 'CI Lower', 'CI Upper', "Cohen's d"],
+      rows: [[
+        formatDecimal(result.t_stat), formatDecimal(result.df), formatDecimal(result.p),
+        formatDecimal(result.mean_diff), formatDecimal(result.se_diff),
+        formatDecimal(result.ci_lower), formatDecimal(result.ci_upper),
+        formatDecimal(result.cohens_d)
+      ]]
+    }];
+  },
+
+  ttest_paired: (result: TTestResult) => {
+    return [{
+      title: 'Paired T-Test',
+      columns: ['t-stat', 'df', 'p-value', 'Mean Diff', 'SE Diff', 'CI Lower', 'CI Upper', "Cohen's d"],
+      rows: [[
+        formatDecimal(result.t_stat), formatDecimal(result.df), formatDecimal(result.p),
+        formatDecimal(result.mean_diff), formatDecimal(result.se_diff),
+        formatDecimal(result.ci_lower), formatDecimal(result.ci_upper),
+        formatDecimal(result.cohens_d)
+      ]]
+    }];
+  },
+
+  ttest_onesample: (result: TTestResult) => {
+    return [{
+      title: 'One-Sample T-Test',
+      columns: ['t-stat', 'df', 'p-value', 'Mean Diff', 'SE Diff', 'CI Lower', 'CI Upper', "Cohen's d"],
+      rows: [[
+        formatDecimal(result.t_stat), formatDecimal(result.df), formatDecimal(result.p),
+        formatDecimal(result.mean_diff), formatDecimal(result.se_diff),
+        formatDecimal(result.ci_lower), formatDecimal(result.ci_upper),
+        formatDecimal(result.cohens_d)
+      ]]
+    }];
+  },
+
+  // Legacy/Aliases
+  logistic_regression_cv_fedaverage: (result) => AlgorithmTableRegistry['logistic_regression_cv'](result),
+  linear_svm: (result) => {
+    if (!result) return [];
+
+    const rows: any[][] = [];
+    if (result.n_obs !== undefined && result.n_obs !== null) {
+      rows.push(['Observations', formatDecimal(result.n_obs)]);
+    }
+    if (result.intercept !== undefined && result.intercept !== null) {
+      rows.push(['Intercept', formatDecimal(result.intercept)]);
+    }
+
+    if (Array.isArray(result.weights) && result.weights.length) {
+      result.weights.forEach((w: any, i: number) => {
+        rows.push([`Weight ${i + 1}`, formatDecimal(w)]);
+      });
+    }
+
+    if (!rows.length) return [];
+
+    return [{
+      title: 'Linear SVM Summary',
+      columns: ['Metric', 'Value'],
+      rows,
+    }];
+  },
+
+  // Default fallback
+  default: () => []
 };

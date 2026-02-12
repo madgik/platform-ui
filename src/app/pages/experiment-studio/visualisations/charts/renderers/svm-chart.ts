@@ -7,9 +7,8 @@ import { EChartsOption } from 'echarts';
  * - ±1 margins
  */
 export function buildSVMChart(result: any): EChartsOption[] {
-  // Support both legacy payloads (support_vectors/coeff) and Exareme3 linear_svm payloads (weights/intercept).
-  const supportVectors: number[] = result?.support_vectors ?? result?.weights ?? [];
-  const coeff: number[] = result?.coeff ?? (typeof result?.intercept === 'number' ? [result.intercept] : []);
+  const supportVectors: number[] = result?.weights ?? [];
+  const coeff: number[] = typeof result?.intercept === 'number' ? [result.intercept] : [];
 
   if (!supportVectors.length) {
     console.warn('[SVM] No support vectors or weights provided.');
@@ -51,7 +50,7 @@ export function buildSVMChart(result: any): EChartsOption[] {
     },
     xAxis: {
       type: 'category',
-      name: result?.support_vectors ? 'Support Vector Magnitude' : 'Weight Value',
+      name: 'Weight Value',
       nameLocation: 'middle', // x label
       nameGap: 40,
       data: binCenters.map((x) => x.toFixed(2)),

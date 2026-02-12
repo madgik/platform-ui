@@ -136,21 +136,6 @@ describe('AlgorithmRulesService', () => {
     expect(wrongCovariateType).toBeFalse();
   });
 
-  it('keeps strict 2-way ANOVA rule for legacy anova alias', () => {
-    const algo = buildAlgo(AlgorithmNames.ANOVA);
-
-    const available = service.isAlgorithmAvailable(algo, {
-      y: [{ code: 'age', label: 'age', type: VariableTypes.REAL } as any],
-      x: [
-        { code: 'sex', label: 'sex', type: VariableTypes.TEXT } as any,
-        { code: 'dataset', label: 'dataset', type: VariableTypes.NOMINAL } as any,
-      ],
-      filters: [],
-    });
-
-    expect(available).toBeTrue();
-  });
-
   it('returns requirement override for canonical anova_twoway', () => {
     const override = service.getAlgorithmRequirementOverrides({
       name: AlgorithmNames.ANOVA_TWOWAY,

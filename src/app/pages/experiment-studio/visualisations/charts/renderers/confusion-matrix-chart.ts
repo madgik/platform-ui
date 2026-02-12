@@ -14,9 +14,10 @@ export function buildConfusionMatrixChart(result: any): EChartsOption[] {
   }
   // Format 2: { tp, fp, fn, tn }
   else if (cm.tp !== undefined && cm.fp !== undefined && cm.fn !== undefined && cm.tn !== undefined) {
+    // Rows = Actual [Positive, Negative], Columns = Predicted [Positive, Negative]
     matrix = [
-      [cm.tp, cm.fp],
-      [cm.fn, cm.tn]
+      [cm.tp, cm.fn],
+      [cm.fp, cm.tn]
     ];
     classNames = ['Positive', 'Negative'];
   }
@@ -123,6 +124,5 @@ export function buildConfusionMatrixChart(result: any): EChartsOption[] {
     },
   ];
 }
-
 
 

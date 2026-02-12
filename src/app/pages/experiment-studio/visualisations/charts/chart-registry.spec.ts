@@ -1,9 +1,8 @@
 import { AlgorithmChartRegistry } from './chart-registry';
 
 describe('AlgorithmChartRegistry', () => {
-  it('contains canonical and legacy SVM keys', () => {
+  it('contains canonical SVM key', () => {
     expect(AlgorithmChartRegistry['linear_svm']).toBeDefined();
-    expect(AlgorithmChartRegistry['svm_scikit']).toBeDefined();
   });
 
   it('renders chart options for linear_svm payload shape', () => {
@@ -17,15 +16,4 @@ describe('AlgorithmChartRegistry', () => {
     expect((charts[0] as any).title?.text).toBe('SVM Support Vector Distribution');
   });
 
-  it('keeps legacy svm_scikit behavior equivalent to linear_svm', () => {
-    const payload = {
-      support_vectors: [0.2, 0.3, 0.5, 0.8, 1.2],
-      coeff: [0.7],
-    };
-
-    const canonical = AlgorithmChartRegistry['linear_svm'].build(payload);
-    const legacy = AlgorithmChartRegistry['svm_scikit'].build(payload);
-
-    expect(canonical).toEqual(legacy);
-  });
 });
