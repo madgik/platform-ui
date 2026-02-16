@@ -3,7 +3,6 @@ export interface RawAlgorithmDefinition {
   label: string;
   desc: string;
   enabled: boolean;
-  type: string;
   inputdata: RawInputData;
   parameters: Record<string, RawParameter>;
   preprocessing?: RawPreprocessingStep[];

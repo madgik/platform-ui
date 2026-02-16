@@ -1037,6 +1037,7 @@ export class AlgorithmPanelComponent {
         covariates: (info.covariates ?? []).map((c: any) => c.label || c.name || c.code),
         filters: (info.filters ?? []).map((f: any) => f.label || f.name || f.code),
         transformations,
+        mipVersion: this.mipVersion,
       },
       algorithmKey: algoKey,
       result,

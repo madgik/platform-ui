@@ -41,6 +41,7 @@ export class StatisticAnalysisPanelComponent implements OnChanges {
   @ViewChildren(ChartRendererComponent)
   chartRenderers!: QueryList<ChartRendererComponent>;
   isExporting = false;
+  readonly mipVersion = (window as any).__env?.MIP_VERSION || '9.0.0';
 
   private expStudioService = inject(ExperimentStudioService);
   private chartBuilder = inject(ChartBuilderService);
@@ -434,7 +435,8 @@ export class StatisticAnalysisPanelComponent implements OnChanges {
         charts: numericCharts,
         nonNominalVariables: this.nonNominalVariables,
         nominalCharts: nominalCharts,
-        nominalVariables: this.nominalVariables
+        nominalVariables: this.nominalVariables,
+        mipVersion: this.mipVersion
       });
     } catch (err) {
       console.error('PDF export failed:', err);

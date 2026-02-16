@@ -29,7 +29,6 @@ export interface AlgorithmConfig {
   covariate: string[];
   category: string;
   configSchema: Array<any>;
-  type: string;
   inputdata?: RawInputData;
   isDisabled: boolean;
 }

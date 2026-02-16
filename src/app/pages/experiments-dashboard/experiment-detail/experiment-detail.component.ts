@@ -55,6 +55,7 @@ export class ExperimentDetailsComponent {
   readonly nameDraft = signal<string>('');
   readonly nameSaving = signal<boolean>(false);
   readonly nameError = signal<string | null>(null);
+  readonly mipVersion = (window as any).__env?.MIP_VERSION || '9.0.0';
 
   private codeToLabelSignal = signal<Record<string, string>>({});
   private enumMapsSignal = signal<EnumMaps>({});
@@ -292,6 +293,7 @@ export class ExperimentDetailsComponent {
         covariates: this.covariatesWithLabels().map((c) => c.label),
         filters: this.filtersWithLabels().map((f) => f.label),
         transformations,
+        mipVersion: this.mipVersion,
       },
       algorithmKey: fullExperiment?.algorithm?.name ?? this.experimentalAlgorithmName(),
       result,

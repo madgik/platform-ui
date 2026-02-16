@@ -10,13 +10,14 @@ Angular 18 standalone application for running experiments, configuring algorithm
 ## Requirements
 - Node 20+ and npm 10+
 - Backend reachable at `http://localhost:8080/services` (adjustable in proxy/Docker env).
+- JupyterHub reachable behind the frontend at `/notebook/` (note the trailing slash).
 - Keycloak endpoints exposed at `/services/oauth2/authorization/keycloak` and `/services/logout`.
 
 ## Quick Start (dev)
 1) Install dependencies: `npm ci`
 2) Start dev server with proxy: `npm start`
    - Serves at `http://localhost:4200/`
-   - Proxies `/services` to `http://localhost:8080` via `src/proxy.conf.json`
+   - Proxies `/services` to `http://localhost:8080` and `/notebook/` to your notebook server via `src/proxy.conf.json`
 3) Ensure backend is running and you can authenticate with Keycloak.
 
 ## Scripts
@@ -55,15 +56,30 @@ See `src/app/core/algorithm-result-enum-mapper.md` for detailed mapping behavior
 - `src/app/pages/account-page/` – basic profile view.
 - `src/app/pages/shared/` – header/footer/navbar/accordion/spinner utilities.
 - `src/styles.css` – global styles and QueryBuilder theming; assets in `src/assets/`.
-- `Dockerfile` / `nginx.conf.template` – container build and runtime proxy (`PORTAL_BACKEND_SERVER`, `PORTAL_BACKEND_CONTEXT` envs).
+- `Dockerfile` / `nginx.conf.template` – container build and runtime proxy (`PORTAL_BACKEND_SERVER`, `PORTAL_BACKEND_CONTEXT`, `NOTEBOOK_ENABLED`, `JUPYTER_SERVER`, `JUPYTER_CONTEXT` envs).
+
+## Notebook Page (`/notebook`)
+- Frontend opens JupyterHub via same-origin path `/notebook` (runtime configurable in `window.__env.JUPYTER_CONTEXT_PATH`).
+- Notebook auth/session is handled by JupyterHub + OIDC (no frontend token injection).
+- Runtime frontend env knobs:
+  - `NOTEBOOK_ENABLED` (default `0`; when `0`, `/notebook` route does not match)
+  - `JUPYTER_CONTEXT_PATH` (default `/notebook`)
+  - `JUPYTER_LANDING_PATH` (default `/hub/spawn`)
 
 ## Docker
 Build and serve with nginx:
 ```bash
 docker build -t fl-platform .
-docker run -e PORTAL_BACKEND_SERVER=portalbackend:8080 -e PORTAL_BACKEND_CONTEXT=services -p 80:80 fl-platform
+docker run \
+  -e PORTAL_BACKEND_SERVER=portalbackend:8080 \
+  -e PORTAL_BACKEND_CONTEXT=services \
+  -e NOTEBOOK_ENABLED=1 \
+  -e JUPYTER_SERVER=jupyterhub:8000 \
+  -e JUPYTER_CONTEXT=jupyter \
+  -e JUPYTER_LANDING_PATH=/hub/spawn \
+  -p 80:80 fl-platform
 ```
-Nginx proxies `/${PORTAL_BACKEND_CONTEXT}/` to the backend; everything else serves the Angular app.
+Nginx always proxies `/${PORTAL_BACKEND_CONTEXT}/` to the backend. Notebook proxying under `/${JUPYTER_CONTEXT}/` is active only when `NOTEBOOK_ENABLED=1`.
 
 ## Testing
 - Unit: `npm test` (Karma).

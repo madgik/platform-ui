@@ -18,6 +18,7 @@ export interface ExperimentPdfDetails {
   filters?: string[] | null;
   interactions?: string | string[] | null;
   transformations?: string | string[] | null;
+  mipVersion?: string | null;
 }
 
 export interface ExperimentPdfPayload {
@@ -111,6 +112,14 @@ export class ResultsPdfExportService {
       timestamp,
       platformName: this.platformName,
     });
+
+    if (payload.details.mipVersion) {
+      this.renderMipVersion(doc, payload.details.mipVersion, {
+        pageWidth,
+        pageHeight,
+        margin,
+      });
+    }
 
     const safeName = (payload.filename || 'experiment-report').replace(/\s+/g, '_');
     doc.save(safeName.endsWith('.pdf') ? safeName : `${safeName}.pdf`);
@@ -583,5 +592,30 @@ export class ResultsPdfExportService {
 
   private formatTimestamp(date: Date): string {
     return date.toLocaleString();
+  }
+
+  private renderMipVersion(
+    doc: jsPDF,
+    version: string,
+    options: {
+      pageWidth: number;
+      pageHeight: number;
+      margin: { left: number; right: number; bottom: number };
+    }
+  ): void {
+    const { pageWidth, pageHeight, margin } = options;
+    const totalPages = (doc as any).getNumberOfPages();
+    doc.setPage(totalPages);
+
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(9);
+    doc.setTextColor(150);
+
+    const versionText = `MIP Version: ${version}`;
+    const textWidth = doc.getTextWidth(versionText);
+    const x = pageWidth - margin.right - textWidth;
+    const y = pageHeight - margin.bottom - 2; // Just above the footer line or timestamp
+
+    doc.text(versionText, x, y);
   }
 }

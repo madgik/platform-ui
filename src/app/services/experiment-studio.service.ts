@@ -237,7 +237,7 @@ export class ExperimentStudioService {
   }
 
   algorithmEnabled(variableType: string): string[] {
-    // create array because raw.type could be string or string[]
+    // Normalize to array because incoming variable metadata may be scalar or array.
     const varTypes = Array.isArray(variableType) ? variableType : [variableType];
     const allAlgos = Object.values(this.backendAlgorithms());
 
@@ -753,7 +753,6 @@ export class ExperimentStudioService {
         },
         parameters: {},
         preprocessing: null,
-        type: "exareme2",
       },
     };
   }

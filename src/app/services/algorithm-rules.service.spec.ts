@@ -13,7 +13,6 @@ describe('AlgorithmRulesService', () => {
     covariate: [],
     category: 'Mock',
     configSchema: [],
-    type: 'exareme2',
     isDisabled: false,
     inputdata: {
       data_model: { label: 'data_model', desc: '', types: ['text'], required: true, multiple: false },
@@ -36,7 +35,6 @@ describe('AlgorithmRulesService', () => {
       covariate: [],
       category: 'Mock',
       configSchema: [],
-      type: 'exareme2',
       isDisabled: false,
       inputdata: {
         data_model: { label: 'data_model', desc: '', types: ['text'], required: true, multiple: false },
@@ -65,7 +63,6 @@ describe('AlgorithmRulesService', () => {
       covariate: [],
       category: 'Mock',
       configSchema: [],
-      type: 'exareme2',
       isDisabled: false,
       inputdata: {
         data_model: { label: 'data_model', desc: '', types: ['text'], required: true, multiple: false },

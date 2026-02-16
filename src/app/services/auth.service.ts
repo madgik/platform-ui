@@ -117,4 +117,8 @@ export class AuthService {
   private clearRedirectFlag(): void {
     localStorage.removeItem(this.redirectUrlKey);
   }
+
+  getToken(): Observable<string> {
+    return this.http.get('/services/activeUser/token', { responseType: 'text' });
+  }
 }

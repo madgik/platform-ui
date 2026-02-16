@@ -19,7 +19,6 @@ export interface Experiment {
 
 export interface AlgorithmDetails {
   name: string;
-  type: string;
   datasets: string[];
   parameters: Record<string, unknown>;
   dataModel: string;

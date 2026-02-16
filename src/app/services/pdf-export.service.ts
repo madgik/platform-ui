@@ -25,6 +25,7 @@ export interface DescriptiveStatsData {
     nonNominalVariables?: any[];
     nominalCharts?: NodeListOf<HTMLElement>;
     nominalVariables?: any[];
+    mipVersion?: string | null;
 }
 
 @Injectable({
@@ -310,6 +311,19 @@ export class PdfExportService {
                         yOffset += 10;
                     }
                 }
+            }
+
+            if (data.mipVersion) {
+                const totalPages = (doc as any).getNumberOfPages();
+                doc.setPage(totalPages);
+                doc.setFont('helvetica', 'italic');
+                doc.setFontSize(9);
+                doc.setTextColor(150);
+                const versionText = `MIP Version: ${data.mipVersion}`;
+                const textWidth = doc.getTextWidth(versionText);
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
+                doc.text(versionText, pageWidth - 10 - textWidth, pageHeight - 10);
             }
 
             doc.save('descriptive_statistics.pdf');

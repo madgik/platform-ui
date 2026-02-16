@@ -61,7 +61,6 @@ export function mapBackendToFrontend(backend: BackendExperiment): Experiment {
 export function mapBackendToAlgorithmDetails(backend: BackendExperiment): AlgorithmDetails {
   return {
     name: backend.algorithm.name,
-    type: backend.algorithm.type,
     datasets: backend.algorithm.inputdata.datasets,
     parameters: backend.algorithm.parameters,
     dataModel: backend.algorithm.inputdata.data_model,
