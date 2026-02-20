@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from "@angular/core";
+import { Component, EventEmitter, Input, OnDestroy, Output } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { CommonModule } from "@angular/common";
 import { ExperimentDatePreset, ExperimentFilters, } from "./experiment-filter.model";
@@ -9,7 +9,7 @@ import { ExperimentDatePreset, ExperimentFilters, } from "./experiment-filter.mo
     templateUrl: './experiment-search.component.html',
     styleUrls: ['./experiment-search.component.css']
 })
-export class ExperimentSearchComponent {
+export class ExperimentSearchComponent implements OnDestroy {
   @Input({ required: true }) filters!: ExperimentFilters;
   @Output() filtersChange = new EventEmitter<Partial<ExperimentFilters>>();
 
@@ -47,6 +47,13 @@ export class ExperimentSearchComponent {
       status: 'any',
       shared: 'any',
     });
+  }
+
+  ngOnDestroy(): void {
+    if (this.t) {
+      clearTimeout(this.t);
+      this.t = null;
+    }
   }
 
 }

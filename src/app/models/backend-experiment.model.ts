@@ -14,9 +14,9 @@ export interface BackendExperiment {
     name: string;
     inputdata: {
       data_model: string;
-      datasets: string[];
-      y: string[] | null;
-      x: string[] | null;
+      datasets: string[] | string | null;
+      y: string[] | string | null;
+      x: string[] | string | null;
       filters: BackendFilter | null;
     };
     parameters: Record<string, unknown>;

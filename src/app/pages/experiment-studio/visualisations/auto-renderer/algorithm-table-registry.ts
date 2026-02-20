@@ -88,7 +88,7 @@ function buildTTestRows(result: Record<string, any>): any[][] {
       if (value !== null && typeof value === 'object') return false;
       return true;
     })
-    .map(([k, v]) => [formatTTestKey(k), v]);
+    .map(([k, v]) => [formatTTestKey(k), formatDecimal(v)]);
 }
 
 export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
@@ -183,12 +183,23 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
       ? nObs.map((val: number, i: number) => [`Fold ${i + 1}`, val])
       : [];
 
-    const statsRows = [
-      ['Root mean squared error', result.mean_sq_error.mean, result.mean_sq_error.std],
-      ['R-squared', result.r_squared.mean, result.r_squared.std],
-      ['Mean absolute error', result.mean_abs_error.mean, result.mean_abs_error.std],
-      ['F-statistic', result.f_stat.mean, result.f_stat.std],
-    ].map(([label, mean, std]) => [label, formatDecimal(mean), formatDecimal(std)]);
+    const normalizeStat = (value: any): { mean: number | null; std: number | null } => {
+      if (!value || typeof value !== 'object') return { mean: null, std: null };
+      const mean = typeof value.mean === 'number' && !isNaN(value.mean) ? value.mean : null;
+      const std = typeof value.std === 'number' && !isNaN(value.std) ? value.std : null;
+      return { mean, std };
+    };
+
+    const candidates: Array<{ label: string; stat: { mean: number | null; std: number | null } }> = [
+      { label: 'Root mean squared error', stat: normalizeStat((result as any).mean_sq_error) },
+      { label: 'R-squared', stat: normalizeStat((result as any).r_squared) },
+      { label: 'Mean absolute error', stat: normalizeStat((result as any).mean_abs_error) },
+      { label: 'F-statistic', stat: normalizeStat((result as any).f_stat) },
+    ];
+
+    const statsRows = candidates
+      .filter(({ stat }) => stat.mean !== null || stat.std !== null)
+      .map(({ label, stat }) => [label, stat.mean ?? '', stat.std ?? '']);
 
     return [
       {
@@ -346,7 +357,7 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
 
     return [
       {
-        title: 'Coefficients',
+        title: 'Logistic Regression Coefficients',
         columns: ['Variable', 'Coefficient', 'Std.Err.', 'z', 'P(>|z|)', 'Lower 95% CI', 'Upper 95% CI'],
         rows: coefRows,
       },
@@ -477,7 +488,7 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
     // Eigenvalues
     if (result.eigenvalues && result.eigenvalues.length) {
       tables.push({
-        title: 'Eigenvalues',
+        title: 'PCA Summary',
         columns: ['Component', 'Eigenvalue'],
         rows: result.eigenvalues.map((v, i) => [`PC${i + 1}`, formatDecimal(v)])
       });
@@ -533,7 +544,7 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
 
       if (numRows.length) {
         tables.push({
-          title: `${titleProp} - Numerical`,
+          title: `${titleProp} Summary — Numeric`,
           columns: ['Variable', 'Dataset', 'N', 'Missing', 'Total', 'Mean', 'Std', 'Min', 'Q1', 'Median', 'Q3', 'Max'],
           rows: numRows,
           layout: 'full'
@@ -541,7 +552,7 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
       }
       if (nomRows.length) {
         tables.push({
-          title: `${titleProp} - Nominal`,
+          title: `${titleProp} Summary — Nominal`,
           columns: ['Variable', 'Dataset', 'N', 'Missing', 'Total', 'Counts'],
           rows: nomRows,
           layout: 'full'
@@ -578,6 +589,22 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
           formatDecimal(r.diff), formatDecimal(r.se),
           formatDecimal(r.t_stat), formatDecimal(r.p_tuckey)
         ])
+      });
+    }
+
+    if (result.min_max_per_group && Array.isArray(result.min_max_per_group.categories)) {
+      const categories = result.min_max_per_group.categories;
+      const minValues = Array.isArray(result.min_max_per_group.min) ? result.min_max_per_group.min : [];
+      const maxValues = Array.isArray(result.min_max_per_group.max) ? result.min_max_per_group.max : [];
+      const rows = categories.map((category, index) => [
+        category,
+        formatDecimal(minValues[index]),
+        formatDecimal(maxValues[index])
+      ]);
+      tables.push({
+        title: 'Group Min/Max',
+        columns: ['Group', 'Min', 'Max'],
+        rows
       });
     }
 
@@ -636,39 +663,24 @@ export const AlgorithmTableRegistry: Record<string, TableBuilder> = {
   ttest_independent: (result: TTestResult) => {
     return [{
       title: 'Independent T-Test',
-      columns: ['t-stat', 'df', 'p-value', 'Mean Diff', 'SE Diff', 'CI Lower', 'CI Upper', "Cohen's d"],
-      rows: [[
-        formatDecimal(result.t_stat), formatDecimal(result.df), formatDecimal(result.p),
-        formatDecimal(result.mean_diff), formatDecimal(result.se_diff),
-        formatDecimal(result.ci_lower), formatDecimal(result.ci_upper),
-        formatDecimal(result.cohens_d)
-      ]]
+      columns: ['Metric', 'Value'],
+      rows: buildTTestRows(result as Record<string, any>)
     }];
   },
 
   ttest_paired: (result: TTestResult) => {
     return [{
       title: 'Paired T-Test',
-      columns: ['t-stat', 'df', 'p-value', 'Mean Diff', 'SE Diff', 'CI Lower', 'CI Upper', "Cohen's d"],
-      rows: [[
-        formatDecimal(result.t_stat), formatDecimal(result.df), formatDecimal(result.p),
-        formatDecimal(result.mean_diff), formatDecimal(result.se_diff),
-        formatDecimal(result.ci_lower), formatDecimal(result.ci_upper),
-        formatDecimal(result.cohens_d)
-      ]]
+      columns: ['Metric', 'Value'],
+      rows: buildTTestRows(result as Record<string, any>)
     }];
   },
 
   ttest_onesample: (result: TTestResult) => {
     return [{
       title: 'One-Sample T-Test',
-      columns: ['t-stat', 'df', 'p-value', 'Mean Diff', 'SE Diff', 'CI Lower', 'CI Upper', "Cohen's d"],
-      rows: [[
-        formatDecimal(result.t_stat), formatDecimal(result.df), formatDecimal(result.p),
-        formatDecimal(result.mean_diff), formatDecimal(result.se_diff),
-        formatDecimal(result.ci_lower), formatDecimal(result.ci_upper),
-        formatDecimal(result.cohens_d)
-      ]]
+      columns: ['Metric', 'Value'],
+      rows: buildTTestRows(result as Record<string, any>)
     }];
   },
 

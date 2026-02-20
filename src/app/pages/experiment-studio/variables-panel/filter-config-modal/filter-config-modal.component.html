@@ -1,5 +1,5 @@
 <div class="modal-wrapper">
-  <div class="modal-overlay" (click)="close()"></div>
+  <div class="modal-overlay" (click)="cancel()"></div>
 
   <div class="filter-modal">
     <div class="filter-modal-header">
@@ -7,7 +7,7 @@
         <i class="fas fa-filter header-icon"></i>
         <h3>Filters & Formula</h3>
       </div>
-      <button class="close-top-btn" (click)="close()" aria-label="Close modal">
+      <button class="close-top-btn" (click)="cancel()" aria-label="Close modal">
         <i class="fas fa-times"></i>
       </button>
     </div>
@@ -66,7 +66,7 @@
       </div>
 
       <div class="filter-actions">
-        <button class="btn-secondary" (click)="close()">Cancel</button>
+        <button class="btn-secondary" (click)="cancel()">Cancel</button>
         <button class="btn-primary-gradient" (click)="saveFilters()">
           <i class="fas fa-check icon-left"></i>
           Apply Filters

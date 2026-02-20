@@ -587,7 +587,6 @@ export class AlgorithmPanelComponent {
     } else if (configValues.data_transformation) {
       delete configValues.data_transformation;
     }
-    this.updateAlgorithmConfiguration(baseAlgorithmName, '', configValues); // or:
     this.experimentStudioService.algorithmConfigurations.set({
       ...this.experimentStudioService.algorithmConfigurations(),
       [baseAlgorithmName]: configValues,
@@ -605,36 +604,41 @@ export class AlgorithmPanelComponent {
         status: 'error',
         error: msg,
       });
+      this.experimentStudioService.setRunning(false);
       return;
     }
 
-    result$.subscribe(res => {
-      const status = res?.status;
-      const payload = res?.result ?? {};
-      if (status === 'error') {
-        // backend error message
-        const msg =
-          payload?.data ||
-          payload?.message ||
-          'The server returned an error for this run.';
-        this.errorMsg.set(msg);
+    result$.subscribe({
+      next: (res) => {
+        const status = res?.status;
+        const payload = res?.result ?? {};
+        if (status === 'error') {
+          const msg =
+            payload?.data ||
+            payload?.message ||
+            'The server returned an error for this run.';
+          this.errorMsg.set(msg);
+          this.result.set({
+            status: 'error',
+            error: msg,
+            payload,
+          });
+          return;
+        }
+
+        const schema = getOutputSchema(finalAlgorithmName ?? '') ?? [];
         this.result.set({
-          status: 'error',
-          error: msg,
-          payload,
+          ...res?.result ?? { message: "No result returned" },
         });
+        this.lastUsedAlgorithm = finalAlgorithmName;
+        this.lastUsedSchema.set(schema);
+      },
+      error: () => {
+        this.errorMsg.set('Unable to run experiment. Please try again.');
+      },
+      complete: () => {
         this.experimentStudioService.setRunning(false);
-        return;
       }
-
-
-      const schema = getOutputSchema(finalAlgorithmName ?? '') ?? [];
-      this.result.set({
-        ...res?.result ?? { message: "No result returned" },
-      });
-      this.lastUsedAlgorithm = finalAlgorithmName;
-      this.lastUsedSchema.set(schema);
-      this.experimentStudioService.setRunning(false);
     });
 
   }
@@ -654,19 +658,6 @@ export class AlgorithmPanelComponent {
     }
 
     return false;
-  }
-
-  updateAlgorithmConfiguration(algorithmName: string | undefined, key: string, value: any) {
-    if (!algorithmName) return;
-
-    const config = this.experimentStudioService.algorithmConfigurations();
-
-    if (!config[algorithmName]) {
-      config[algorithmName] = {};
-    }
-
-    config[algorithmName][key] = value;
-    this.experimentStudioService.algorithmConfigurations.set({ ...config });
   }
 
   toggleCrossValidation(event: Event) {
@@ -937,18 +928,18 @@ export class AlgorithmPanelComponent {
         if (status === 'error') {
           const msg = payload?.message || 'Failed to save experiment results.';
           this.errorMsg.set(msg);
-          this.experimentStudioService.setRunning(false);
           return;
         }
 
         this.saveAsMode.set(false);
         this.saveAsName.set('');
         this.result.set(null); // Return to parameters view
-        this.experimentStudioService.setRunning(false);
         this.triggerSuccessNotification();
       },
-      error: (err) => {
+      error: () => {
         this.errorMsg.set('Failed to save experiment.');
+      },
+      complete: () => {
         this.experimentStudioService.setRunning(false);
       }
     });

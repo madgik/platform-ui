@@ -23,6 +23,16 @@ function collectFilterVariableCodes(
   return [...codes];
 }
 
+function normalizeToStringArray(value: string[] | string | null | undefined): string[] {
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item));
+  }
+  if (value === null || value === undefined || value === '') {
+    return [];
+  }
+  return [String(value)];
+}
+
 // Map BackendExperiment to Experiment
 export function mapBackendToFrontend(backend: BackendExperiment): Experiment {
 
@@ -48,9 +58,9 @@ export function mapBackendToFrontend(backend: BackendExperiment): Experiment {
     isShared: backend.shared,
 
     domain: input.data_model ?? null,
-    datasets: input.datasets ?? [],
-    variables: input.y ?? [],
-    covariates: input.x ?? [],
+    datasets: normalizeToStringArray(input.datasets),
+    variables: normalizeToStringArray(input.y),
+    covariates: normalizeToStringArray(input.x),
     filters: collectFilterVariableCodes(filtersLogic),
     mipVersion: backend.mipVersion ?? undefined,
   };
@@ -61,7 +71,7 @@ export function mapBackendToFrontend(backend: BackendExperiment): Experiment {
 export function mapBackendToAlgorithmDetails(backend: BackendExperiment): AlgorithmDetails {
   return {
     name: backend.algorithm.name,
-    datasets: backend.algorithm.inputdata.datasets,
+    datasets: normalizeToStringArray(backend.algorithm.inputdata.datasets),
     parameters: backend.algorithm.parameters,
     dataModel: backend.algorithm.inputdata.data_model,
   };

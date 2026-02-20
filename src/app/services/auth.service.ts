@@ -66,9 +66,8 @@ export class AuthService {
   }
 
   login(redirectUrl: string = '/experiments-dashboard'): void {
-    const target = redirectUrl.startsWith('http')
-      ? redirectUrl
-      : `${window.location.origin}${redirectUrl.startsWith('/') ? '' : '/'}${redirectUrl}`;
+    const normalizedPath = this.normalizeRedirectPath(redirectUrl);
+    const target = `${window.location.origin}${normalizedPath}`;
     localStorage.setItem(this.redirectUrlKey, target);
     const encodedTarget = encodeURIComponent(target);
     window.location.href = `/services/oauth2/authorization/keycloak?frontend_redirect=${encodedTarget}`;
@@ -95,16 +94,27 @@ export class AuthService {
   }
 
   private consumeRedirect(): void {
-    const stored = localStorage.getItem(this.redirectUrlKey);
-    if (!stored) {
+    const rawStored = localStorage.getItem(this.redirectUrlKey);
+    if (!rawStored) {
       return;
     }
 
     localStorage.removeItem(this.redirectUrlKey);
 
-    if (stored.startsWith('http')) {
-      window.location.href = stored;
-      return;
+    let stored = rawStored;
+    if (/^https?:\/\//i.test(stored)) {
+      try {
+        const parsed = new URL(stored);
+        if (parsed.origin !== window.location.origin) {
+          this.router.navigateByUrl('/experiments-dashboard').catch(() => {
+            window.location.href = '/experiments-dashboard';
+          });
+          return;
+        }
+        stored = `${parsed.pathname}${parsed.search}${parsed.hash}`;
+      } catch {
+        stored = '/experiments-dashboard';
+      }
     }
 
     this.router.navigateByUrl(stored).catch((error) => {
@@ -114,8 +124,25 @@ export class AuthService {
     });
   }
 
-  private clearRedirectFlag(): void {
-    localStorage.removeItem(this.redirectUrlKey);
+  private normalizeRedirectPath(redirectUrl: string | null | undefined): string {
+    if (!redirectUrl) return '/experiments-dashboard';
+
+    const trimmed = redirectUrl.trim();
+    if (!trimmed) return '/experiments-dashboard';
+
+    if (/^https?:\/\//i.test(trimmed)) {
+      try {
+        const parsed = new URL(trimmed);
+        if (parsed.origin !== window.location.origin) {
+          return '/experiments-dashboard';
+        }
+        return `${parsed.pathname}${parsed.search}${parsed.hash}` || '/experiments-dashboard';
+      } catch {
+        return '/experiments-dashboard';
+      }
+    }
+
+    return trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
   }
 
   getToken(): Observable<string> {

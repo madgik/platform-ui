@@ -88,18 +88,20 @@ export class ExperimentStudioComponent implements OnInit, OnDestroy, AfterViewIn
       .pipe(takeUntil(this.destroy$))
       .subscribe((msg) => this.errorMessage.set(msg ?? ''));
 
-    this.route.queryParamMap.subscribe((params) => {
-      const experimentId = params.get('experimentId');
-      const mode = params.get('mode');
+    this.route.queryParamMap
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((params) => {
+        const experimentId = params.get('experimentId');
+        const mode = params.get('mode');
 
-      if (mode === 'edit' && experimentId) {
-        // EDIT MODE
-        this.loadExperimentForEdit(experimentId);
-      } else {
-        // CREATE MODE
-        this.initCreateMode();
-      }
-    });
+        if (mode === 'edit' && experimentId) {
+          // EDIT MODE
+          this.loadExperimentForEdit(experimentId);
+        } else {
+          // CREATE MODE
+          this.initCreateMode();
+        }
+      });
   }
 
   ngAfterViewInit(): void {

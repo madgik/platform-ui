@@ -1,6 +1,6 @@
 import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, Subject, catchError, filter, interval, map, of, switchMap, take, takeUntil, takeWhile, tap } from 'rxjs';
+import { Observable, Subject, catchError, defaultIfEmpty, filter, map, of, switchMap, take, takeUntil, tap, timer } from 'rxjs';
 import { SessionStorageService } from './session-storage.service';
 import { D3HierarchyNode, DataModel, Group, Variable } from '../models/data-model.interface';
 import { mapRawAlgorithmToAlgorithmConfig } from '../core/algorithm-mappers';
@@ -680,10 +680,9 @@ export class ExperimentStudioService {
           cacheHandler(response.result);
         }
       }),
-      catchError(async (error) => {
+      catchError(() => {
         this.errorService.setError('Failed to run experiment. Please try again.');
         this.setRunning(false);
-        console.groupEnd();
         return of({ status: 'error', result: { message: 'Experiment request failed.' } });
       })
     );
@@ -712,9 +711,7 @@ export class ExperimentStudioService {
       tap((resp) => {
         if (cacheHandler && resp) cacheHandler(resp);
       }),
-      catchError((error) => {
-        console.groupCollapsed('Transient backend error');
-        console.groupEnd();
+      catchError(() => {
         this.errorService.setError('Quick preview failed. Please retry.');
         return of(null);
       })
@@ -844,9 +841,8 @@ export class ExperimentStudioService {
   pollForResults(url: string): Observable<any> {
     const pollingInterval = 5000;
     const maxRetries = 60;
-    let attempts = 0;
-
-    return interval(pollingInterval).pipe(
+    return timer(0, pollingInterval).pipe(
+      take(maxRetries),
       switchMap(() =>
         this.http.get<any>(url).pipe(
           map((response) => {
@@ -855,16 +851,20 @@ export class ExperimentStudioService {
             }
             return null;
           }),
-          catchError((error) => {
-            console.groupCollapsed('Detailed backend error', error);
-            console.groupEnd();
-            return of({ status: 'error', result: { data: 'Network or 5xx error' } }); // fallback, no exception
-          })
+          catchError(() =>
+            of({
+              status: 'error',
+              result: { message: 'Network or server error while polling results.' }
+            })
+          )
         )
       ),
-      takeWhile(() => attempts++ < maxRetries, true),
       filter((result) => result !== null),
-      take(1)
+      take(1),
+      defaultIfEmpty({
+        status: 'error',
+        result: { message: 'Experiment run timed out before completion.' }
+      })
     );
   }
 
@@ -955,7 +955,7 @@ export class ExperimentStudioService {
     const filters = input.filters ?? null;
 
     // Selected datasets
-    this.setSelectedDatasets(input.datasets ?? []);
+    this.setSelectedDatasets(this.toArray(input.datasets));
 
     // Filters
     this.setFilterLogic(filters);

@@ -3,7 +3,7 @@ import { Experiment } from '../models/experiments-dashboard.model';
 import { HttpClient } from '@angular/common/http';
 import { BackendExperiment, BackendExperimentWithResult } from '../models/backend-experiment.model';
 import { mapBackendToFrontend } from '../pages/experiments-dashboard/experiments-dashboard.mapper';
-import { map, tap } from 'rxjs';
+import { Subscription, map, tap } from 'rxjs';
 import { ErrorService } from './error.service';
 
 @Injectable({
@@ -20,6 +20,7 @@ export class ExperimentsDashboardService {
   currentPage = signal<number>(0);
 
   private http = inject(HttpClient);
+  private experimentsRequestSub: Subscription | null = null;
 
   constructor() { }
 
@@ -30,19 +31,22 @@ export class ExperimentsDashboardService {
     const params: any = {
       page: page.toString(),
       size: size.toString(),
-      mine: onlyMine,
+      mine: onlyMine.toString(),
       includeShared: (!onlyMine).toString()
     };
-    console.log('getUserExperiments params:', params);
 
     if (filters) {
       if (filters.query) params.name = filters.query;
       if (filters.algorithm) params.algorithm = filters.algorithm;
       if (filters.shared === 'shared') params.shared = 'true';
       if (filters.shared === 'private') params.shared = 'false';
+      const dateRange = this.resolveDateRange(filters.datePreset);
+      if (dateRange.dateFrom) params.dateFrom = dateRange.dateFrom;
+      if (dateRange.dateTo) params.dateTo = dateRange.dateTo;
     }
 
-    this.http
+    this.experimentsRequestSub?.unsubscribe();
+    this.experimentsRequestSub = this.http
       .get<{ experiments: BackendExperiment[], totalExperiments: number, totalPages: number, currentPage: number }>(this.apiUrl, {
         params: params
       })
@@ -58,6 +62,9 @@ export class ExperimentsDashboardService {
           console.error('[ExperimentsDashboardService] getUserExperiments error', err);
           this.errorService.setError('Failed to load experiments.');
           this.experiments.set([]);
+          this.totalExperiments.set(0);
+          this.totalPages.set(0);
+          this.currentPage.set(0);
         }
       });
   }
@@ -151,19 +158,48 @@ export class ExperimentsDashboardService {
   deleteExperiment(experimentId: string): void {
     if (!experimentId) return;
 
+    const previousExperiments = this.experiments();
+    const previousTotal = this.totalExperiments();
+
     // Optimistic update UI
     this.experiments.update((current: Experiment[]) =>
       current.filter((exp: Experiment) => exp.id !== experimentId)
     );
+    this.totalExperiments.set(Math.max(0, previousTotal - 1));
 
-    // Backend call // Todo: show error
+    // Backend call with rollback on failure
     this.http.delete<void>(`${this.apiUrl}/${experimentId}`).subscribe({
       next: () => {
       },
       error: (err) => {
         console.error('Error deleting experiment', err);
+        this.experiments.set(previousExperiments);
+        this.totalExperiments.set(previousTotal);
+        this.errorService.setError('Failed to delete experiment.');
       },
     });
+  }
+
+  private resolveDateRange(
+    preset: 'any' | 'today' | '7d' | '30d' | string | null | undefined
+  ): { dateFrom?: string; dateTo?: string } {
+    if (!preset || preset === 'any') return {};
+
+    const now = new Date();
+    const toIso = (d: Date) => d.toISOString();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    if (preset === 'today') {
+      return { dateFrom: toIso(startOfToday), dateTo: toIso(now) };
+    }
+    if (preset === '7d' || preset === '30d') {
+      const days = preset === '7d' ? 7 : 30;
+      const from = new Date(now);
+      from.setDate(now.getDate() - days);
+      return { dateFrom: toIso(from), dateTo: toIso(now) };
+    }
+
+    return {};
   }
 
 }

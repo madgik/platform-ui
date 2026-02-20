@@ -6,15 +6,33 @@ import { Injectable } from '@angular/core';
 export class SessionStorageService {
 
   setItem(key: string, value: any) {
-    sessionStorage.setItem(key, JSON.stringify(value));
+    try {
+      sessionStorage.setItem(key, JSON.stringify(value));
+    } catch {
+      // Ignore storage write failures (quota/private mode).
+    }
   }
 
   getItem<T>(key: string): T | null {
-    const item = sessionStorage.getItem(key);
-    return item ? JSON.parse(item) : null;
+    try {
+      const item = sessionStorage.getItem(key);
+      if (!item) return null;
+      return JSON.parse(item) as T;
+    } catch {
+      try {
+        sessionStorage.removeItem(key);
+      } catch {
+        // Ignore storage cleanup failures.
+      }
+      return null;
+    }
   }
 
   removeItem(key: string) {
-    sessionStorage.removeItem(key);
+    try {
+      sessionStorage.removeItem(key);
+    } catch {
+      // Ignore storage cleanup failures.
+    }
   }
 }

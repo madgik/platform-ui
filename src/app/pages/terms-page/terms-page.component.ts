@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit }
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { AuthService } from '../../services/auth.service';
 import { TermsService } from '../../services/terms.service';
 
@@ -15,12 +14,11 @@ import { TermsService } from '../../services/terms.service';
 })
 export class TermsPageComponent implements OnInit {
   private http = inject(HttpClient);
-  private sanitizer = inject(DomSanitizer);
   private termsService = inject(TermsService);
   private authService = inject(AuthService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
-  tosHtml: SafeHtml | null = null;
+  tosHtml: string | null = null;
   accepted = false;
   loading = true;
   loadError = false;
@@ -35,7 +33,7 @@ export class TermsPageComponent implements OnInit {
       next: (markdown) => {
         const cleaned = this.stripIntro(this.stripGeneralTermsHeading(markdown));
         const html = this.markdownToHtml(cleaned);
-        this.tosHtml = this.sanitizer.bypassSecurityTrustHtml(html);
+        this.tosHtml = html;
         this.loading = false;
         this.cdr.markForCheck();
       },
@@ -248,10 +246,20 @@ export class TermsPageComponent implements OnInit {
   }
 
   private formatInline(text: string): string {
-    return text
+    const escaped = this.escapeHtml(text);
+    return escaped
       .replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
       .replace(/\[([^\]]+)\]\((mailto:[^)]+)\)/g, '<a href="$2">$1</a>')
       .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
       .replace(/_([^_]+)_/g, '<em>$1</em>');
+  }
+
+  private escapeHtml(value: string): string {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 }

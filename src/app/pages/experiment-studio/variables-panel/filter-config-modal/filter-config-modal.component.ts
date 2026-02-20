@@ -240,9 +240,8 @@ export class FilterConfigModalComponent implements OnInit, OnChanges {
   }
 
 
-  // Closes modal
-  close() {
-    this.saveFilters();
+  // Closes modal without saving edits
+  cancel() {
     this.closeModal.emit();
   }
 }

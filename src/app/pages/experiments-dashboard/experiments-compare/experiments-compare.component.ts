@@ -47,8 +47,8 @@ export class ExperimentsCompareComponent {
   // Config collapse per exp
   private configExpandedMap = signal<Record<string, boolean>>({});
 
-  // Labels: code -> label
-  private codeToLabelSignal = signal<Record<string, string>>({});
+  // Labels grouped by domain (data_model:version)
+  private labelsByDomain = signal<Record<string, Record<string, string>>>({});
   private enumMapsByDomain = signal<Record<string, EnumMaps>>({});
 
   readonly experimentsWithState = computed<CompareItem[]>(() => {
@@ -88,26 +88,28 @@ export class ExperimentsCompareComponent {
           if (!currentMap[exp.id]) this.loadResult(exp.id);
         });
 
-        // same domain assumption -> load labels once
-        const domain = exps[0]?.domain ?? null;
-        this.loadLabels(domain);
-        this.loadEnumMaps(domain);
+        const domains = Array.from(
+          new Set(
+            exps
+              .map((exp) => exp?.domain)
+              .filter((domain): domain is string => !!domain)
+          )
+        );
+        domains.forEach((domain) => {
+          void this.loadLabels(domain);
+          void this.loadEnumMaps(domain);
+        });
       },
       { allowSignalWrites: true }
     );
   }
 
   private async loadLabels(domain: string | null) {
-    if (!domain) {
-      this.codeToLabelSignal.set({});
-      return;
-    }
-
-    // if already loaded, don't redo
-    if (Object.keys(this.codeToLabelSignal()).length > 0) return;
+    if (!domain) return;
+    if (this.labelsByDomain()[domain]) return;
 
     const map = await this.labelService.getLabelMap(domain);
-    this.codeToLabelSignal.set(map);
+    this.labelsByDomain.update((current) => ({ ...current, [domain]: map }));
   }
 
   private async loadEnumMaps(domain: string | null) {
@@ -184,21 +186,26 @@ export class ExperimentsCompareComponent {
     return getOutputSchema(exp.algorithmName) ?? [];
   }
 
-  private withLabels(codes: string[] | undefined | null) {
-    const map = this.codeToLabelSignal();
+  private getLabelMapForDomain(domain: string | null | undefined): Record<string, string> {
+    if (!domain) return {};
+    return this.labelsByDomain()[domain] ?? {};
+  }
+
+  private withLabels(codes: string[] | undefined | null, domain?: string | null) {
+    const map = this.getLabelMapForDomain(domain);
     return (codes ?? []).map((code) => ({ code, label: map[code] ?? code }));
   }
 
   getVariablesWithLabels(exp: Experiment) {
-    return this.withLabels((exp as any).variables);
+    return this.withLabels((exp as any).variables, exp?.domain ?? null);
   }
 
   getCovariatesWithLabels(exp: Experiment) {
-    return this.withLabels((exp as any).covariates);
+    return this.withLabels((exp as any).covariates, exp?.domain ?? null);
   }
 
   getFiltersWithLabels(exp: Experiment) {
-    return this.withLabels((exp as any).filters);
+    return this.withLabels((exp as any).filters, exp?.domain ?? null);
   }
 
   getEnumMapsFor(exp: Experiment): EnumMaps {
@@ -207,7 +214,7 @@ export class ExperimentsCompareComponent {
   }
 
   getLabelMapFor(exp: Experiment): Record<string, string> {
-    return this.codeToLabelSignal();
+    return this.getLabelMapForDomain(exp?.domain ?? null);
   }
 
   getYVarFor(exp: Experiment): string | null {
